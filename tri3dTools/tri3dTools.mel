@@ -1,5 +1,8 @@
-// ################# Tri3d Rigger tools ##################//
-// Contact to : info.tri3d@gmail.com
+// ################# Tri3d Rigger tools ################## //
+// ## Contact to : info.tri3d@gmail.com
+// ## Rigging - Animation
+// ## No copy right !!!!
+// ####################################################### //
 global proc tri3dPathToolsProc (){}
 global proc string tri3dPathTools ()
 {
@@ -33,23 +36,16 @@ global proc readAllValuesFromJson()
         while (!`feof $fileId`) {
             $line = strip(`fgetline $fileId`);
 
-            // Bỏ qua dòng { và }
             if ($line == "{" || $line == "}") continue;
 
-            // Tách key và value bằng dấu :
             string $tokens[];
             tokenize($line, ":", $tokens);
 
             if (size($tokens) == 2) {
-                // Làm sạch chuỗi key
                 $key = strip(substituteAllString($tokens[0], "\"", ""));
                 $key = substituteAllString($key, ",", "");
-
-                // Làm sạch chuỗi value
                 $value = strip(substituteAllString($tokens[1], ",", ""));
                 int $intVal = int($value);
-
-                // Gán vào biến toàn cục tương ứng
                 if ($key == "optCount")
                     $dataJsTools[0] = $intVal;
                 else if ($key == "curtab")
@@ -62,6 +58,7 @@ global proc readAllValuesFromJson()
         fclose $fileId;
     }
 }readAllValuesFromJson();
+
 global proc checkNode()
 {
     global int $dataJsTools[];  
@@ -78,6 +75,58 @@ global proc checkNode()
         fclose $fileId;
     }
 }checkNode();
+global proc checkOrCreateTextFile()
+{
+    string $cInstallToolsTri3D = `tri3dPathTools`;
+    string $listData[] = {($cInstallToolsTri3D + "Source/Data/History.txt")
+                            ,($cInstallToolsTri3D + "Source/Data/ListData.txt")
+                            ,($cInstallToolsTri3D + "Source/Data/bin.txt")};
+    for($filePath in $listData)
+    {
+        if (`filetest -f $filePath`) {
+        } else {
+            int $fileId = `fopen $filePath "w"`;
+            if ($fileId == 0) {
+                return;
+            }
+            fprint $fileId "Create by Tri3D !!\n";
+            fclose $fileId;
+        }        
+    }
+    string $listLicense[] = {($cInstallToolsTri3D + "Source/License/license.json")
+                        ,($cInstallToolsTri3D + "Source/License/tri3dTools.txt")};
+    for($filePath in $listLicense)
+    {
+        if (`filetest -f $filePath`) {
+        } else {
+            int $fileId = `fopen $filePath "w"`;
+            if ($fileId == 0) {
+                return;
+            }
+            fprint $fileId ("################# Tri3d Rigger tools ##################"+"\n"+"## Contact to : info.tri3d@gmail.com"+"\n"+"## Rigging - Animation"+"\n"+"## No copy right !!!!"+"\n"+"#######################################################");
+            fclose $fileId;
+        }        
+    }
+}checkOrCreateTextFile();
+global proc historyTxt(string $his)
+{
+    checkOrCreateTextFile();
+    string $cInstallToolsTri3D = `tri3dPathTools`;
+    string $filePath = $cInstallToolsTri3D + "Source/Data/History.txt";    
+    int $fileId = `fopen $filePath "r"`;
+    string $fullText = "";
+    if ($fileId != 0) {
+        while (!`feof $fileId`) {
+            $fullText += `fgetline $fileId`;
+        }
+        fclose $fileId;
+    }
+    string $date = `date`;
+    int $fileR = `fopen $filePath "w"`;
+    fprint $fileR ($fullText+"\n"+$date+" - "+$his+" .");
+    fclose $fileR;
+}
+
 // #################################################################### //
 // #################################################################### //
 
@@ -88,10 +137,10 @@ global proc functionsWindow()
     float $wh[] = {500,500};
     string $buttonSingleTools[] = {"","Influences","Curve AI","Curve Arc","Curve ADV6","Parent Curve","SetLoop","Pasted","Set default","Anotations","Sample","Check","DtMush"
                                     ,"Ref Geo","AI parent","Rivet","CurJnt","Auto"
-                                    ,"ADV 6 set","Face BS","Auto Vis","Wheel Auto","Sword Motion"};
+                                    ,"ADV 6 set","Face BS","Auto Vis","Wheel Auto","Sword Motion","His"};
     string $commandSingleTools[] = {"","AddInfluenceOptions","jointToCurvePY","CreateCurveArc","ControllerGalleryImport","combineCurve","deleteIhistory","pastedRename","CreateQuickSelectSet","CreateAnnotateNode","triFitResample","triModelCheckerUI","triHardenWeights"
                                     ,"refGeoTest","autoAcctionObj","toolsRivetWindow","createCurvePjnt","autoRigFunctionSmall"
-                                    ,"checkFullADV5","importFacialBlendshape","SDKVisAuto","autoRigWheel","swordMotionAuto"};
+                                    ,"checkFullADV5","importFacialBlendshape","SDKVisAuto","autoRigWheel","swordMotionAuto","DeleteIhi"};
     string $creatCtrl[] = {"","cCubeCur","cCircleCur","cCicleCurHafl","cHandCur","cLegCur","cTarget","cLocator","cTargetCircle","Plus","cCirclePlus","cRotate","cArrow","cColorRange","cDirections","cBody","cLockCircle","cLockSquare","cSquare","cFaceCtrl","dizzyCtrl"};
     string $imageCtrl[] = {"","ccButton02.png","ccButton08.png","ccButton48.png","ccButton11.png","ccButton12.png","ccButton03.png","ccButton10.png","ccButton19.png","ccButton17.png","ccButton23.png","ccButton27.png","ccButton29.png","ccButton32.png","ccButton35.png","ccButton38.png","ccButton40.png","ccButton43.png","ccSquare.png","ccFace.png","ccButton36.png"};
     string $cbCtrl[] = {"","Normal","Match","Boxer","Group","Joint","Parent","Bind"};
@@ -255,27 +304,31 @@ global proc functionsWindow()
 				if($mn == "int")$dtType = "long";
 
             string $selected[] =`ls -sl`;
-            for ($obj in $selected){
-                if(!`attributeExists $nameAttr $obj`)
-                {
-                    if($mn == "on")
+            if(size($selected)>0)
+            {
+                for ($obj in $selected){
+                    if(!`attributeExists $nameAttr $obj`)
                     {
-                        addAttr -ln $nameAttr -at bool -keyable true ;
-                        return;
-                    }                
-                    if($minV  >= 0)
-                    {
-                        addAttr -ln $nameAttr -at $dtType -min $minV -max $maxV -keyable true ;
+                        if($mn == "on")
+                        {
+                            addAttr -ln $nameAttr -at bool -keyable true ;
+                            return;
+                        }                
+                        if($minV  >= 0)
+                        {
+                            addAttr -ln $nameAttr -at $dtType -min $minV -max $maxV -keyable true ;
+                        }
+                        else if($minV  < 0)
+                        {
+                            addAttr -ln $nameAttr -at $dtType -keyable true ;
+                        }                    
                     }
-                    else if($minV  < 0)
+                    else
                     {
-                        addAttr -ln $nameAttr -at $dtType -keyable true ;
-                    }                    
-                }
-                else
-                {
-                    warning "Attribute Exists !!";
-                }
+                        warning "Attribute Exists !!";
+                    }
+                }   
+                historyTxt("Creat Attribute "+$nameAttr)  ;           
             }
         }
     global proc ConnectFrameEx(){
@@ -307,6 +360,7 @@ global proc functionsWindow()
                         addAttr -ln $ctrlEXname -at $dtType -min $nMin -max $nMax -keyable true ($select[0]);
                         connectAttr -f ($select[0] + "." + $ctrlEXname) ($fileEXname + ".frameExtension");
                     }
+                    historyTxt("Switch texture !!")  ;           
                 }
             }
         }
@@ -314,6 +368,23 @@ global proc functionsWindow()
             warning "Please select obj !!!";
         }
     }
+// ################# funtion single tools  ####################### //
+global proc DeleteIhi()
+{
+    string $sl[] = `ls`;
+    for($o in $sl)
+    {
+        if(`gmatch $o "*posur*"` || `gmatch $o "*curveFromMesh*"` || `gmatch $o "*posur*"` || `gmatch $o "*loft*"`)
+        {
+            setAttr ($o + ".ihi") 0;
+        }
+        if(`gmatch $o "*ngSkin*"`)
+        {
+            delete $o;
+        }
+    }    
+}
+// ################## check advanced skeleton ###################### //
 
 // ################# Curve ################# //
     global proc int[] checkBoxCtrl()
@@ -345,13 +416,14 @@ global proc functionsWindow()
     {
         string $sl[]=`ls -sl`;
         int $check[]=checkBoxCtrl();
+        if(size($sl)>0){
         for($o in $sl){
         $newName="";
         $cur=`curve -n "Cube" -d 1 -p 1 1 1 -p 1 1 -1 -p 1 -1 -1 -p 1 -1 1 -p -1 -1 1 -p -1 1 1 -p 1 1 1 -p 1 -1 1 -p -1 -1 1 -p -1 -1 -1 -p -1 1 -1 -p 1 1 -1 -p 1 -1 -1 -p -1 -1 -1 -p -1 1 -1 -p -1 1 1`;
         if(size($sl)>0){$newName=renameCur($cur,$o);}
         if($check[4]==1&&size($sl)>0){$jnt=`createNode -n ($o+"_J") joint`;parent $jnt $newName;}
         if($check[3]==1&&size($sl)>0){$grp=`group -empty -n ($o+"_gr")`;parent $newName $grp;}
-        if($check[1]==1&&size($sl)>0){matchTrans($o,$newName);}}select -cl;
+        if($check[1]==1&&size($sl)>0){matchTrans($o,$newName);}}select -cl;historyTxt("Create Cube Curve");}
     }
 
 
