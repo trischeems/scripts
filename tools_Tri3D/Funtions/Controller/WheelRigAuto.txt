@@ -1,0 +1,6 @@
+if (wheel_move_ctrl.auto == 1 )
+{
+$diff = wheel_rotate_grp.translateZ - wheel_rotate_grp.offset ;
+wheel_rotate_grp.rotateX -= $diff * -360 / (wheel_sizeShape.distance*3.14) ;
+};
+wheel_rotate_grp.offset = wheel_rotate_grp.translateZ ;

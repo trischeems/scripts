@@ -1,0 +1,561 @@
+/*
+'Copy Animation with Offset (CAWO)' MEL script
+Author: Carlos Rico Adega
+
+Tested on Windows.
+
+SCRIPT NAME:
+
+cra_copyAnim.mel
+
+
+DESCRIPTION:
+
+This script lets you copy the animation of an existing object into other objects adding a frame offset
+to each object sequentially.
+
+LAUNCH UI:
+
+cra_copyAnim();
+
+Change log:
+
+	Version: 2.0.0
+	Date: August 31, 2019
+		- UI Redesign
+		- Bug fixing.
+
+	Version: 1.1.1
+	Date: April 6, 2012
+		- Bug fixing. Script execution didn't respect float frame offset.
+		- Bug fixing. UI glitches.
+
+	Version: 1.1.0
+	Date: Janyary 7, 2011
+		- Added 'Mantain Offset' option. Prevent the target objects from changing position.
+		- Added an option to modify the selection order of target objects.
+
+
+*/
+global proc cra_copyAnim()
+{
+	if (`window -ex cra_copyAnimUI`)
+		deleteUI cra_copyAnimUI;
+	
+	if (`window -exists helpUI`)
+		deleteUI helpUI;
+	
+	window -t "Copy Animation+" -s 0 -toolbox 1 cra_copyAnimUI;
+	
+	frameLayout -mh 2 -mw 2 -bv 1 -lv 0 -collapsable 0 -li 10;
+	frameLayout -mh 2 -bv 1 -mw 2 -lv 0  -collapsable 0 -li 10 mainFL;
+	columnLayout -adj 1;
+
+	rowLayout -nc 2 -adj 1 -bgc 0.2 0.2 0.2;
+		floatFieldGrp 			
+			-numberOfFields 1
+			-label "Offset " -extraLabel " frames"
+			-ann "Number of frames to vary for each object" 
+			-cw3 38 35 20
+			-adj 3
+			-pre 2
+			-value1 1
+		copyNodeChannelFFG;
+		
+		popupMenu;
+			menuItem -label "  0 frame" -command "floatFieldGrp -e -value1 0 copyNodeChannelFFG;";
+			menuItem -label "  1 frame" -command "floatFieldGrp -e -value1 1 copyNodeChannelFFG;";
+			menuItem -label "  2 frames" -command "floatFieldGrp -e -value1 2 copyNodeChannelFFG;";
+			menuItem -label "  3 frames" -command "floatFieldGrp -e -value1 3 copyNodeChannelFFG;";
+			menuItem -label "  4 frames" -command "floatFieldGrp -e -value1 4 copyNodeChannelFFG;";
+			menuItem -label "  5 frames" -command "floatFieldGrp -e -value1 5 copyNodeChannelFFG;";
+			menuItem -label "  6 frames" -command "floatFieldGrp -e -value1 6 copyNodeChannelFFG;";
+			menuItem -label "  7 frames" -command "floatFieldGrp -e -value1 7 copyNodeChannelFFG;";
+			menuItem -label "  8 frames" -command "floatFieldGrp -e -value1 8 copyNodeChannelFFG;";
+			menuItem -label "  9 frames" -command "floatFieldGrp -e -value1 9 copyNodeChannelFFG;";
+			menuItem -label "10 frames" -command "floatFieldGrp -e -value1 10 copyNodeChannelFFG;";
+			menuItem -label "15 frames" -command "floatFieldGrp -e -value1 15 copyNodeChannelFFG;";
+			menuItem -label "20 frames" -command "floatFieldGrp -e -value1 20 copyNodeChannelFFG;";	
+		setParent -m ..;
+
+		nodeIconButton -h 20 -w 20 -i (`getApplicationVersionAsFloat` > 2015 ? "help.png" : "pickOtherObj.png") -ann "About" -c "craCopyAnimAboutScript";	
+	setParent ..;
+	
+	rowLayout -nc 2;
+		checkBox 
+		-l "Random"
+		-bgc 0.2 0.2 0.2
+		-ann "Offset previous object animation within this range"
+		-h 22
+		-onc "floatFieldGrp -e -en 1 rndOffsetNodeFF;floatFieldGrp -e -en 0 copyNodeChannelFFG;"
+		-ofc "floatFieldGrp -e -en 0 rndOffsetNodeFF; floatFieldGrp -e -en 1 copyNodeChannelFFG;"
+		cbRandInput;
+		
+		floatFieldGrp 
+		-bgc 0.2 0.2 0.2
+		-en 0
+		-h 22
+		-cw2 35 35
+		-numberOfFields 2
+		-pre 2
+		-value1 0
+		-value2 5
+		rndOffsetNodeFF;
+	setParent ..;
+	
+	separator -h 2 -st "none";
+	
+	optionMenu selectionOrderOM;
+		menuItem -l "order as selected" -c "";
+		menuItem -l "order randomized" -c "";
+		menuItem -l "sorted by name [A-Z]" -c "";
+		menuItem -l "sorted by name [Z-A]" -c "";
+	setParent -m;
+
+	separator -h 2 -st "none";
+	
+	checkBox -v 1 -l " Mantain Xform Offset" -ann "Relative transform mode. Also affects time." craMOCB;
+	
+	separator  -h 2 -st "none";
+	
+	rowLayout -nc 3; 
+	nodeIconButton 
+		-w 46
+		-st "iconOnly"
+		-i "skinWeightCopy.png"
+		-l "Copy animation" 
+		-bgc .7 .7 .7 
+		-ann "Select the objects you want to copy animation onto (selection order is important).\nThen select the object to copy the animation from\nYou can also select which attributes to copy in the Channel Box (optional)"
+		-c "cra_copyAnimDo()" 
+	copiarButton;
+
+	nodeIconButton  
+		-st "iconOnly"
+		-i "save.png"
+		-w 46
+		-l "Store animation" 
+		-ann "Stores the object.attribute animation curve selected in the Channel Box."
+		-bgc .7 .7 .7 
+		-c "cra_storeAnim()" 
+	guardarButton;
+	
+	nodeIconButton  
+		-st "iconOnly"
+		-i "skinWeightPaste.png"
+		-l "Paste animation"
+		-en 0
+		-w 46
+		// -h 20
+		-bgc .7 .7 .7 
+		-c "cra_pasteAnim()"
+		-ann "Select object(s) and attribute(s) to paste animation on."
+	pegarButton;
+
+
+	setParent ..;
+	
+	separator -h 2 -st "none";
+	// text -bgc 0.4 0.4 0.4 -en 0 -h 20 -l "object.attribute" -ann "Currently stored object.attribute" animCurvesGuardadas;
+	// button -bgc 0.4 0.4 0.4 -en 0 -h 20 -l "object.attribute" -ann "Currently stored object.attribute" animCurvesGuardadas;
+	nodeIconButton -style "iconAndTextHorizontal"  -i "greenSelect" -bgc 0.4 0.4 0.4 -en 0 -h 20 -l "object.attribute" -ann "Currently stored object.attribute" animCurvesGuardadas;
+	
+	window -e
+		-wh 158 153
+		-s 0
+		-mxb 0
+		-mnb 0
+		-tlb 0
+	cra_copyAnimUI;
+
+	showWindow cra_copyAnimUI;
+}
+// cra_copyAnim //////////////////////////////////////////////////// Final
+
+
+// cra_copyAnimDo //////////////////////////////////////////////////// Inicio
+global proc cra_copyAnimDo()
+{
+	string $cra_input[] = ls("-sl");
+	string $cra_inputAttr[];
+	float $cra_key[]; 
+	
+	float $cra_offsetCBChannel = `floatFieldGrp -q -v1 copyNodeChannelFFG`;
+
+	if(!size($cra_input))
+	{
+		craCopyAnimInViewMessage "Select some objects" "";
+		error "Select some objects";
+	}
+	
+	if (size(`channelBox -q -hol mainChannelBox`) != 0 && size(`channelBox -q -sha mainChannelBox`) != 0) 
+		$cra_inputAttr = `channelBox -q -sha mainChannelBox`;
+	if (size(`channelBox -q -sol mainChannelBox`) != 0 && size(`channelBox -q -ssa mainChannelBox`) != 0) 
+		$cra_inputAttr = `channelBox -q -ssa mainChannelBox`;
+	if (size(`channelBox -q -mol mainChannelBox`) != 0 && size(`channelBox -q -mol mainChannelBox`) != 0)
+		$cra_inputAttr = `channelBox -q -sma mainChannelBox`;
+	
+	if(!size($cra_inputAttr))
+	{
+		$cra_tempInputAttr = `listAttr -k $cra_input[size($cra_input)-1]`;
+		
+		for($m=0,$j=0;$m< size($cra_tempInputAttr);$m++)
+		{
+			string $tempConnections[]= `listConnections -t "animCurve" ($cra_input[size($cra_input)-1] +"." + $cra_tempInputAttr[$m])`;
+			if($tempConnections[0] != "")
+			{
+				$cra_inputAttr[$j] = $cra_tempInputAttr[$m];
+				$j++;
+			}
+		}
+	}
+	
+	if(size($cra_input) < 2 || !size($cra_inputAttr)) 
+	{
+		craCopyAnimInViewMessage "Object and or attributes missing" "\nSelect your objects in order. Then select the source animation object.\nYou can select some attribute(s) in the ChannelBox to copy only those";
+		// confirmDialog -ma "center" -t "  Object and or attributes missing." -button "OK" -db "OK" -m "Select your objects in order. Then select the source animation object.\t\nYou can select some attribute(s) in the ChannelBox to copy only those.";
+	}
+	else
+	{
+		// print "\n$cra_input\n";
+		// print $cra_input;
+
+		if(`optionMenu -q -sl selectionOrderOM` == 1)
+		{
+			string $leadObject = $cra_input[size($cra_input)-1];
+			stringArrayRemoveAtIndex(size($cra_input)-1, $cra_input);
+			stringArrayInsertAtIndex(0, $cra_input, $leadObject);
+		}
+		
+		if(`optionMenu -q -sl selectionOrderOM` == 2)
+		{
+			$cra_input = `craRandArray($cra_input)`;
+		} 		
+		
+		if(`optionMenu -q -sl selectionOrderOM` == 3)
+			$cra_input = `craSortArray($cra_input)`;
+		
+		if(`optionMenu -q -sl selectionOrderOM` == 4)
+		{
+			string $leadObject = $cra_input[size($cra_input)-1];
+			$cra_input= craSortArray($cra_input);
+			stringArrayRemoveAtIndex(0, $cra_input);
+			stringArrayInsertAtIndex(size($cra_input), $cra_input, $leadObject);
+			$cra_input = cra_invertArray($cra_input);
+		}
+
+		// print "\n$cra_input1\n";
+		// print $cra_input;
+		
+		for ($cra_attr in $cra_inputAttr)
+		{
+			for ($cra_i = 1; $cra_i<size($cra_input); $cra_i++) 
+			{
+				seed $cra_i;
+				if (`checkBox -q -v cbRandInput`) 
+				{
+					float $cra_val1 = (`floatFieldGrp -q -value1 rndOffsetNodeFF`);
+					float $cra_val2 = (`floatFieldGrp -q -value2 rndOffsetNodeFF`);
+					$cra_offsetCBChannel = trunc(rand($cra_val1, $cra_val2));
+				}
+
+				float $currentAttrValue = `getAttr ($cra_input[$cra_i] + "." + $cra_attr)`;
+				
+				$cra_lastKey = $cra_i - 1;
+				$cra_key = `keyframe -q $cra_input[$cra_lastKey]`;
+				
+				copyKey -at $cra_attr $cra_input[$cra_lastKey];
+				float $cra_fallOff = ($cra_key[0] + $cra_offsetCBChannel);
+				pasteKey -option "replaceCompletely" -at $cra_attr -time $cra_fallOff $cra_input[$cra_i];
+				
+				if(`checkBox -q -v craMOCB`)
+				{
+					keyframe -q -at ($cra_input[$cra_i] + "." + $cra_attr);
+					float $offsetValue = `getAttr ($cra_input[$cra_i] + "." + $cra_attr)`;
+					float $diffValue = $currentAttrValue - $offsetValue;
+					keyframe -e -relative -valueChange $diffValue ($cra_input[$cra_i] + "." + $cra_attr);
+				}
+			}
+		}
+	}
+}
+
+// cra_copyAnimDo //////////////////////////////////////////////////// Final
+
+
+
+// cra_storeAnim //////////////////////////////////////////////////// Final
+
+global proc cra_storeAnim()
+{
+	string $cra_input[] = `ls -sl`;
+	string $cra_inputAttr[];
+	
+	float $cra_offsetCBChannel = `floatFieldGrp -q -v1 copyNodeChannelFFG`;
+	
+	if (size(`channelBox -q -hol mainChannelBox`) != 0 && size(`channelBox -q -sha mainChannelBox`) != 0) 
+		$cra_inputAttr = `channelBox -q -sha mainChannelBox`;
+	if (size(`channelBox -q -sol mainChannelBox`) != 0 && size(`channelBox -q -ssa mainChannelBox`) != 0) 
+		$cra_inputAttr = `channelBox -q -ssa mainChannelBox`;
+	if (size(`channelBox -q -mol mainChannelBox`) != 0 && size(`channelBox -q -mol mainChannelBox`) != 0)
+		$cra_inputAttr = `channelBox -q -sma mainChannelBox`;
+	
+	if(!size($cra_inputAttr) || size($cra_inputAttr) > 1) 
+	{
+		// confirmDialog -ma "center" -t "  Source object.attribute missing" -button "OK" -db "OK" -m "Select an object and an attribute in the Channel Box\t\nwhich animation curve you want to store.";
+		craCopyAnimInViewMessage "Source object/attribute missing:" "\nSelect an attribute in the Channel Box\nwhich animation curve you want to store.";
+	}
+	else 
+	{
+		string $cra_animCurves[];
+		
+		for ($cra_i = 0; $cra_i < size($cra_inputAttr); $cra_i++) 
+		{
+			$cra_tempAnimCurves = `listConnections -s 1 ($cra_input[0] + "." + $cra_inputAttr[$cra_i])`;
+			if (size ($cra_tempAnimCurves) != 0) $cra_animCurves[$cra_i] = $cra_tempAnimCurves[0];
+		}
+		
+		if (!size ($cra_animCurves))
+		{
+			craCopyAnimInViewMessage "Wrong attribute: " "The selected attribute is not driven by an animation curve";
+			// confirmDialog -ma "center" -t "  No animation curves." -button "OK" -db "OK" -m "The selected attribute is not controlled by an animation curve.";
+		}
+		else 
+		{
+			string $objectAttr[];
+			int $numTokens = `tokenize $cra_input[0] "|" $objectAttr`;
+			
+			// text -e -en 1 -ann ($objectAttr[$numTokens-1] + "." + $cra_inputAttr[0]) -l ($objectAttr[$numTokens-1] + "." + $cra_inputAttr[0]) animCurvesGuardadas;
+			// button -e -en 1 -c ("select -r " + $objectAttr[$numTokens-1]) -ann ($objectAttr[$numTokens-1] + "." + $cra_inputAttr[0]) -l ($objectAttr[$numTokens-1] + "." + $cra_inputAttr[0]) animCurvesGuardadas;
+			nodeIconButton -e -en 1 -c ("select -r " + $objectAttr[$numTokens-1]) -ann ($objectAttr[$numTokens-1] + "." + $cra_inputAttr[0]) -l ($objectAttr[$numTokens-1] + "." + $cra_inputAttr[0]) animCurvesGuardadas;
+			nodeIconButton -e -en 1 pegarButton;
+		}
+	}
+}
+
+// cra_storeAnim //////////////////////////////////////////////////// Final
+
+
+// cra_pasteAnim //////////////////////////////////////////////////// Inicio
+
+global proc cra_pasteAnim()
+{
+	if (!size (`ls -sl`))
+		confirmDialog -ma "center" -t "  No animation curves." -button "OK" -db "OK" -m "No object(s) selected to paste animation to.";
+	else 
+	{
+		string $cra_input[] = `ls -sl`;
+		string $cra_inputAttr[];
+		float $cra_key[]; 
+		float $cra_offsetCBChannel = `floatFieldGrp -q -v1 copyNodeChannelFFG`;
+		string $objectAttr[];
+		// string $curvasSalvadas = `text -q -l animCurvesGuardadas`;
+		string $curvasSalvadas = `nodeIconButton -q -l animCurvesGuardadas`;
+		int $numTokens = `tokenize $curvasSalvadas "." $objectAttr`;
+		
+		if (size(`channelBox -q -hol mainChannelBox`) != 0 && size(`channelBox -q -sha mainChannelBox`) != 0) 
+		{
+			// $cra_input = `channelBox -q -hol mainChannelBox`;
+			$cra_inputAttr = `channelBox -q -sha mainChannelBox`;
+		}
+		else if (size(`channelBox -q -sol mainChannelBox`) != 0 && size(`channelBox -q -ssa mainChannelBox`) != 0) 
+		{
+			// $cra_input = `channelBox -q -sol mainChannelBox`;
+			$cra_inputAttr = `channelBox -q -ssa mainChannelBox`;
+		}
+		else if (size(`channelBox -q -mol mainChannelBox`) != 0 && size(`channelBox -q -mol mainChannelBox`) != 0)
+		{
+			// $cra_input = `channelBox -q -mol mainChannelBox`;
+			$cra_inputAttr = `channelBox -q -sma mainChannelBox`;
+		}
+
+		// print "\n$cra_input1\n";
+		// print $cra_input;
+
+		// print "\n$cra_input2\n";
+		// print $cra_input;
+		if(`optionMenu -q -sl selectionOrderOM` == 1)
+			stringArrayInsertAtIndex(0, $cra_input, $objectAttr[0]);		
+		else 
+			$cra_input[size($cra_input)] = $objectAttr[0];
+	
+		if(`optionMenu -q -sl selectionOrderOM` == 2)
+			$cra_input = `craRandArray($cra_input)`;
+		
+		if(`optionMenu -q -sl selectionOrderOM` == 3)
+			$cra_input = `craSortArray($cra_input)`;
+
+		if(`optionMenu -q -sl selectionOrderOM` == 4)
+		{
+			string $leadObject = $cra_input[size($cra_input)-1];
+			$cra_input= craSortArray($cra_input);
+			stringArrayRemoveAtIndex(0, $cra_input);
+			stringArrayInsertAtIndex(size($cra_input), $cra_input, $leadObject);
+			$cra_input = cra_invertArray($cra_input);
+		}
+		
+		if(!size($cra_inputAttr))
+			$cra_inputAttr[0] = $objectAttr[1];
+
+		// print "\n$cra_input3\n";
+		// print $cra_input;
+
+
+		for ($cra_attr in $cra_inputAttr)
+		{
+			for ($cra_i = 1, $cra_offset = 0; $cra_i<size($cra_input); $cra_i++, $cra_offset += $cra_offsetCBChannel) 
+			{
+				if (`checkBox -q -v cbRandInput`) 
+				{
+					seed $cra_i;
+					float $cra_val1 = (`intFieldGrp -q -value1 rndOffsetNodeFF`);
+					float $cra_val2 = (`intFieldGrp -q -value2 rndOffsetNodeFF`);
+					$cra_offsetCBChannel = trunc(rand($cra_val1, $cra_val2));
+				}
+				
+				float $currentAttrValue = `getAttr ($cra_input[$cra_i] + "." + $cra_attr)`;
+				$cra_lastKey = $cra_i;
+				$cra_key = `keyframe -q $objectAttr[0]`;
+				copyKey -at $objectAttr[1] $objectAttr[0];
+				// int $cra_fallOff = ($cra_key[0] + $cra_offsetCBChannel + $cra_offset);
+				int $cra_fallOff = ($cra_key[0] + $cra_offset);
+				
+				pasteKey -option "replaceCompletely" -at $cra_attr -time $cra_fallOff $cra_input[$cra_i];
+				
+				if(`checkBox -q -v craMOCB`)
+				{
+					keyframe -q -at ($cra_input[$cra_i] + "." + $cra_attr);
+					float $offsetValue = `getAttr ($cra_input[$cra_i] + "." + $cra_attr)`;
+					float $diffValue = $currentAttrValue - $offsetValue;
+					keyframe -e -relative -valueChange $diffValue ($cra_input[$cra_i] + "." + $cra_attr);
+				}
+			}
+		}
+	}
+}
+
+///// cra_pasteAnim //////////////////////////////////////////////////// Final
+global proc string[] cra_invertArray ( string $array[] ) 
+{
+	string $leadObject = $array[size($array)-1];
+	stringArrayRemoveAtIndex((size($array)-1), $array);
+
+	string $invertedArray[];
+
+	for ($i=(size($array)-1);$i>=0;$i--)
+		$invertedArray[$i] = $array[(size($array)-1)-$i];
+
+	stringArrayInsertAtIndex(0, $invertedArray, $leadObject);	
+	
+	return $invertedArray;
+
+}
+
+
+global proc string[] craRandArray(string $stringArray[])
+{
+	string $leadObject = $stringArray[size($stringArray)-1];
+	stringArrayRemoveAtIndex((size($stringArray)-1), $stringArray);
+
+	int $arraySize = size($stringArray);
+	python("l = range(" + ($arraySize) + ")");
+	python("import random");
+	python("random.shuffle (l)");
+	int $randomIndex[] = python("l");
+	
+	for( $i=0;$i<($arraySize);$i++)
+		$randomArray[$i] =$stringArray[$randomIndex[$i]];
+	
+	stringArrayInsertAtIndex(0, $randomArray, $leadObject);
+	return $randomArray;
+}
+
+
+global proc string[] craSortArray(string $stringArray[])
+{
+	string $leadObject = $stringArray[size($stringArray)-1];
+	stringArrayRemoveAtIndex((size($stringArray)-1), $stringArray);
+	$sortedArray = sort($stringArray);
+	stringArrayInsertAtIndex(0, $sortedArray, $leadObject);
+	
+	return $sortedArray;
+}
+
+global proc craCopyAnimInViewMessage( string $message1, string $message2)
+{
+    if(`getApplicationVersionAsFloat` > 2013)
+    {
+        int $inViewStatus = `optionVar -q inViewMessageEnable`;
+        optionVar -iv inViewMessageEnable true;
+        print ($message1 + " " + $message2 + "\n");
+		inViewMessage 
+            -a .9 
+            -smg ("<font color=\"orange\">" + $message1 + " </font><font color=\"limegreen\">" + $message2 + "</font>") 
+            -pos "topCenter" 
+            -bkc 0x00001100 
+            -fade 
+            -fadeInTime 100 -fadeStayTime 1500 
+            -fadeOutTime 500;
+        optionVar -iv inViewMessageEnable $inViewStatus;
+    }
+    else
+    {
+        print ($message1 + " " + $message2 + "\n");
+        headsUpMessage -t 0.1 ($message1 + " " + $message2);
+    }
+}
+
+global proc craCopyAnimAboutScript()
+{
+    if (`window -exists craCopyAnimAboutAboutWin`)
+        deleteUI craCopyAnimAboutAboutWin;
+
+    string $craIconPath = `internalVar -userTmpDir`;
+    string $linkedInIcon[] = { "/* XPM */", "static char *linkedin_xpm[] = {", "/* width height num_colors chars_per_pixel */", "\"    64    64       16            1\",", "/* colors */", "\"` c #047eac\",", "\". c #88cfdf\",", "\"# c #1ea7c6\",", "\"a c #c5e7ee\",", "\"b c #50b7d1\",", "\"c c #0497be\",", "\"d c #e7f6fc\",", "\"e c #72c6db\",", "\"f c #b0e0eb\",", "\"g c #35aecc\",", "\"h c #62c1da\",", "\"i c #059fc4\",", "\"j c #048cb6\",", "\"k c #9ad5e4\",", "\"l c #dbf1f4\",", "\"m c #fcfefc\",", "/* pixels */", "\"#i#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii##\",", "\"iiciiciiciiciiciiciiciiciiciiciiciiciiciiciiciiciiciiciiciiciici\",", "\"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\",", "\"iiicicicicicicicicicicicicicicicicicicicicicicicicicicicicicicii\",", "\"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\",", "\"#cicicicicicicicicicicicicicicicicicicicicicicicicicicicicicicii\",", "\"iiiiiiiiiiiiccciiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\",", "\"iiiciciciicjjicjjiicicicicicicicicicicicicicicicicicicicicicicii\",", "\"iiiiiiiiijjhflakbjciiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\",", "\"#ciciciijiammmmmm.jcicicicicicicicicicicicicicicicicicicicicicii\",", "\"iiiiiiccclmmmmmmmmejiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\",", "\"iiiciiijemmmmmmmmmm#jiciciciciciciciciciciciciciciciciciciciciii\",", "\"iiiicicjammmmmmmmmmejiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiici\",", "\"#ciiiicidmmmmmmmmmmkjiciciciciciciciciciciciciciciciciciciciciii\",", "\"iiiciccidmmmmmmmmmmkjiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\",", "\"iiiiiiijammmmmmmmmmhjiciciciciciciciciciciciciciciciciciciciciii\",", "\"iiciciijbmmmmmmmmmmcciiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiicii\",", "\"#iiiiciijfmmmmmmmmbjiiciciciciciciciciciciciciciciciciciciciiiii\",", "\"iiciiiiijc.mmmmmdbjciiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiicicii\",", "\"iiiiciciicjgekkecjiiiciciciciciciciciciciciciciciciciciciciiiiii\",", "\"iiciiiiiiiccjcjjciiciiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiciciii\",", "\"#iiiciciciiciciiiciiiciciciciciciciciciciccccciciciciciciiiiiici\",", "\"iiciiiiiicjcccccccciiiiiicccccccccciiiicjjjccjjjjciiiiiiciciciii\",", "\"iiiiciicii#ii#iii#icicicii#ii#i#iiiiicjcb.faaaf.bcjciciiiiiiiiii\",", "\"iiciiiccgdmmdmdmdmfcciiciddmdmddmm.jjjelmmmmmmmmmlejjiicicicicii\",", "\"#iiiciijgmmmmmmmmmljiicc#mmmmmmmmmk`ilmmmmmmmmmmmmma#jiiiiiiiiii\",", "\"iiciiicjgmmmmmmmmmacciijimmmmmmmmmhjdmmmmmmmmmmmmmmmdcjiicicicii\",", "\"iiiiciicgmmmmmmmmmacciicimmmmmmmmmefmmmmmmmmmmmmmmmmmajiiiiiiiii\",", "\"iiciiicjgmmmmmmmmmacciccimmmmmmmmmmmmmmmmmmmmmmmmmmmmmbjicicicii\",", "\"#iiiciijgmmmmmmmmmacciicimmmmmmmmmmmmmmmmmmmmmmmmmmmmmajiiiiiiii\",", "\"iiciiiijgmmmmmmmmmacciicimmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#ccicicii\",", "\"iiiiciijgmmmmmmmmmacciccimmmmmmmmmmmmmmmddmmmmmmmmmmmmmbjiiiiiii\",", "\"iiciicicgmmmmmmmmmacciicidmmmmmmmmmmmab#ccgkmmmmmmmmmmm.jiciciii\",", "\"#iiiiiijgmmmmmmmmmaccicc#dmmmmmmmmmmfjjjccj`emmmmmmmmmmfjiiiiici\",", "\"iiciciijgmmmmmmmmmacciicimmmmmmmmmmdcjiiiiicjammmmmmmmmacciciiii\",", "\"iiiiicijgmmmmmmmmmacciccimmmmmmmmmm.jiiciciijemmmmmmmmmlcciiicii\",", "\"iiciiiijgmmmmmmmmmacciicidmmmmmmmmmgjiciiicijgmmmmmmmmmdcciiciii\",", "\"#iicicijgmmmmmmmmmaccicc#dmmmmmmmmm#ciiiiiicc#mmmmmmmmmdiciciiii\",", "\"iiiiiiicgmmmmmmmmmacciicimmmmmmmmmdicciciciicimmmmmmmmmdiciiiiii\",", "\"iiciciijgmmmmmmmmmacciccimmmmmmmmmdcciiiiicicidmmmmmmmmdicciciii\",", "\"iiiiiiccgmmmmmmmmmacciicidmmmmmmmmdiciciciiccimmmmmmmmmdiciiicii\",", "\"#ciciiijgmmmmmmmmmaccicc#dmmmmmmmmdcciiiiiiicidmmmmmmmmdicciiiii\",", "\"iiiiciijgmmmmmmmmmacciicimmmmmmmmmdicicicicicimmmmmmmmmdicicicii\",", "\"iiiiicijgmmmmmmmmmacciccimmmmmmmmmdcciiiiiiicidmmmmmmmmdicciiiii\",", "\"iiciiiijgmmmmmmmmmacciicidmmmmmmmmdicicicicicidmmmmmmmmdiciiciii\",", "\"#iicicijgmmmmmmmmmaccicc#dmmmmmmmmdcciiiiiiccimmmmmmmmmdicciiici\",", "\"iiiiiiicgmmmmmmmmmacciicimmmmmmmmmdiciciciiicidmmmmmmmmdiciciiii\",", "\"iiciciijgmmmmmmmmmacciccimmmmmmmmmdcciiiiicicimmmmmmmmmdicciicii\",", "\"iiiiiiccgmmmmmmmmmacciicidmmmmmmmmdiciciciiicidmmmmmmmmdiciiiiii\",", "\"#ciciiijgmmmmmmmmmaccicc#dmmmmmmmmdcciiiiicicidmmmmmmmmdicciciii\",", "\"iiiiciijgmmmmmmmmmacciicimmmmmmmmmdiciciciiccimmmmmmmmmdiciiiiii\",", "\"iiiiicijgmmmmmmmmmacciccimmmmmmmmmdcciiiiiiicidmmmmmmmmdicciciii\",", "\"iiciiiijgmmmmmmmmmacciicidmmmmmmmmdicicicicicimmmmmmmmmdiciiicii\",", "\"#iicicijgmmmmmmmmmaccicc#dmmmmmmmmdcciiiiiiicidmmmmmmmmdicciiiii\",", "\"iiiiiiijgmmmmmmmmmljiiijimmmmmmmmmmicciciciccimmmmmmmmmmicicicii\",", "\"iiciciic#dlldlldllfcciicilldlldlldacciiiiiiicillldlldldacciiiiii\",", "\"iiiiiiciicicciccicciciciiccciccicciiiiciiciiciccccicccciiiciciii\",", "\"#ciciiiiccccccccccciiiiiicccccccccciciiiciiiiicciccccicciciiiici\",", "\"iiiiciciiiiiiiiiiiiiciciciiiiiiiiiiiiciiiiciciiiiiiiiiiiiiiiciii\",", "\"iiiiiiiiiiciiciiciiiiiiiiiiiciiciiciiiiciiiiiciciciciciciciiiiii\",", "\"iiciciciciiiciiiiiciciciciciiiciiiiciciiciciiiiiiiiiiiiiiiciciii\",", "\"#iiiiiiiiciiiiciciiiiiiiiiiiciiiciiiiiiiiiiciciciciciciciiiiicii\",", "\"ciciciciiiiciiiiiiciciciciciiiciiiciciciciiiiiiiiiiiiiiiciciiiii\",", "\"#iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii#\"", "};", "",  "" };
+    string $vimeoIcon[] = { "/* XPM */", "static char *vimeo_xpm[] = {", "/* width height num_colors chars_per_pixel */", "\"    64    64       16            1\",", "/* colors */", "\"` c #049efc\",", "\". c #8ad7fc\",", "\"# c #49c1fc\",", "\"a c #caecfc\",", "\"b c #1cb2fc\",", "\"c c #69ccfc\",", "\"d c #a8e1fc\",", "\"e c #fcfefc\",", "\"f c #2bb6fc\",", "\"g c #04a6fc\",", "\"h c #59c6fc\",", "\"i c #d9f2fc\",", "\"j c #78d1fc\",", "\"k c #b9e6fc\",", "\"l c #38bdfc\",", "\"m c #98ddfc\",", "/* pixels */", "\"lffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffl\",", "\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",", "\"fbbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbgbf\",", "\"fbbbgbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbgggbbbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbggggggbbbbbbbbbbbbbbbbbgggbffbgggbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbggfcm.#ggbbbbbbbbbbbbbbggbcmieeeajbgbbbbbbbbbf\",", "\"fbbgbbbbbbbbbbbbggldeeeeeifgbbbbbbbbbbbbgb.ieeeeeeeei#gbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbgbmeeeeeeeeebgbbbbbbbbbgg#eeeeeeeeeeeeelgbbbbbbbf\",", "\"fbbbbbbbbbbbbbg#eeeeeeeeeeeagbbbbbbbbggmeeeeeeeeeeeeeeeggbbbbbbf\",", "\"fbbbbbbbbbbbggjeeeeeeeeeeeeelgbbbbbbbgdeeeeeeeeeeeeeeeecgbbbbbbb\",", "\"fbbgbbbbbbbggdeeeeeeeeeeeeeemgbbbbbbgmeeeeeeeeeeeeeeeeekgbbbbbbf\",", "\"fbbbbbbbbbggieeeeeeeeeeeeeeeagbbbbbg#eeeeeeeeeeeeeeeeeeebgbbbbbf\",", "\"fbbbbbbbbgbeeeeeeeeeeeeeeeeeefgbbbggieeeeeeeeeeeeeeeeeeebgbbbbbb\",", "\"fbbbbbbbgbeeeeeeeeeeeeeeeeeeelgbbbgheeeeeeeeeeeeeeeeeeedgbbbbbbf\",", "\"fbbbbbbgbieeeeeeeeeeeeeeeeeeehgbbbgmeeeeeeeeeeeeeeeeeee.gbbbbbbf\",", "\"fbbgbbbgdeeeeeeeeeeeeeeeeeeeejgbbbgdimm.ieeeeeeeeeeeeee#gbbbbbbb\",", "\"fbbbbbgbeeeeeieeeeeeeeeeeeeeemgbbbbbgg```meeeeeeeeeeeeegbbbbbbbf\",", "\"fbbbbbbgdeeihggieeeeeeeeeeeeedgbbbbgbbbbgfeeeeeeeeeeeedgbbbgbbbb\",", "\"fbbbbbbggkkb`gggeeeeeeeeeeeeedgbbbbbbbbbgfeeeeeeeeeeeec`bbbbbbbf\",", "\"fbbbbbbbbgggfbf`jeeeeeeeeeeeeagbbbbbbbbbgfeeeeeeeeeeeefgbbbbbbbf\",", "\"fbbgbbbbbbbbbbbggeeeeeeeeeeeeigbbgbbbbbbg#eeeeeeeeeeeagbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbg.eeeeeeeeeeeebgbbbbbbbbgjeeeeeeeeeeec`bbbgbbbbf\",", "\"fbbbbbbbbbbbbbbbgleeeeeeeeeeeefgbbbbbbbbgkeeeeeeeeeeebgbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbgieeeeeeeeeee#gbbbbbbbgbeeeeeeeeeeekgbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbgmeeeeeeeeeeecgbbbbbbbg.eeeeeeeeeee#gbbbbbbbbbf\",", "\"fbbgbbbbbbbbbbbbbgheeeeeeeeeeem`bbbbbbgbeeeeeeeeeeeigbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbgfeeeeeeeeeeeagbbbbbbgkeeeeeeeeeeec`bbbbgbbbbbf\",", "\"fbbbbbbbbbbbbbbbbggieeeeeeeeeeefgbbbbgceeeeeeeeeeeigbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbgdeeeeeeeeeee.gbbbgleeeeeeeeeeeec`bbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbgjeeeeeeeeeeeeggfgfeeeeeeeeeeeei`bbbbbgbbbbbbf\",", "\"fbbgbbbbbbbbbbbbbbgleeeeeeeeeeeeag`feeeeeeeeeeeeefgbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbgbeeeeeeeeeeeeek#eeeeeeeeeeeee.`bbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbgaeeeeeeeeeeeeeeeeeeeeeeeeeei`bbbbbbgbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbgmeeeeeeeeeeeeeeeeeeeeeeeeeebgbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbgheeeeeeeeeeeeeeeeeeeeeeeeeh`bbbbbgbbbbbbbbbb\",", "\"fbbgbbbbbbbbbbbbbbbgfeeeeeeeeeeeeeeeeeeeeeeeem`bbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbgieeeeeeeeeeeeeeeeeeeeeek`gbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbgmeeeeeeeeeeeeeeeeeeeeeiggfbbbbbgbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbgheeeeeeeeeeeeeeeeeeeeiggbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbgbeeeeeeeeeeeeeeeeeeeeggfbbbbbgbbbbbbbbbbbbf\",", "\"fbbgbbbbbbbbbbbbbbbbbgmeeeeeeeeeeeeeeeeeibgbbbbbbbbbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbbgleeeeeeeeeeeeeeeeiggbbbbbbgbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbgaeeeeeeeeeeeeeekggfbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbgfeeeeeeeeeeeee.`gbbbbbbbbbbbbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbbbbgjeeeeeeeeeeil`bbbbbbbbgbbbbbbbbbbbbbbbbf\",", "\"fbbgbbbbbbbbbbbbbbbbbbbb`.eeeeeeeejg`bbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbb`#keeeacb`gbbbbbbbbgbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbggflfg`gbbbbbbbbgbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbgggbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbgbbbbbbbbbbbbbbbbbbbbbgbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbgbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbgbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",", "\"lbffffbffbffbffbffbffbffbffbffbffbffbffbffbffbffbffbffbffbffbfbl\"", "};", "",  "" };
+    string $youtubeIcon[] = { "/* XPM */", "static char *youtube_xpm[] = {", "/* width height num_colors chars_per_pixel */", "\"    64    64       16            1\",", "/* colors */", "\"` c #890204\",", "\". c #cf8787\",", "\"# c #b94e4f\",", "\"a c #eacaca\",", "\"b c #a82929\",", "\"c c #dba8a8\",", "\"d c #f5e8e9\",", "\"e c #c67171\",", "\"f c #9c0405\",", "\"g c #be5f60\",", "\"h c #af3839\",", "\"i c #d49998\",", "\"j c #f1dad9\",", "\"k c #e1b9b9\",", "\"l c #a31b1b\",", "\"m c #fcfefc\",", "/* pixels */", "\"lflfflfflfflfflfflfflfflfflfflfflfflfflfflfflfflfflfflfflfflffll\",", "\"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",", "\"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",", "\"fff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`fff\",", "\"lfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`f\",", "\"fff`fff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`fffff\",", "\"fffff`ffffffffffffffffffffffffffffffffffffffffffffffffffffff`fff\",", "\"lff`fffff`fff`fff`fff`fff`fff`fff`fff`fff`fff`fff`fff`fff`ffffff\",", "\"fffffff`fffffff`fffffff`fffffff`fffffff`fffffff`fffffff`fffff`ff\",", "\"ffff`ffffff`fffffff`fffffff`fffffff`fffffff`fffffff`fffffff`ffff\",", "\"lf`fffff`ffff`fff`fff`fff`fff`fff`fff`fff`fff`fff`fff`fff`ffffff\",", "\"ffffff`ffff`fffffffffffffffffffffffffffffffffffffffffffffffff`ff\",", "\"ffff`fffffffff`f``````````````````````````````f``f`fff`ff`ffffff\",", "\"lfffffff`f`````ffffflllbbbhbhhhhhhhhhbhbblllfffff`````fffff`ffff\",", "\"ff`fff`ff`f#.ckaajddmmmmmmmmmmmmmmmmmmmmmmmmmddjakkigl``ffffff`f\",", "\"ffff`fff`hkmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm.``fff`fff\",", "\"lffffff`hmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmc`fffffff\",", "\"fff`ff`fmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmme`f`ffff\",", "\"ffffff`emmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmdf`fffff\",", "\"lff`f``ammmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#`ff`ff\",", "\"fffff`lmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmi`fffff\",", "\"fff`f`#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmma`fffff\",", "\"lffff`emmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmjf`f`ff\",", "\"fffff`.mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmdffffff\",", "\"ff`f``immmmmmmmmmmmmmmmmmmjimmmmmmmmmmmmmmmmmmmmmmmmmmmmmml`ffff\",", "\"lffff`cmmmmmmmmmmmmmmmmmmmj`bcmmmmmmmmmmmmmmmmmmmmmmmmmmmmb`ff`f\",", "\"fffff`kmmmmmmmmmmmmmmmmmmmjf``hcmmmmmmmmmmmmmmmmmmmmmmmmmmh`ffff\",", "\"fff`f`ammmmmmmmmmmmmmmmmmmjf`f``hkmmmmmmmmmmmmmmmmmmmmmmmm#`ffff\",", "\"lffff`ammmmmmmmmmmmmmmmmmmjffff```#kmmmmmmmmmmmmmmmmmmmmmm#`ffff\",", "\"fff`ffammmmmmmmmmmmmmmmmmmjf`fffff``#ammmmmmmmmmmmmmmmmmmm#`f`ff\",", "\"ffff`fammmmmmmmmmmmmmmmmmmjfff`ffff```gammmmmmmmmmmmmmmmmm#`ffff\",", "\"lffff`ammmmmmmmmmmmmmmmmmmjf`ffff`ffff``cmmmmmmmmmmmmmmmmm#`ffff\",", "\"ff`f`fammmmmmmmmmmmmmmmmmmjffff`ffff``hcdmmmmmmmmmmmmmmmmm#`ffff\",", "\"fffff`ammmmmmmmmmmmmmmmmmmdf`fffff``bcmmmmmmmmmmmmmmmmmmmm#`f`ff\",", "\"lfff`fammmmmmmmmmmmmmmmmmmjf`fff``bimmmmmmmmmmmmmmmmmmmmmm#`ffff\",", "\"fffff`ammmmmmmmmmmmmmmmmmmjfff``limmmmmmmmmmmmmmmmmmmmmmmm#`ffff\",", "\"ff`ff`ammmmmmmmmmmmmmmmmmmdf``l.mmmmmmmmmmmmmmmmmmmmmmmmmm#`ffff\",", "\"lfff`fkmmmmmmmmmmmmmmmmmmma``.mmmmmmmmmmmmmmmmmmmmmmmmmmmmh`ff`f\",", "\"fffff`cmmmmmmmmmmmmmmmmmmmj.dmmmmmmmmmmmmmmmmmmmmmmmmmmmmmh`ffff\",", "\"fff`f`immmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmml`ffff\",", "\"lffff`.mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmffffff\",", "\"fff`f`emmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmjff`fff\",", "\"fffff`gmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmaf`ffff\",", "\"lff`f`bmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmc`fffff\",", "\"ffffff`dmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmg`ff`ff\",", "\"fff`ff`.mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmf`fffff\",", "\"lfffff`lmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmi`ffffff\",", "\"fff`fff`emmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmjf`fff`ff\",", "\"fffff`ff`gdmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmkf`fffffff\",", "\"lff`ffff``lgcaddmdmdmdmdmdmdmdmdmdmdmdmdmdmdmdmdmddai#``ffff`fff\",", "\"ffffffffff```ffflfflfflfflfflfflfflfflfflfflfflfffff``ffffffffff\",", "\"ffff`ff`fffff`f`ff`ff`fff`ff`ff`ff`ff`ff`ff`ff`fff`fffffff`ff`ff\",", "\"lf`ffffffffffffffffffff`fffffffffffffffffffffffffffff`ff`fffffff\",", "\"ffffff`ff`ff`fff`ff`ffffffff`fff`fff`fff`fff`ff`ff`fffffffff`fff\",", "\"ffff`fffffffffffffffff`fff`fffffff`fffffff`ffffffffff`ffff`fffff\",", "\"lfffffff`ff`ff`ff`ff`fffffffff`fffffff`fffffff`ff`fffff`ffffff`f\",", "\"ff`fff`fffffffffffffffff`fff`fff`fff`fff`fff`ffffff`ffffff`fffff\",", "\"ffff`ffffff`fff`fff`ffffff`fffffffffffffffffffff`ffff`ff`ffff`ff\",", "\"lfffffff`ffff`fff`ffff`fffffff`ff`ff`ff`ff`ff`ffffffffffffffffff\",", "\"fff`fffffff`ffffffffffff`fff`ffffffffffffffffffff`ff`fffff`fffff\",", "\"ffffff`ff`ffffff`fff`fffffffffff`ff`ff`ff`ff`ff`ffffff`f`fff`fff\",", "\"lff`fffffffff`ffffffff`ff`ff`ffffffffffffffffffffff`ffffffffffff\",", "\"ffffff`fff`ffffff`ff`fffffffff`ff`fff`fff`fff`fff`ffffffff`ff`ff\",", "\"lffflfffflfffflffflfffflfffflffflffflffflffflffflfffflffflffflfl\"", "};", "",  "" };
+    string $highend3dIcon[] = { "/* XPM */", "static char *highend3d___xpm[] = {", "/* width height num_colors chars_per_pixel */", "\"    89    89       32            1\",", "/* colors */", "\"` c #292c37\",", "\". c #999997\",", "\"# c #845f17\",", "\"a c #ded17f\",", "\"b c #57595e\",", "\"c c #d89b24\",", "\"d c #c9d0de\",", "\"e c #aeafa8\",", "\"f c #9b7d32\",", "\"g c #606574\",", "\"h c #fcfeb8\",", "\"i c #4e3a14\",", "\"j c #b88520\",", "\"k c #717786\",", "\"l c #999fae\",", "\"m c #82868f\",", "\"n c #dadbe0\",", "\"o c #c4c4c4\",", "\"p c #d1b659\",", "\"q c #fcfa6f\",", "\"r c #3f434d\",", "\"s c #b2b8c8\",", "\"t c #4e4f58\",", "\"u c #fbd44c\",", "\"v c #f5b934\",", "\"w c #fafcfb\",", "\"x c #b4a574\",", "\"y c #a48e64\",", "\"z c #946c1d\",", "\"A c #676259\",", "\"B c #5e4c27\",", "\"C c #373537\",", "/* pixels */", "\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwnoellsdnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwo.kmkkkkmlsnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwn.kkmmmmmkggmmowwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwnwomk.snddllmmkgkksnwwwwwwwwwwwwwwwwwwwwdosssdnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwnnomklnwwwwwsllkkgtglnwwwwwwwwwwwwwwwwwoemkkgkkk.nwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwnndmklwwwwwwwndllkggrkswwwwwwwwwwwwwwwnlmkkmlmmmgbtlwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwnno.gmnwwwwwwwwndllkgtrkswwwwwwwwwwwnnn.kkldnddslmkgrmwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwnnoekgswwwwwwwwwwndlmgbrtldwwwwwwwwwnnn.gklwwwwwndlmkbrswwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwnoemAknwwwwwwwwwwwnslkbtrklwwwwwwwwnnn.gglwwwwwwwwdlkktrdwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwnns.kbmwwwwwwwwwwwwwdmmgtCtldwwwwwwnnoekbgdwwwwwwwwwdlgbrgwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwnoxmAbmwwwwwwwwwwwwnslkgtrCgswwwwwwndembbmwwwwwwwwwwwlmgrrdwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwns.kAbknwwnwwwwwwwwdslkggrrrkwwwwwnne.kbblwwwwwwwwwwdskkt`lwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwndemkbbkdnsdwwwwwwwndsmkgtrrmgdwwwwno.mAtgkswwwwwwwwwslmgbCkwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwndxmAbbgmllsdnwwwwwndlmkbtrrmtswwwnne.kbbgkmnwwwwwwwnslkgtCrnwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwndekkbbggkmlsdnwwwndslmkbtrrtrswwwnoemAbbgkmssdwwwwndslkbtrrdwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwnoekAbbgbkmllddwnwwdslmgttrrr`swwwno.mAbttbkmssddwnwdsmkbtCrdwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwndxmAbbgtgmllsdnwwwndlmkttrrC`owwwno.kAbrrtgkldddnnwnslgbtCbdwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwnoekAbtgbbgmsldnwwwndsmgttrC``owwnnsykAtrCrtgkldnnnwndlkbt`gwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwoemAbbggtbklldnwwwwdslgbtr``rnwwwns.AAbtCrtggmsnnwwwdlkgrrmwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwndemAbtbkbtgmlsnwwwwnslgbrr``gwwwnns.kAttt`Ctbksddwwwwsmgrrswwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwde.kAbtggbbgmsnwwwwwdmktrC``lnwwnno.kAbttt`Ctg.ddwwwwdmgrgnwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwno.mAtbtkgbgklnwwwwwdlktrC`tdnnwwnoemAbbrggrrtkedwwwwnlkrmwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwndemkbbttkgbglnwwwwwnlgrrC`mnnwnwnn.fA#bBCbgtrbmonwwwwogrmwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwno.fgbbttkgglwwwwwwwlgrtCrlddnwwoxfjjjjf#tbgtrksnwwwwnmrmwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwnde.kAbtttggmwwwwwwwlgtt`glonnnoyjccpcccjjzbgtt.nwwwwwmtknwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwnoe.kAbtbbgknwwwwwwsgttCgesooxzjcuququvcffzAgrgnwwwwwsbgnwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwnnoemkAbttbgdwwwwwwskttrklsoe#jcqhhhqqquczzzAbtlwwwwwsgtswwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwdoxmkAtttglwwwwwwsktbrkeeekzcqhwwwhqqqvczzfbtknwwwwdkb.wwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwnnolmAAttbmwwwwwwdmbbrkelm#juhwwwwwwqqqvz#zfbbewwwwwltknwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwnno.mAbttgdwwwwwdlbbrkl.Azcuwwwwwwwhqquc##fAbmnwwwwlggowwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwndeykbbtgswwwwwnlgttA.mbzcuwwwwwwwwqqucj##Abkewwwwdktlwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwno.mAbttlwwwwwnlgbAbmkBzcuwwwhwhhhqquvz###rglnwwwnltknwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwndemkbtt.wwwwwnskbybkABzcqhhqhhhhqqqucj##BrAmdwwwwlggswwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwnoykAbtknwwwwwskbxAAABzcuqqqqqqqqqqvcz###Ctkewwwwdmbmwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwnoekAbtknwwwwwsmbxfbgBfjvqqqqqqqqquvjz###CrAlnwwwdlggewwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwndemAAtgowwwwwslbxxrABfzjuqqqqqqqqvcjzzzBrCbmowwwnsmbkwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwnne.kAtgswwwwwdlgmabArzjzcvqqqqqquvcjzjzBtCtmewwwwslggswwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnsykAtblwwwwwdlkgaktbBj#zjvuuuuuvvcfjj#rbrrglnwwwslkgmdwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwno.kAbblwwwwwnsmbpxrbr#z##jccjccccfjf#ibbrrA.swwwslmgglnwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnoekAbgmwwwwwnsmg.prbtiB#####z#####z#CtAbrrbm.nwnslmkbmlnwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnoxmAbgkwwwwwnslgkabtbBiiiBB#B#BBiiiCBmAAtCbk.sdsllmmgglsdwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnnemgAgkdwwwwdlmggayrbbtiiiiiiiiiii`b.mkbtCbkmmlllmmmmggllswwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwoemAbgklwwwnsllkgaprbbttiiiiiiiiiimee.kAtrtAmmmlllmmmkgbkllnwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwndemkbgkmswnsllmmb.qArAAttriCiiBtkeoos.kAtCtkmkmlllllmmkkbgmldwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnnemAAgmmllllllmmkkqxBbkAbAAAggm.eoddo.mAtrtAmm.lsssssllkkgtkmdwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwoemkAkkmmllllmkkmkeqmrbmkkgkmy.eonnno.mArrbkmednwwwndsslmggtgmnwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwndxmAAkkkmmmlmmmkkmkxuyrA.....esonnwno.mArtbk.hwwwwwwwndslkggtgmwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnoemAgkkklmlllmmmkmkgxxfrkeoeoonnwwnno.kArtAkewwwwwwwwwwdllkgttbowwwwwwwww\",", "\"wwwwwwwwwwwwwwwno.mAkkkmmllllllmlmkggggArknnnnwwwwwne.ktrbAknwwwwwwwwwwndlmkttrkwwwwwwwww\",", "\"wwwwwwwwwwwwwwwns.kgkkkmlssdsssllmmkgbtgAt.wwwwwwwndeykrtbgmdwwwwwwwwwwwwsmmgbrtdwwwwwwww\",", "\"wwwwwwwwwwwwwwnne.kkkkmsnwwwwndsslmmkgbbkgbowwwwwwnoemAtAgkmdwwwwwwwwwwwwslkggrrlwwwwwwww\",", "\"wwwwwwwwwwwwwwnoemAkkmswwwwwwwndssllkggtbgtkwwwwwwno.mAbgbkklwwwwwwwwwwwdslkggtrkwwwwwwww\",", "\"wwwwwwwwwwwwwwne.kmkkswwwwwwwwwwddslmkgbrbtCdwwwwnnoykAggbgkmnwwwwwwwwwwdllkgbbrbnwwwwwww\",", "\"wwwwwwwwwwwwwnoeykkklwwwwwwwwwwwwdsllkgbtttCkwwwwwdemkbggrgkmsndwwwwwwwddllkgbbrtwwwwwwww\",", "\"wwwwwwwwwwwwnno.kkkkdwwwwwwwwwwwwndslmkbtrbgrnwwwndeygAgbrtgklssdnwwwwddslmkgtbtrnwwwwwww\",", "\"wwwwwwwwwwwwndemkmkmwwwwwwwwwwwwwwnslmkgtrgltswwwwoemAbtgCtbkmlssddnddddllkkbtgtrnwwwwwww\",", "\"wwwwwwwwwwwwns.kkkklwwwwwwwwwwwwwwwdllkkbrblbkwwwndemAAtbrrtggmsddsddssslmkgbggrtwwwwwwww\",", "\"wwwwwwwwwwwnoeykkkglwwwwwwwwwwwwwwwdlmkggrtkrgwwwnnemAbttrCttgklsddsssllmmkggggrgwwwwwwww\",", "\"wwwwwwwwwwwno.mAmkglwwwwwwwwwwwwwwnsllkgbbrbrtnwwwde.gAtttCrtgggkllslslmmmkgbkg`mwwwwwwww\",", "\"wwwwwwwwwwnne.kAmgkmwwnwwwwwwwwwwndslmkgbbtrrrdwwwdoykAtrtr`rbbggkkmlmlmmmkgggr`swwwwwwww\",", "\"wwwwwwwwwwwoemkgkkgklsddwwwwwwwwwndslmggtbtrCrdwwwno.mAttrtrrrtbbggggkkmkkgggb`tnwwwwwwww\",", "\"wwwwwwwwwwnoekAAkgkkklssdnwwwwwwndsllkgbtgbr`CdwwwndemAAtrCtrrrtttbbbggkkggkg``.wwwwwwwww\",", "\"wwwwwwwwwwno.mAgkkgkmmlsddnwwnndddslmkgtbgb``rdwwwwno.mAttCrrrrrrtrtttttbggb``bnwwwwwwwww\",", "\"wwwwwwwwwwno.kAAkgggmlllssdddddndsllkgbbgkt``rwwwwwnoemkbtrCCrrrrrrrrrrrrrr``tswwwwwwwwww\",", "\"wwwwwwwwwwno.kAtkgggklslsssssssosllkkggggkr``bwwwwwnno.mAbtrC`Cr`rrrrCrCC```bsnwwwwwwwwww\",", "\"wwwwwwwwwwno.mAbgggbgglsssssssslllmmkgggkg```mnwwwwwwde.mAbtrC````````````Cgednwwwwwwwwww\",", "\"wwwwwwwwwwno.mAbbggbggkmsssslllllmmmkggggb```swwwwwwnnne.mAbtrrC`````````tklsnwwwwwwwwwww\",", "\"wwwwwwwwwwnoemAbtggttgggklllllllmmmmkggggC``rdnwwwwwwwnde.mAAbrrrC````rrgmlsnnwwwwwwwwwww\",", "\"wwwwwwwwwwnnemAAtbgbtbgggkkmmlmmmmmkkggkr```mdwwwwwwwwwndo..kgAbtttttbgkmlsdnwwwwwwwwwwww\",", "\"wwwwwwwwwwwdoykAbtgbtttbgggggkkkkkkgggkt```rlnnwwwwwwwwwnnoe..mkkkgkkkmleonnwwwwwwwwwwwww\",", "\"wwwwwwwwwwwnolmAbtbbttttttbbgtbggggkgkt````konnwwwwwwwwwwnndoee.....lesodnwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwndemkAttbbrtttttttttrtrtttr````tlonwwwwwwwwwwwwwnnnodoooodnnnwwnwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwno.mAbtttbrrtttrtrrrrrrrr````rmednnwwwwwwwwwwwwwwwnnnnnwnnwwnwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwndeykAtbtttrrrrrrrrrCrC`````Cklsdnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwnoemAAbttrrrrrrrrCCC``````rgmsdnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwnns.mkbbtttrrr`C`````````tg.eonwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwnns.mAAAbttrrr`C`````Crgk.eonnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnnexmkAgbbbttrrrrttggkmlsdnnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwnnoe.mkkAgAgggggkkmmlsodnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwnnoee.mmmkmkmm...esonnnwnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwnnnoseee.eeeeesodnnwnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwnnnnoooooddnnnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwwwwnwnwnnwnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\"", "};", "",  "" };
+
+    if(!`filetest -f ($craIconPath + "highend3dIcon.xpm")`)
+        craXPMCreator($craIconPath,"highend3dIcon.xpm" , $highend3dIcon);
+    if(!`filetest -f ($craIconPath + "linkedInIcon.xpm")`)
+        craXPMCreator($craIconPath,"linkedInIcon.xpm" , $linkedInIcon);
+    if(!`filetest -f ($craIconPath + "vimeoIcon.xpm")`)
+        craXPMCreator($craIconPath,"vimeoIcon.xpm" , $vimeoIcon);
+    if(!`filetest -f ($craIconPath + "youtubeIcon.xpm")`)
+        craXPMCreator($craIconPath,"youtubeIcon.xpm" , $youtubeIcon);
+
+    string $highend3dIconPath = ($craIconPath + "highend3dIcon.xpm");
+    string $linkedInIconPath = ($craIconPath + "linkedInIcon.xpm");
+    string $vimeoIconPath = ($craIconPath + "vimeoIcon.xpm");
+    string $youtubeIconPath = ($craIconPath + "youtubeIcon.xpm");
+
+    window -t  " About this tool" -s 0 -tlb 0 -mnb 0 -mxb 0 craCopyAnimAboutAboutWin;
+    frameLayout -mw 5 -mh 5 -lv 0;
+    frameLayout -bv 1 -mw 5 -mh 5 -lv 0;
+    columnLayout -adj 1;
+    text -l "<font color=gold><h2>Copy Animation+</h2></font>";
+    text -l "<font color=#057cf3><h3>v2.0.0</h3></font>";
+    text -l "";
+    text -l "Copy Animation between objects";
+    text -l "";
+    text -l "You can offset/stagger\nthe animation when copying";
+    text -l "";
+    text -l "Store one channel and copy it\ninto other channels";
+    text -l "";
+    text -l "<font color=indianred><h4>Carlos Rico Adega (c) 2018</h4></font>";
+    text -l "";
+    textField -bgc 0.2 0.2 0.2 -ed 0 -text "      carlos.rico.3d@gmail.com";
+    text -l "";
+    rowLayout -nc 6 -adj 1;
+        separator -st "none";
+        iconTextButton -w 42 -h 42 -i $highend3dIconPath -l "Downloads" -ann "highend3d downloads" -c "showHelp -absolute \"https://www.highend3d.com/users/charliewales/free/downloads\"";
+        iconTextButton -w 42 -h 42 -i $linkedInIconPath -ann "LinkedIn profile"-l "LinkedIn" -c "showHelp -absolute \"https://www.linkedin.com/in/carlos-rico-adega-3250586\"";
+        iconTextButton -w 42 -h 42 -i $vimeoIconPath -l "Vimeo" -ann "Vimeo Channel" -c "showHelp -absolute \"https://vimeo.com/channels/749131\"";
+        iconTextButton -w 42 -h 42 -i $youtubeIconPath -l "YouTube" -ann "Youtube Channel" -c "showHelp -absolute \"https://www.youtube.com/channel/UCXnSX8PHpQtwJR-uN-atO3Q\"";
+        separator -st "none";
+    setParent ..;          
+    setParent ..;
+    setParent ..;
+    window -e -wh 205 285 craCopyAnimAboutAboutWin;
+    showWindow craCopyAnimAboutAboutWin;
+}

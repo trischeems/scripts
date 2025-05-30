@@ -1,0 +1,1009 @@
+/*
+'Offset Keyframes' MEL script
+
+Author: Carlos Rico Adega - carlos.rico.3d@gmail.com
+
+Copyright © 2018 Carlos Rico Adega
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
+SCRIPT NAME:
+    craOffsetKeys.mel
+
+Main procedure:
+    craOffsetKeysProc;
+
+DESCRIPTION:
+    Offset keyframes.
+
+LAUNCH UI:
+    craOffsetKeys;
+
+CHANGE LOG:
+
+    Version: 3.0.1
+    Date: June 2, 2023
+    	- Store last used value
+    	
+    Version: 3.0.0
+    Date: March 11, 2022
+    	- Added offset presets in second
+
+    Version: 2.0.0
+    Date: November 4, 2019
+        - Added many options. Explained in the UI
+
+    Version: 1.1.0
+    Date: October 26, 2015
+        - Options stored in optionVars
+
+    Version: 1.0.0
+    Date: July 2, 2015
+        - First release
+
+*/
+
+global proc craOffsetKeys()
+{
+	if (`window -exists craOffsetKeysWin`)
+		deleteUI craOffsetKeysWin;
+
+    string $craIconPath = `internalVar -ubd`;
+
+    string $craToggle8Icon[] = { "/* XPM */", "static char *craToggle8Icon_xpm[] = {", "/* width height num_colors chars_per_pixel */", "\"    29    20      256            2\",", "/* colors */", "\"`` c #444444\",", "\"`. c #4e4e4e\",", "\"`# c #5c5c5c\",", "\"`a c #606060\",", "\"`b c #575757\",", "\"`c c #636363\",", "\"`d c #545454\",", "\"`e c #646a5f\",", "\"`f c #6b7364\",", "\"`g c #6a7263\",", "\"`h c #63695e\",", "\"`i c #5f5f5f\",", "\"`j c #9ca197\",", "\"`k c #adb5a6\",", "\"`l c #acb7a0\",", "\"`m c #abb7a1\",", "\"`n c #aeb4aa\",", "\"`o c #979c94\",", "\"`p c #666e61\",", "\"`q c #636462\",", "\"`r c #64685f\",", "\"`s c #7e8577\",", "\"`t c #acb5a6\",", "\"`u c #a6bd8f\",", "\"`v c #a2c084\",", "\"`w c #89af66\",", "\"`x c #8ab067\",", "\"`y c #a3bf87\",", "\"`z c #a8ba97\",", "\"`A c #b0b2ae\",", "\"`B c #6f7869\",", "\"`C c #6d7465\",", "\"`D c #a3a6a0\",", "\"`E c #b1b1b1\",", "\"`F c #959a91\",", "\"`G c #666e60\",", "\"`H c #808779\",", "\"`I c #abb6a4\",", "\"`J c #a4c086\",", "\"`K c #6e9d42\",", "\"`L c #427e0a\",", "\"`M c #448206\",", "\"`N c #427e0b\",", "\"`O c #77a34b\",", "\"`P c #a6bc90\",", "\"`Q c #61675e\",", "\"`R c #6d7566\",", "\"`S c #6c7364\",", "\"`T c #afb3ad\",", "\"`U c #a4be8b\",", "\"`V c #5c902c\",", "\"`W c #438106\",", "\"`X c #1d3703\",", "\"`Y c #234203\",", "\"`Z c #7aa450\",", "\"`0 c #a7b999\",", "\"`1 c #9da19a\",", "\"`2 c #626461\",", "\"`3 c #8e9488\",", "\"`4 c #62675e\",", "\"`5 c #646b5f\",", "\"`6 c #a4a6a0\",", "\"`7 c #697062\",", "\"`8 c #62665e\",", "\".` c #aab7a0\",", "\".. c #669736\",", "\".# c #244107\",", "\".a c #000000\",", "\".b c #2e5804\",", "\".c c #437f08\",", "\".d c #a4bf89\",", "\".e c #afb3ac\",", "\".f c #5f645d\",", "\".g c #676d61\",", "\".h c #b0b0b0\",", "\".i c #636461\",", "\".j c #a8aaa6\",", "\".k c #8aa373\",", "\".l c #2b5304\",", "\".m c #292929\",", "\".n c #ffffff\",", "\".o c #254603\",", "\".p c #92b56f\",", "\".q c #656c61\",", "\".r c #686e61\",", "\".s c #989c94\",", "\".t c #b1b1af\",", "\".u c #50732e\",", "\".v c #182d02\",", "\".w c #162a02\",", "\".x c #90b36d\",", "\".y c #adb5a5\",", "\".z c #626560\",", "\".A c #878e81\",", "\".B c #61665e\",", "\".C c #979b92\",", "\".D c #5e625d\",", "\".E c #54723e\",", "\".F c #69993b\",", "\".G c #407b06\",", "\".H c #0b1401\",", "\".I c #3b7005\",", "\".J c #427f08\",", "\".K c #a4bf88\",", "\".L c #afb3ab\",", "\".M c #727a6a\",", "\".N c #626860\",", "\".O c #558a22\",", "\".P c #3e7706\",", "\".Q c #1b3502\",", "\".R c #1f3c03\",", "\".S c #729f47\",", "\".T c #a6ba96\",", "\".U c #a2a59f\",", "\".V c #707869\",", "\".W c #adaeac\",", "\".X c #9ca099\",", "\".Y c #60665e\",", "\".Z c #616261\",", "\".0 c #848b7f\",", "\".1 c #aab7a2\",", "\".2 c #a3c084\",", "\".3 c #68983b\",", "\".4 c #417e07\",", "\".5 c #417e08\",", "\".6 c #719f44\",", "\".7 c #a5be8d\",", "\".8 c #63695f\",", "\"#` c #676d60\",", "\"#. c #7d8479\",", "\"## c #aab6a2\",", "\"#a c #a5be8b\",", "\"#b c #a2c182\",", "\"#c c #7da657\",", "\"#d c #7ea758\",", "\"#e c #a6bb93\",", "\"#f c #aeb3ab\",", "\"#g c #72796d\",", "\"#h c #6a7265\",", "\"#i c #a4aa9f\",", "\"#j c #aab89c\",", "\"#k c #aab89d\",", "\"#l c #a1a49e\",", "\"#m c #697163\",", "\"#n c #666c60\",", "\"#o c #6e7668\",", "\"#p c #6e7667\",", "\"#q c #626361\",", "\"#r c #000000\",", "\"#s c #000000\",", "\"#t c #000000\",", "\"#u c #000000\",", "\"#v c #000000\",", "\"#w c #000000\",", "\"#x c #000000\",", "\"#y c #000000\",", "\"#z c #000000\",", "\"#A c #000000\",", "\"#B c #000000\",", "\"#C c #000000\",", "\"#D c #000000\",", "\"#E c #000000\",", "\"#F c #000000\",", "\"#G c #000000\",", "\"#H c #000000\",", "\"#I c #000000\",", "\"#J c #000000\",", "\"#K c #000000\",", "\"#L c #000000\",", "\"#M c #000000\",", "\"#N c #000000\",", "\"#O c #000000\",", "\"#P c #000000\",", "\"#Q c #000000\",", "\"#R c #000000\",", "\"#S c #000000\",", "\"#T c #000000\",", "\"#U c #000000\",", "\"#V c #000000\",", "\"#W c #000000\",", "\"#X c #000000\",", "\"#Y c #000000\",", "\"#Z c #000000\",", "\"#0 c #000000\",", "\"#1 c #000000\",", "\"#2 c #000000\",", "\"#3 c #000000\",", "\"#4 c #000000\",", "\"#5 c #000000\",", "\"#6 c #000000\",", "\"#7 c #000000\",", "\"#8 c #000000\",", "\"a` c #000000\",", "\"a. c #000000\",", "\"a# c #000000\",", "\"aa c #000000\",", "\"ab c #000000\",", "\"ac c #000000\",", "\"ad c #000000\",", "\"ae c #000000\",", "\"af c #000000\",", "\"ag c #000000\",", "\"ah c #000000\",", "\"ai c #000000\",", "\"aj c #000000\",", "\"ak c #000000\",", "\"al c #000000\",", "\"am c #000000\",", "\"an c #000000\",", "\"ao c #000000\",", "\"ap c #000000\",", "\"aq c #000000\",", "\"ar c #000000\",", "\"as c #000000\",", "\"at c #000000\",", "\"au c #000000\",", "\"av c #000000\",", "\"aw c #000000\",", "\"ax c #000000\",", "\"ay c #000000\",", "\"az c #000000\",", "\"aA c #000000\",", "\"aB c #000000\",", "\"aC c #000000\",", "\"aD c #000000\",", "\"aE c #000000\",", "\"aF c #000000\",", "\"aG c #000000\",", "\"aH c #000000\",", "\"aI c #000000\",", "\"aJ c #000000\",", "\"aK c #000000\",", "\"aL c #000000\",", "\"aM c #000000\",", "\"aN c #000000\",", "\"aO c #000000\",", "\"aP c #000000\",", "\"aQ c #000000\",", "\"aR c #000000\",", "\"aS c #000000\",", "\"aT c #000000\",", "\"aU c #000000\",", "\"aV c #000000\",", "\"aW c #000000\",", "\"aX c #000000\",", "\"aY c #000000\",", "\"aZ c #000000\",", "\"a0 c #000000\",", "\"a1 c #000000\",", "\"a2 c #000000\",", "\"a3 c #000000\",", "\"a4 c #000000\",", "\"a5 c #000000\",", "\"a6 c #000000\",", "\"a7 c #000000\",", "\"a8 c #000000\",", "/* pixels */", "\"`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c\",", "\"`c`c`c`c`c`c`a`a`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c\",", "\"`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c\",", "\"`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`e`f`g`h`c`c`c`c`c`c`c`c\",", "\"`c`c`i`c`c`c`c`c`c`c`c`c`c`c`c`f`j`k`l`m`n`o`p`c`c`c`c`c`c\",", "\"`c`c`a`c`c`c`q`e`r`c`c`c`c`c`s`t`u`v`w`x`y`z`A`B`c`c`a`c`c\",", "\"`c`c`a`c`c`C`D`E`E`F`G`c`c`H`I`J`K`L`M`M`N`O`P`A`Q`c`a`c`c\",", "\"`c`c`a`c`R`E`E`E`E`E`E`c`S`T`U`V`M`W`X`Y`M`M`Z`0`1`c`a`c`c\",", "\"`c`c`a`2`E`E`3`4`5`6`7`8`E.`..`M`M.#``.a.b`M.c.d.e.f`a`c`c\",", "\"`c`c`a.g`E.h.i`c`c`c.i.j`E.k`M`M.l.m.n.a.a.o`M.p`k.q`c`c`c\",", "\"`c`c`a.r`E.h`c`c`c`c.s`E.t.u`M`M.v.a.a.a.a.w`M.x.y.q`c`c`c\",", "\"`c`c`c.z`E`E.A.B`h.C`E`E.D.E.F`M.G.a.a.a.H.I.J.K.L.f`c`c`c\",", "\"`c`c`c`c.M`E`E`E`E`E`E.N`c.L.d.O`M.P.Q.R`M`M.S.T.U`c`c`c`c\",", "\"`c`c`c`c`c.V.W`E`E.X.Y`c.Z.0.1.2.3.4`M`M.5.6.7`T.8`c`c`c`c\",", "\"`c`c`c`c`c`c.z.r#``c`c`c`c`c#.###a#b#c#d.2#e#f#g`c`c`c`c`c\",", "\"`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c#h#i`m#j#k`k#l#m`c`c`c`c`c`c\",", "\"`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`2#n#o#p`5#q`c`c`c`c`c`c`c\",", "\"`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c\",", "\"`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c\",", "\"`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c`c\"", "};", "",  "" };
+    string $craLinearKeysIcon[] = { "/* XPM */", "static const char *const keys_0000_linear_xpm[]={", "/* width height ncolors chars_per_pixel */", "\"24 24 256 2\",", "/* colors */", "\"   c #444444\",", "\" . c #3a3a3a\",", "\" X c #bdbdbd\",", "\" o c #3f3f3f\",", "\" O c #ce6940\",", "\" + c #5a443b\",", "\" @ c #62473c\",", "\" # c #68483c\",", "\" $ c #60463b\",", "\" % c #59433b\",", "\" & c #54423b\",", "\" * c #bdb8b6\",", "\" = c #774d3c\",", "\" - c #bbbaba\",", "\" ; c #69493d\",", "\" : c #7b4e3d\",", "\" > c #d06940\",", "\" , c #bcbcbc\",", "\" < c #59443b\",", "\" 1 c #d16a40\",", "\" 2 c #47413f\",", "\" 3 c #cf6940\",", "\" 4 c #4d403b\",", "\" 5 c #c2653f\",", "\" 6 c #704b3c\",", "\" 7 c #6c4a3d\",", "\" 8 c #67483c\",", "\" 9 c #57433b\",", "\" 0 c #50423a\",", "\" q c #434242\",", "\" w c #61463c\",", "\" e c #463e3a\",", "\" r c #000000\",", "\" t c #000000\",", "\" y c #000000\",", "\" u c #000000\",", "\" i c #000000\",", "\" p c #000000\",", "\" a c #000000\",", "\" s c #000000\",", "\" d c #000000\",", "\" f c #000000\",", "\" g c #000000\",", "\" h c #000000\",", "\" j c #000000\",", "\" k c #000000\",", "\" l c #000000\",", "\" z c #000000\",", "\" x c #000000\",", "\" c c #000000\",", "\" v c #000000\",", "\" b c #000000\",", "\" n c #000000\",", "\" m c #000000\",", "\" M c #000000\",", "\" N c #000000\",", "\" B c #000000\",", "\" V c #000000\",", "\" C c #000000\",", "\" Z c #000000\",", "\" A c #000000\",", "\" S c #000000\",", "\" D c #000000\",", "\" F c #000000\",", "\" G c #000000\",", "\" H c #000000\",", "\" J c #000000\",", "\" K c #000000\",", "\" L c #000000\",", "\" P c #000000\",", "\" I c #000000\",", "\" U c #000000\",", "\" Y c #000000\",", "\" T c #000000\",", "\" R c #000000\",", "\" E c #000000\",", "\" W c #000000\",", "\" Q c #000000\",", "\" ! c #000000\",", "\" ~ c #000000\",", "\" ^ c #000000\",", "\" / c #000000\",", "\" ( c #000000\",", "\" ) c #000000\",", "\" _ c #000000\",", "\" ` c #000000\",", "\" ' c #000000\",", "\" ] c #000000\",", "\" [ c #000000\",", "\" { c #000000\",", "\" } c #000000\",", "\" | c #000000\",", "\".  c #000000\",", "\".. c #000000\",", "\".X c #000000\",", "\".o c #000000\",", "\".O c #000000\",", "\".+ c #000000\",", "\".@ c #000000\",", "\".# c #000000\",", "\".$ c #000000\",", "\".% c #000000\",", "\".& c #000000\",", "\".* c #000000\",", "\".= c #000000\",", "\".- c #000000\",", "\".; c #000000\",", "\".: c #000000\",", "\".> c #000000\",", "\"., c #000000\",", "\".< c #000000\",", "\".1 c #000000\",", "\".2 c #000000\",", "\".3 c #000000\",", "\".4 c #000000\",", "\".5 c #000000\",", "\".6 c #000000\",", "\".7 c #000000\",", "\".8 c #000000\",", "\".9 c #000000\",", "\".0 c #000000\",", "\".q c #000000\",", "\".w c #000000\",", "\".e c #000000\",", "\".r c #000000\",", "\".t c #000000\",", "\".y c #000000\",", "\".u c #000000\",", "\".i c #000000\",", "\".p c #000000\",", "\".a c #000000\",", "\".s c #000000\",", "\".d c #000000\",", "\".f c #000000\",", "\".g c #000000\",", "\".h c #000000\",", "\".j c #000000\",", "\".k c #000000\",", "\".l c #000000\",", "\".z c #000000\",", "\".x c #000000\",", "\".c c #000000\",", "\".v c #000000\",", "\".b c #000000\",", "\".n c #000000\",", "\".m c #000000\",", "\".M c #000000\",", "\".N c #000000\",", "\".B c #000000\",", "\".V c #000000\",", "\".C c #000000\",", "\".Z c #000000\",", "\".A c #000000\",", "\".S c #000000\",", "\".D c #000000\",", "\".F c #000000\",", "\".G c #000000\",", "\".H c #000000\",", "\".J c #000000\",", "\".K c #000000\",", "\".L c #000000\",", "\".P c #000000\",", "\".I c #000000\",", "\".U c #000000\",", "\".Y c #000000\",", "\".T c #000000\",", "\".R c #000000\",", "\".E c #000000\",", "\".W c #000000\",", "\".Q c #000000\",", "\".! c #000000\",", "\".~ c #000000\",", "\".^ c #000000\",", "\"./ c #000000\",", "\".( c #000000\",", "\".) c #000000\",", "\"._ c #000000\",", "\".` c #000000\",", "\".' c #000000\",", "\".] c #000000\",", "\".[ c #000000\",", "\".{ c #000000\",", "\".} c #000000\",", "\".| c #000000\",", "\"X  c #000000\",", "\"X. c #000000\",", "\"XX c #000000\",", "\"Xo c #000000\",", "\"XO c #000000\",", "\"X+ c #000000\",", "\"X@ c #000000\",", "\"X# c #000000\",", "\"X$ c #000000\",", "\"X% c #000000\",", "\"X& c #000000\",", "\"X* c #000000\",", "\"X= c #000000\",", "\"X- c #000000\",", "\"X; c #000000\",", "\"X: c #000000\",", "\"X> c #000000\",", "\"X, c #000000\",", "\"X< c #000000\",", "\"X1 c #000000\",", "\"X2 c #000000\",", "\"X3 c #000000\",", "\"X4 c #000000\",", "\"X5 c #000000\",", "\"X6 c #000000\",", "\"X7 c #000000\",", "\"X8 c #000000\",", "\"X9 c #000000\",", "\"X0 c #000000\",", "\"Xq c #000000\",", "\"Xw c #000000\",", "\"Xe c #000000\",", "\"Xr c #000000\",", "\"Xt c #000000\",", "\"Xy c #000000\",", "\"Xu c #000000\",", "\"Xi c #000000\",", "\"Xp c #000000\",", "\"Xa c #000000\",", "\"Xs c #000000\",", "\"Xd c #000000\",", "\"Xf c #000000\",", "\"Xg c #000000\",", "\"Xh c #000000\",", "\"Xj c #000000\",", "\"Xk c #000000\",", "\"Xl c #000000\",", "\"Xz c #000000\",", "\"Xx c #000000\",", "\"Xc c #000000\",", "\"Xv c #000000\",", "\"Xb c #000000\",", "\"Xn c #000000\",", "\"Xm c #000000\",", "\"XM c #000000\",", "\"XN c #000000\",", "\"XB c #000000\",", "\"XV c #000000\",", "\"XC c #000000\",", "\"XZ c #000000\",", "\"XA c #000000\",", "\"XS c #000000\",", "\"XD c #000000\",", "\"XF c #000000\",", "\"XG c #000000\",", "\"XH c #000000\",", "\"XJ c #000000\",", "\"XK c #000000\",", "\"XL c #000000\",", "\"XP c #000000\",", "\"XI c #000000\",", "\"XU c #000000\",", "/* pixels */", "\"                                                \",", "\"                                                \",", "\"                                                \",", "\"                                 . . . . .      \",", "\"                                 . X X X .      \",", "\"                                 e , . X .      \",", "\"                               o & - X X .      \",", "\"                             o = O 9 . . .      \",", "\"                           o 6 O + o            \",", "\"                         o : 3 < o              \",", "\"                   . . . 0 O + o                \",", "\"                   . X X X . o                  \",", "\"                   . X . X .                    \",", "\"                 o ; * X X .                    \",", "\"               o @ O 7 . . .                    \",", "\"             o w 1 @ o                          \",", "\"           q # 5 8 o                            \",", "\"     . . . 4 > $ o                              \",", "\"     . X X X % 2                                \",", "\"     . X . X .                                  \",", "\"     . X X X .                                  \",", "\"     . . . . .                                  \",", "\"                                                \",", "\"                                                \",", "};", "",  "" }; //
+    string $craSlopeKeysIcon[] = { "/* XPM */", "static const char *const keys_0001_slope_xpm[]={", "/* width height ncolors chars_per_pixel */", "\"24 24 256 2\",", "/* colors */", "\"   c #444444\",", "\" . c #bdbdbd\",", "\" X c #424242\",", "\" o c #434343\",", "\" O c #404040\",", "\" + c #414141\",", "\" @ c #3b3b3b\",", "\" # c #3a3a3a\",", "\" $ c #3d3d3d\",", "\" % c #bcbcbc\",", "\" & c #bbbaba\",", "\" * c #3c3c3c\",", "\" = c #3f3f3f\",", "\" - c #64483d\",", "\" ; c #45413f\",", "\" : c #424141\",", "\" > c #454545\",", "\" , c #494949\",", "\" < c #3e3e3e\",", "\" 1 c #646464\",", "\" 2 c #98776a\",", "\" 3 c #444342\",", "\" 4 c #47403d\",", "\" 5 c #453f3d\",", "\" 6 c #47413e\",", "\" 7 c #49413e\",", "\" 8 c #6a493c\",", "\" 9 c #473e3a\",", "\" 0 c #50443e\",", "\" q c #8d6e61\",", "\" w c #505050\",", "\" e c #9a583e\",", "\" r c #585858\",", "\" t c #6d4b3e\",", "\" y c #714c3d\",", "\" u c #ae5e3f\",", "\" i c #81513e\",", "\" p c #454241\",", "\" a c #83513d\",", "\" s c #64483c\",", "\" d c #7c4f3c\",", "\" f c #4d423d\",", "\" g c #58453d\",", "\" h c #474747\",", "\" j c #9c5f47\",", "\" k c #4d4340\",", "\" l c #8c543d\",", "\" z c #4d4d4d\",", "\" x c #89533e\",", "\" c c #b4603f\",", "\" v c #463f3b\",", "\" b c #a45b3f\",", "\" n c #44413f\",", "\" m c #484544\",", "\" M c #4a423e\",", "\" N c #57453f\",", "\" B c #434241\",", "\" V c #92563d\",", "\" C c #7b4f3d\",", "\" Z c #665954\",", "\" A c #5e473e\",", "\" S c #5a453d\",", "\" D c #656362\",", "\" F c #857b78\",", "\" G c #403f3f\",", "\" H c #8e543e\",", "\" J c #95563d\",", "\" K c #444443\",", "\" L c #bf6440\",", "\" P c #57453e\",", "\" I c #9d593e\",", "\" U c #000000\",", "\" Y c #000000\",", "\" T c #000000\",", "\" R c #000000\",", "\" E c #000000\",", "\" W c #000000\",", "\" Q c #000000\",", "\" ! c #000000\",", "\" ~ c #000000\",", "\" ^ c #000000\",", "\" / c #000000\",", "\" ( c #000000\",", "\" ) c #000000\",", "\" _ c #000000\",", "\" ` c #000000\",", "\" ' c #000000\",", "\" ] c #000000\",", "\" [ c #000000\",", "\" { c #000000\",", "\" } c #000000\",", "\" | c #000000\",", "\".  c #000000\",", "\".. c #000000\",", "\".X c #000000\",", "\".o c #000000\",", "\".O c #000000\",", "\".+ c #000000\",", "\".@ c #000000\",", "\".# c #000000\",", "\".$ c #000000\",", "\".% c #000000\",", "\".& c #000000\",", "\".* c #000000\",", "\".= c #000000\",", "\".- c #000000\",", "\".; c #000000\",", "\".: c #000000\",", "\".> c #000000\",", "\"., c #000000\",", "\".< c #000000\",", "\".1 c #000000\",", "\".2 c #000000\",", "\".3 c #000000\",", "\".4 c #000000\",", "\".5 c #000000\",", "\".6 c #000000\",", "\".7 c #000000\",", "\".8 c #000000\",", "\".9 c #000000\",", "\".0 c #000000\",", "\".q c #000000\",", "\".w c #000000\",", "\".e c #000000\",", "\".r c #000000\",", "\".t c #000000\",", "\".y c #000000\",", "\".u c #000000\",", "\".i c #000000\",", "\".p c #000000\",", "\".a c #000000\",", "\".s c #000000\",", "\".d c #000000\",", "\".f c #000000\",", "\".g c #000000\",", "\".h c #000000\",", "\".j c #000000\",", "\".k c #000000\",", "\".l c #000000\",", "\".z c #000000\",", "\".x c #000000\",", "\".c c #000000\",", "\".v c #000000\",", "\".b c #000000\",", "\".n c #000000\",", "\".m c #000000\",", "\".M c #000000\",", "\".N c #000000\",", "\".B c #000000\",", "\".V c #000000\",", "\".C c #000000\",", "\".Z c #000000\",", "\".A c #000000\",", "\".S c #000000\",", "\".D c #000000\",", "\".F c #000000\",", "\".G c #000000\",", "\".H c #000000\",", "\".J c #000000\",", "\".K c #000000\",", "\".L c #000000\",", "\".P c #000000\",", "\".I c #000000\",", "\".U c #000000\",", "\".Y c #000000\",", "\".T c #000000\",", "\".R c #000000\",", "\".E c #000000\",", "\".W c #000000\",", "\".Q c #000000\",", "\".! c #000000\",", "\".~ c #000000\",", "\".^ c #000000\",", "\"./ c #000000\",", "\".( c #000000\",", "\".) c #000000\",", "\"._ c #000000\",", "\".` c #000000\",", "\".' c #000000\",", "\".] c #000000\",", "\".[ c #000000\",", "\".{ c #000000\",", "\".} c #000000\",", "\".| c #000000\",", "\"X  c #000000\",", "\"X. c #000000\",", "\"XX c #000000\",", "\"Xo c #000000\",", "\"XO c #000000\",", "\"X+ c #000000\",", "\"X@ c #000000\",", "\"X# c #000000\",", "\"X$ c #000000\",", "\"X% c #000000\",", "\"X& c #000000\",", "\"X* c #000000\",", "\"X= c #000000\",", "\"X- c #000000\",", "\"X; c #000000\",", "\"X: c #000000\",", "\"X> c #000000\",", "\"X, c #000000\",", "\"X< c #000000\",", "\"X1 c #000000\",", "\"X2 c #000000\",", "\"X3 c #000000\",", "\"X4 c #000000\",", "\"X5 c #000000\",", "\"X6 c #000000\",", "\"X7 c #000000\",", "\"X8 c #000000\",", "\"X9 c #000000\",", "\"X0 c #000000\",", "\"Xq c #000000\",", "\"Xw c #000000\",", "\"Xe c #000000\",", "\"Xr c #000000\",", "\"Xt c #000000\",", "\"Xy c #000000\",", "\"Xu c #000000\",", "\"Xi c #000000\",", "\"Xp c #000000\",", "\"Xa c #000000\",", "\"Xs c #000000\",", "\"Xd c #000000\",", "\"Xf c #000000\",", "\"Xg c #000000\",", "\"Xh c #000000\",", "\"Xj c #000000\",", "\"Xk c #000000\",", "\"Xl c #000000\",", "\"Xz c #000000\",", "\"Xx c #000000\",", "\"Xc c #000000\",", "\"Xv c #000000\",", "\"Xb c #000000\",", "\"Xn c #000000\",", "\"Xm c #000000\",", "\"XM c #000000\",", "\"XN c #000000\",", "\"XB c #000000\",", "\"XV c #000000\",", "\"XC c #000000\",", "\"XZ c #000000\",", "\"XA c #000000\",", "\"XS c #000000\",", "\"XD c #000000\",", "\"XF c #000000\",", "\"XG c #000000\",", "\"XH c #000000\",", "\"XJ c #000000\",", "\"XK c #000000\",", "\"XL c #000000\",", "\"XP c #000000\",", "\"XI c #000000\",", "\"XU c #000000\",", "/* pixels */", "\"                                                \",", "\"                                                \",", "\"                                     X O +      \",", "\"                                 $ @ h w >      \",", "\"                                 @ . . & O o    \",", "\"                                 * . # % z O    \",", "\"                               K 7 . . . r >    \",", "\"                               3 - j Z + X $ o  \",", "\"         m                     ; d e N B        \",", "\"                             X S J i k          \",", "\"                             n y L g +          \",", "\"                       o X O P b a M X          \",", "\"                       + = 1 F 2 t :            \",", "\"                       X , . . & 4              \",", "\"                     o + , . # % $              \",", "\"                   o p 5 D . . . $              \",", "\"                 X 6 s I l v * < +              \",", "\"       o X   o : f C c H 0 X                    \",", "\"       < . . & - V u 8 G o                      \",", "\"       @ . # % q x A O                          \",", "\"     X 1 . . . 9 ; X                            \",", "\"     O * @ # = =                                \",", "\"             o o                                \",", "\"                                                \",", "};", "",  "" }; //
+    string $craSlope2KeysIcon[] = { "/* XPM */", "static const char *const curves2_0000_SteepSlope_xpm[]={", "/* width height ncolors chars_per_pixel */", "\"24 24 256 2\",", "/* colors */", "\"   c #444444\",", "\" . c #bdbdbd\",", "\" X c #434343\",", "\" o c #424242\",", "\" O c #414141\",", "\" + c #3a3a3a\",", "\" @ c #3d3d3d\",", "\" # c #404040\",", "\" $ c #3b3b3b\",", "\" % c #bcbcbc\",", "\" & c #bbbaba\",", "\" * c #3c3c3c\",", "\" = c #3f3f3f\",", "\" - c #64483d\",", "\" ; c #45413f\",", "\" : c #494949\",", "\" > c #646464\",", "\" , c #3e3e3e\",", "\" < c #424141\",", "\" 1 c #64483c\",", "\" 2 c #47413e\",", "\" 3 c #bf6440\",", "\" 4 c #4d4340\",", "\" 5 c #9d593e\",", "\" 6 c #6d4b3e\",", "\" 7 c #7b4f3d\",", "\" 8 c #9a583e\",", "\" 9 c #49413e\",", "\" 0 c #453f3d\",", "\" q c #403f3f\",", "\" w c #ae5e3f\",", "\" e c #95563d\",", "\" r c #714c3d\",", "\" t c #98776a\",", "\" y c #57453e\",", "\" u c #b4603f\",", "\" i c #57453f\",", "\" p c #44413f\",", "\" a c #463f3b\",", "\" s c #7c4f3c\",", "\" d c #656362\",", "\" f c #5f5f5f\",", "\" g c #434241\",", "\" h c #8e543e\",", "\" j c #444342\",", "\" k c #50443e\",", "\" l c #8c543d\",", "\" z c #473e3a\",", "\" x c #515151\",", "\" c c #857b78\",", "\" v c #a45b3f\",", "\" b c #444443\",", "\" n c #92563d\",", "\" m c #787878\",", "\" M c #4a423e\",", "\" N c #81513e\",", "\" B c #9c5f47\",", "\" V c #454241\",", "\" C c #6a493c\",", "\" Z c #5e5e5e\",", "\" A c #89533e\",", "\" S c #4d423d\",", "\" D c #58453d\",", "\" F c #83513d\",", "\" G c #47403d\",", "\" H c #8d6e61\",", "\" J c #5e473e\",", "\" K c #615956\",", "\" L c #5a453d\",", "\" P c #000000\",", "\" I c #000000\",", "\" U c #000000\",", "\" Y c #000000\",", "\" T c #000000\",", "\" R c #000000\",", "\" E c #000000\",", "\" W c #000000\",", "\" Q c #000000\",", "\" ! c #000000\",", "\" ~ c #000000\",", "\" ^ c #000000\",", "\" / c #000000\",", "\" ( c #000000\",", "\" ) c #000000\",", "\" _ c #000000\",", "\" ` c #000000\",", "\" ' c #000000\",", "\" ] c #000000\",", "\" [ c #000000\",", "\" { c #000000\",", "\" } c #000000\",", "\" | c #000000\",", "\".  c #000000\",", "\".. c #000000\",", "\".X c #000000\",", "\".o c #000000\",", "\".O c #000000\",", "\".+ c #000000\",", "\".@ c #000000\",", "\".# c #000000\",", "\".$ c #000000\",", "\".% c #000000\",", "\".& c #000000\",", "\".* c #000000\",", "\".= c #000000\",", "\".- c #000000\",", "\".; c #000000\",", "\".: c #000000\",", "\".> c #000000\",", "\"., c #000000\",", "\".< c #000000\",", "\".1 c #000000\",", "\".2 c #000000\",", "\".3 c #000000\",", "\".4 c #000000\",", "\".5 c #000000\",", "\".6 c #000000\",", "\".7 c #000000\",", "\".8 c #000000\",", "\".9 c #000000\",", "\".0 c #000000\",", "\".q c #000000\",", "\".w c #000000\",", "\".e c #000000\",", "\".r c #000000\",", "\".t c #000000\",", "\".y c #000000\",", "\".u c #000000\",", "\".i c #000000\",", "\".p c #000000\",", "\".a c #000000\",", "\".s c #000000\",", "\".d c #000000\",", "\".f c #000000\",", "\".g c #000000\",", "\".h c #000000\",", "\".j c #000000\",", "\".k c #000000\",", "\".l c #000000\",", "\".z c #000000\",", "\".x c #000000\",", "\".c c #000000\",", "\".v c #000000\",", "\".b c #000000\",", "\".n c #000000\",", "\".m c #000000\",", "\".M c #000000\",", "\".N c #000000\",", "\".B c #000000\",", "\".V c #000000\",", "\".C c #000000\",", "\".Z c #000000\",", "\".A c #000000\",", "\".S c #000000\",", "\".D c #000000\",", "\".F c #000000\",", "\".G c #000000\",", "\".H c #000000\",", "\".J c #000000\",", "\".K c #000000\",", "\".L c #000000\",", "\".P c #000000\",", "\".I c #000000\",", "\".U c #000000\",", "\".Y c #000000\",", "\".T c #000000\",", "\".R c #000000\",", "\".E c #000000\",", "\".W c #000000\",", "\".Q c #000000\",", "\".! c #000000\",", "\".~ c #000000\",", "\".^ c #000000\",", "\"./ c #000000\",", "\".( c #000000\",", "\".) c #000000\",", "\"._ c #000000\",", "\".` c #000000\",", "\".' c #000000\",", "\".] c #000000\",", "\".[ c #000000\",", "\".{ c #000000\",", "\".} c #000000\",", "\".| c #000000\",", "\"X  c #000000\",", "\"X. c #000000\",", "\"XX c #000000\",", "\"Xo c #000000\",", "\"XO c #000000\",", "\"X+ c #000000\",", "\"X@ c #000000\",", "\"X# c #000000\",", "\"X$ c #000000\",", "\"X% c #000000\",", "\"X& c #000000\",", "\"X* c #000000\",", "\"X= c #000000\",", "\"X- c #000000\",", "\"X; c #000000\",", "\"X: c #000000\",", "\"X> c #000000\",", "\"X, c #000000\",", "\"X< c #000000\",", "\"X1 c #000000\",", "\"X2 c #000000\",", "\"X3 c #000000\",", "\"X4 c #000000\",", "\"X5 c #000000\",", "\"X6 c #000000\",", "\"X7 c #000000\",", "\"X8 c #000000\",", "\"X9 c #000000\",", "\"X0 c #000000\",", "\"Xq c #000000\",", "\"Xw c #000000\",", "\"Xe c #000000\",", "\"Xr c #000000\",", "\"Xt c #000000\",", "\"Xy c #000000\",", "\"Xu c #000000\",", "\"Xi c #000000\",", "\"Xp c #000000\",", "\"Xa c #000000\",", "\"Xs c #000000\",", "\"Xd c #000000\",", "\"Xf c #000000\",", "\"Xg c #000000\",", "\"Xh c #000000\",", "\"Xj c #000000\",", "\"Xk c #000000\",", "\"Xl c #000000\",", "\"Xz c #000000\",", "\"Xx c #000000\",", "\"Xc c #000000\",", "\"Xv c #000000\",", "\"Xb c #000000\",", "\"Xn c #000000\",", "\"Xm c #000000\",", "\"XM c #000000\",", "\"XN c #000000\",", "\"XB c #000000\",", "\"XV c #000000\",", "\"XC c #000000\",", "\"XZ c #000000\",", "\"XA c #000000\",", "\"XS c #000000\",", "\"XD c #000000\",", "\"XF c #000000\",", "\"XG c #000000\",", "\"XH c #000000\",", "\"XJ c #000000\",", "\"XK c #000000\",", "\"XL c #000000\",", "\"XP c #000000\",", "\"XI c #000000\",", "\"XU c #000000\",", "/* pixels */", "\"                                                \",", "\"                                 X X            \",", "\"                                 = = + $ * #    \",", "\"                             o ; z . . . > o    \",", "\"                           # J A H % + . $      \",", "\"                       X q C w n - & . . ,      \",", "\"                     o k h u 7 S < X   o X      \",", "\"               O , * a l 5 1 2 o                \",", "\"               @ . . . d 0 V X                  \",", "\"               @ % + . : O X                    \",", "\"               G & . . : o                      \",", "\"             < 6 t c > = O                      \",", "\"           o M F v y # o X                      \",", "\"           O D 3 r p                            \",", "\"           4 N e L o                            \",", "\"         g i 8 s ;                              \",", "\"   X @ $ O K B - j                              \",", "\"     @ m . . . 9 b                              \",", "\"     # f % + . *                                \",", "\"     X + & . . $                                \",", "\"       @ Z x + @                                \",", "\"       O # o                                    \",", "\"                                                \",", "\"                                                \",", "};", "",  "" }; //
+
+    if(!`filetest -f ($craIconPath + "craToggle8Icon.xpm")`)
+        craXPMCreator($craIconPath,"craToggle8Icon.xpm" , $craToggle8Icon);
+    if(!`filetest -f ($craIconPath + "craLinearKeysIcon.xpm")`)
+        craXPMCreator($craIconPath,"craLinearKeysIcon.xpm" , $craLinearKeysIcon);
+    if(!`filetest -f ($craIconPath + "craSlopeKeysIcon.xpm")`)
+        craXPMCreator($craIconPath,"craSlopeKeysIcon.xpm" , $craSlopeKeysIcon);
+    if(!`filetest -f ($craIconPath + "craSteepSlopeKeysIcon.xpm")`)
+        craXPMCreator($craIconPath,"craSteepSlopeKeysIcon.xpm" , $craSlope2KeysIcon);
+
+    if(!`optionVar -exists craOffsetKeysStaggerOV`)
+		optionVar -iv craOffsetKeysStaggerOV 0;
+    if(!`optionVar -exists craOffsetKeysSlidersOV`)
+		optionVar -iv craOffsetKeysSlidersOV 1;
+	if(!`optionVar -exists craOffsetKeysRandomOV`)
+		optionVar -iv craOffsetKeysRandomOV 0;
+    if(!`optionVar -exists craOffsetKeysLastValueOV`)
+		optionVar -iv craOffsetKeysLastValueOV 1;
+
+    window -s 1 -tlb 0 -mxb 0 -mnb 0 -t "Offset Keyframes" craOffsetKeysWin;
+    frameLayout -lv 0 -mw 1 -mh 1;
+    columnLayout -adj 1;
+
+    frameLayout -vis 1 -bv 1 -lv 0 -mw 1 -mh 1 craOffsetKeysSelOrderFL;
+        rowLayout -nc 4;
+            optionMenu -w 113 -h 23 -ann "Choose selection order" craOffsetKeysSelectionOrderOM;
+                menuItem -l "sort: as selected";
+                menuItem -l "sort: reverse selection";
+                menuItem -l "sort: name [A-Z]";
+                menuItem -l "sort: name [Z-A]";
+                menuItem -l "sort: random";
+            setParent -m ..;
+
+            nodeIconButton -h 22 -w 22 -i "out_transform.png" -ann "Select All Animated transforms\nRMB for options" -c "select -cl;select -r `craGetAnimated 1 \"transform\"`";
+            popupMenu;
+                menuItem -d 1 -dl "Select animated objects";
+                menuItem -i "createNode.png" -l "All animated nodes" -c "select -cl;select -r `craGetAnimated 0 \"\"`";
+                menuItem -i "out_animCurveTA.png" -l "All Animation Curves" -c "select -r `ls -type \"animCurveTU\" -type \"animCurveTA\" -type \"animCurveTT\" -type \"animCurveTL\"`";
+                menuItem -i "out_nurbsCurve.png" -l "All animated Curves" -c "select -cl;select -r `craGetAnimated 1 \"nurbsCurve\"`";
+                menuItem -i "out_joint.png" -l "All animated Joints" -c "select -cl;select -r `craGetAnimated 1 \"joint\"`";
+            setParent -m ..;
+
+            nodeIconButton -h 22 -w 22 -i "getGraphEditor.png" -ann "Open Graph Editor\nRMB for layouts" -c "GraphEditor";
+            popupMenu;
+                menuItem -d 1 -dl "Panel Layouts" -en 0;
+                menuItem -l "Persp/Graph" -c "setNamedPanelLayout \"Persp/Graph\"";
+                menuItem -l "Persp/Graph/Outliner" -c "setNamedPanelLayout \"Persp/Graph/Outliner\"";
+                menuItem -l "Persp/Graph/Hypergraph" -c "setNamedPanelLayout \"Persp/Graph/Hypergraph\"";
+            setParent -m ..;
+
+            nodeIconButton -h 22 -w 22 -i (`getApplicationVersionAsFloat` > 2015 ? "QR_help.png" : "pickOtherObj.png") -ann "About" -c "craOffsetKeysAboutScript";
+        setParent ..;
+    setParent ..;
+    separator -h 2 -st "none";
+    frameLayout -lv 0 -bv 1 -mw 1 -mh 0    ;
+        rowLayout -nc 4 -adj 3;
+            iconTextCheckBox -v `optionVar -q craOffsetKeysStaggerOV`
+            	-ann "Toggle stagger mode\nIncrement offset for each object"
+            	-w 52
+            	-l "Stagger"
+            	-h 22
+            	-bgc .2 .2 .2
+                -style "textOnly"
+                -cc "rowLayout -e -en #1 craStaggerModesRL"
+                -onc "rowLayout -e -en #1 craStaggerModesRL;iconTextCheckBox -e -v 0 craRandomOffsetCB;optionVar -iv craOffsetKeysStaggerOV #1;optionVar -iv craOffsetKeysRandomOV 0;craInViewMessage \"Stagger mode\" \"ON\""
+                -ofc "optionVar -iv craOffsetKeysStaggerOV 0;craInViewMessage \"Stagger mode\" \"OFF\""
+            craStaggerOffsetCB;
+
+            rowLayout -nc 3
+            	-en `optionVar -q craOffsetKeysStaggerOV`
+            	// -bgc .2 .2 .2
+            craStaggerModesRL;
+
+                iconTextCheckBox -v 1
+                	-h 22 -w 22
+                    -i "craLinearKeysIcon.xpm"
+                    -l "linear"
+                    -ann "linear increment"
+                    -onc "iconTextCheckBox  -e -v (!#1) craSlopeOffsetCB;iconTextCheckBox  -e -v (!#1) craSlopeDownOffsetCB;craInViewMessage \"Stagger increment set to\" \"linear\""
+                    -ofc "iconTextCheckBox  -e -v 1 craLinearOffsetCB"
+                craLinearOffsetCB;
+
+	            iconTextCheckBox -v 0
+	            	-h 22 -w 22
+	                -i "craSlopeKeysIcon.xpm"
+	                -l "slope"
+	                -ann "slope increment"
+	                -onc "iconTextCheckBox  -e -v (!#1) craLinearOffsetCB;iconTextCheckBox  -e -v (!#1) craSlopeDownOffsetCB;craInViewMessage \"Stagger increment set to\" \"slope\""
+	                -ofc "iconTextCheckBox  -e -v 1 craSlopeOffsetCB"
+	            craSlopeOffsetCB;
+
+	            iconTextCheckBox -v 0
+	            	-h 22 -w 22
+	                -i "craSteepSlopeKeysIcon.xpm"
+	                -l "steep slope"
+	                -ann "steep slope increment"
+	                -onc "iconTextCheckBox  -e -v (!#1) craLinearOffsetCB;iconTextCheckBox  -e -v (!#1) craSlopeOffsetCB;craInViewMessage \"Stagger increment set to\" \"steep slope\""
+	                -ofc "iconTextCheckBox  -e -v 1 craSlopeDownOffsetCB"
+	            craSlopeDownOffsetCB;
+        	setParent ..;
+
+            separator -st "none";
+
+            iconTextCheckBox -v `optionVar -q craOffsetKeysRandomOV`
+            	-ann "Toggle random mode\nRandom offset for each object.\nRandom range between 0 and frame offset"
+            	-l "Random"
+            	-bgc .2 .2 .2
+            	-w 52
+            	-style "textOnly"
+            	-h 22
+                -onc "rowLayout -e -en (!#1) craStaggerModesRL;iconTextCheckBox -e -v 0 craStaggerOffsetCB;optionVar -iv craOffsetKeysRandomOV #1;optionVar -iv craOffsetKeysStaggerOV 0;craInViewMessage \"Random mode\" \"ON\""
+                -ofc "optionVar -iv craOffsetKeysRandomOV 0;craInViewMessage \"Random mode\" \"OFF\""
+                craRandomOffsetCB;
+        setParent ..;
+    setParent ..;
+
+	separator -h 2 -st "none";
+
+    frameLayout -lv 0 -bv 1 -mw 1 -mh 0    ;
+	    columnLayout -adj 1;
+	        rowLayout -nc 5 -adj 3;
+	            nodeIconButton -bgc .4 .2 .2 -h 22 -w 22 -ann "Negative Time Offset\nPress Alt to multiply offset by 2.0\nPress Shift to multiply offset by 1.5\nPress Control to multiply offset by 0.5\nPress Control+Shift to multiply offset by 0.1" -i "timeprev.png" -c "craOffsetKeysWrapper -1 \" -tc \"";
+                popupMenu -pmc "";
+	            nodeIconButton -bgc .4 .2 .2 -h 22 -w 22 -ann "Positive Time Offset\nPress Alt to multiply offset by 2.0\nPress Shift to multiply offset by 1.5\nPress Control to multiply offset by 0.5\nPress Control+Shift to multiply offset by 0.1" -i "timenext.png" -c "craOffsetKeysWrapper 1 \" -tc \"";
+	            setParent -m ..;
+                popupMenu -pmc "";
+	            setParent -m ..;
+	            rowLayout -vis 1 -nc 4 -adj 2 craOffsetKeysValueRL;
+	                nodeIconButton -i "channelBox.png" -w 19 -h 21 -ann "Get selected channel value\nIf no channel is selected set the field to 1\nRMB to toggle offset sliders" -c "craGetCurrentChannelValue";
+                    popupMenu -pmc "craToggleOffsetSliders";
+	                setParent -m ..;
+	                floatField -ann "Offset value\nRMB for presets\nMMB to get value from current frame number"
+                               -pre 2 -h 21 -w 32
+                               -v `optionVar -q craOffsetKeysLastValueOV`
+                               -ec "optionVar -iv craOffsetKeysLastValueOV `floatField -q -v craOffsetKeysFramesIF`"
+                               -min 0 craOffsetKeysFramesIF;
+                        popupMenu -p craOffsetKeysFramesIF craOffsetNumPUM;
+                            menuItem -d 1 -dl "Seconds to frames";
+                            string $plural = "";
+                            menuItem -i "cursor_trim.png" -label ("0.5 seconds" + $plural) -command ("floatField -e -v `sec_to_frames 0.5` craOffsetKeysFramesIF;optionVar -iv craOffsetKeysLastValueOV `floatField -q -v craOffsetKeysFramesIF`");
+                            for ($craf=1.0; $craf<=5.0;$craf+=1.0)
+                            {
+                                menuItem -i "cursor_trim.png" -label ($craf + " second" + $plural) -command ("floatField -e -v `sec_to_frames " + $craf + "` craOffsetKeysFramesIF;optionVar -iv craOffsetKeysLastValueOV `floatField -q -v craOffsetKeysFramesIF`");
+                                $plural = "s";
+                            }
+                            menuItem -i "cursor_trim.png" -label "10 seconds" -command ("floatField -e -v `sec_to_frames 10` craOffsetKeysFramesIF;optionVar -iv craOffsetKeysLastValueOV `floatField -q -v craOffsetKeysFramesIF`");
+
+                            menuItem -d 1 -dl "Offset amount";
+                            // menuItem -d 1;
+                            // for ($craf=1; $craf<= 10;$craf+=1)
+                            for ($craf in {1, 5, 10, 100, 1000})
+                            {
+                                menuItem -i "cursor_trim.png" -label $craf -command ("floatField -e -v " + $craf + " craOffsetKeysFramesIF;optionVar -iv craOffsetKeysLastValueOV `floatField -q -v craOffsetKeysFramesIF`");
+                            }
+                            menuItem -d 1;
+                            for ($craf=0.1; $craf<= 0.5;$craf+=0.4)
+                            {
+                                menuItem -i "cursor_trim.png" -label $craf -command ("floatField -e -v " + $craf + " craOffsetKeysFramesIF;optionVar -iv craOffsetKeysLastValueOV `floatField -q -v craOffsetKeysFramesIF`");
+                                menuItem -i "cursor_trim.png" -label ($craf*0.1) -command ("floatField -e -v " + $craf*0.1 + " craOffsetKeysFramesIF;optionVar -iv craOffsetKeysLastValueOV `floatField -q -v craOffsetKeysFramesIF`");
+                                menuItem -i "cursor_trim.png" -label ($craf*0.01) -command ("floatField -e -v " + $craf*0.01 + " craOffsetKeysFramesIF;optionVar -iv craOffsetKeysLastValueOV `floatField -q -v craOffsetKeysFramesIF`");
+                            }
+                        setParent -m ..;
+	                    popupMenu -b 2 -p craOffsetKeysFramesIF -pmc "floatField -e -v `currentTime -q` craOffsetKeysFramesIF" craOffsetNumPUM;
+	                    setParent -m ..;
+	                    // popupMenu -b 2 -p craOffsetKeysFramesIF -pmc "floatField -e -v 1 craOffsetKeysFramesIF";
+	                    // setParent -m ..;
+	                nodeIconButton -i "teZeroKey.png" -w 19 -h 21 -ann "Offset animation curve so the current frame has a zero value\n\nZero/Offset selected ChannelBox attributes,\nif no attr is selected in the channelBox\ntranslation and rotation will be reseted\n\n- Press shift to reset translation\n- Press shift+control to reset XZ plane\n- Press control to reset rotation\n- Press alt to reset scale\n\nRight-click for options" -c "craSetZeroCurrentFrame 0";
+                        popupMenu;
+                            menuItem -d 1 -dl "Set current frame as zero value";
+                            menuItem -i "teZeroKey.png" -label "Zero out translation and rotation" -c "craSetZeroCurrentFrame 0";
+                            menuItem -i "teZeroKey.png" -label "Zero out translation" -c "craSetZeroCurrentFrame 1";
+                            menuItem -i "teZeroKey.png" -label "Zero out translation (XZ plane)" -c "craSetZeroCurrentFrame 5";
+                            menuItem -i "teZeroKey.png" -label "Zero out rotation" -c "craSetZeroCurrentFrame 4";
+                            menuItem -i "teZeroKey.png" -label "Zero out scale" -c "craSetZeroCurrentFrame 8";
+                        setParent -m ..;
+
+	            setParent ..;
+	            nodeIconButton -bgc .2 .2 .4 -h 22 -w 22 -ann "Negative Value Offset\nPress Alt to multiply offset by 2.0\nPress Shift to multiply offset by 1.5\nPress Control to multiply offset by 0.5\nPress Control+Shift to multiply offset by 0.1" -i "timeend.png" -c "craOffsetKeysWrapper -1 \" -vc \"";
+                popupMenu -pmc "";
+	            setParent -m ..;
+	            nodeIconButton -bgc .2 .2 .4 -h 22 -w 22 -ann "Positive Value Offset\n\nPress Alt to multiply offset by 2.0\nPress Shift to multiply offset by 1.5\nPress Control to multiply offset by 0.5\nPress Control+Shift to multiply offset by 0.1" -i "timestart.png" -c "craOffsetKeysWrapper 1 \" -vc \"";
+                popupMenu -pmc "";
+	            setParent -m ..;
+	        setParent ..;
+			separator -h 1 -st "none";
+            columnLayout -adj 1 -vis `optionVar -q craOffsetKeysSlidersOV` craOffsetSliderCL;
+                rowLayout -nc 3 -adj 2 ;
+                    text -w 10 -l "<font color=indianred><b>-</b></font>";
+                    floatSlider
+                        -w 90
+                        -ann "drag to offset time"
+                        -dc "craOffsetSlider \" -tc \""
+                        -cc "craStopOffsetSlider"
+                        -bgc .4 .2 .2
+                        -min -10
+                        -max 10
+                        -v 0
+                        -step 1
+                    craOffsetKeysTimeFS;
+                    text -w 10 -l "<font color=indianred><b>+</b></font>";
+                setParent ..;
+
+                rowLayout -nc 3 -adj 2 ;
+                    text -w 10 -l "<font color=MediumSlateBlue><b>-</b></font>";
+                    floatSlider
+                        -dc "craOffsetSlider \" -vc \""
+                        -cc "craStopOffsetSlider"
+                        -ann "drag to offset values"
+                        -bgc .2 .2 .4
+                        -min -10
+                        -max 10
+                        -v 0
+                        -step 1
+                    craOffsetKeysValueFS;
+                    text -w 10 -l "<font color=MediumSlateBlue><b>+</b></font>";
+                setParent ..;
+            setParent ..;
+	    	separator -h 1 -st "none";
+	    setParent ..;
+    setParent ..;
+
+	separator -h 2 -st "none";
+
+    frameLayout -vis 1 -lv 0 -bv 1 -mw 1 -mh 1 craOffsetKeysInfinityFL;
+	    rowLayout -nc 7 -adj 4;
+		    nodeIconButton -h 22 -w 22 -i "muted.png" -ann "Pre-Infinity: Constant for selected objects" -l "Cycle" -c "craOffsetKeysCycle 0";
+		    nodeIconButton -h 22 -w 22 -i "preInfinityCycleOffset.png" -ann "Pre Infinity: Cycle with Offset for selected objects" -l "Cycle" -c "craOffsetKeysCycle 1";
+			    popupMenu;
+			    menuItem -i "preInfinityCycle.png" -label "Pre Infinity: Linear for selected objects" -command "craOffsetKeysCycle 6";
+			    menuItem -i "preInfinityCycle.png" -label "Pre Infinity: Oscillate for selected objects" -command "craOffsetKeysCycle 7";
+			    setParent -m ..;
+		    nodeIconButton -h 22 -w 22 -i "preInfinityCycle.png" -ann "Pre Infinity: Cycle for selected objects" -l "Cycle" -c "craOffsetKeysCycle 2";
+			    popupMenu;
+			    menuItem -i "preInfinityCycle.png" -label "Pre Infinity: Linear for selected objects" -command "craOffsetKeysCycle 6";
+			    menuItem -i "preInfinityCycle.png" -label "Pre Infinity: Oscillate for selected objects" -command "craOffsetKeysCycle 7";
+			    setParent -m ..;
+		    nodeIconButton -h 22 -w 22 -i "craToggle8Icon.xpm" -ann "Graph Editor: Toggle view Infinity" -c "if(`animCurveEditor -q -displayInfinities graphEditor1GraphEd`) animCurveEditor -e -displayInfinities 0 graphEditor1GraphEd; else animCurveEditor -e -displayInfinities  1 graphEditor1GraphEd" craToggle8IconNIB;
+		    nodeIconButton -h 22 -w 22 -i "postInfinityCycle.png" -ann "Post Infinity: Cycle for selected objects" -l "Cycle" -c "craOffsetKeysCycle 3";
+			    popupMenu;
+			    menuItem -i "postInfinityCycle.png" -label "Post Infinity: Linear for selected objects" -command "craOffsetKeysCycle 8";
+			    menuItem -i "postInfinityCycle.png" -label "Post Infinity: Oscillate for selected objects" -command "craOffsetKeysCycle 9";
+			    setParent -m ..;
+		    nodeIconButton -h 22 -w 22 -i "postInfinityCycleOffset.png" -ann "Post Infinity: Cycle with Offset for selected objects" -l "Cycle" -c "craOffsetKeysCycle 4";
+			    popupMenu;
+			    menuItem -i "postInfinityCycle.png" -label "Post Infinity: Linear for selected objects" -command "craOffsetKeysCycle 8";
+			    menuItem -i "postInfinityCycle.png" -label "Post Infinity: Oscillate for selected objects" -command "craOffsetKeysCycle 9";
+			    setParent -m ..;
+		    nodeIconButton -h 22 -w 22 -i "muted.png" -ann "Post Infinity: Constant for selected objects" -l "Cycle" -c "craOffsetKeysCycle 5";
+	    setParent ..;
+    setParent ..;
+
+    if(`getApplicationVersionAsFloat` > 2015)
+    {
+        frameLayout -e -mw 0 craOffsetKeysSelOrderFL;
+        optionMenu -e craOffsetKeysSelectionOrderOM;
+        window -e -wh 195 155 -s 1 craOffsetKeysWin;
+        if(!`optionVar -q craOffsetKeysSlidersOV`)
+            window -e -h (155-35) -s 1 craOffsetKeysWin;
+
+    }
+    else
+        window -e -wh 200 115 -s 1 craOffsetKeysWin;
+
+    setFocus craOffsetKeysFramesIF;
+
+    // set window icon
+    python("win_name = 'craOffsetKeysWin';win_icon = ':directKeySmall.png';from shiboken2 import wrapInstance;from maya import OpenMayaUI as omui;from PySide2.QtGui import QIcon;from PySide2.QtWidgets import QWidget;import sys;qw = omui.MQtUtil.findWindow(win_name);widget = wrapInstance(int(qw), QWidget);icon = QIcon(win_icon);widget.setWindowIcon(icon)");
+
+    showWindow craOffsetKeysWin;
+    window -e -s 0 craOffsetKeysWin;
+
+    evalDeferred ("optionMenu -e -sl 1 craOffsetKeysSelectionOrderOM");
+}
+
+
+global proc float sec_to_frames(float $seconds)
+{
+    float $fps = 0.0;
+    string $current_time_unit = `currentUnit -q -t`;
+    switch($current_time_unit)
+    {
+
+        case "game": //15 fps
+            $fps = 15.0;
+        break;
+
+        case "film": // 24 fps
+            $fps =  24.0;
+        break;
+
+        case "pal": //25 fps
+            $fps =  25.0;
+        break;
+
+        case "ntsc": // 30 fps
+            $fps =  30.0;
+        break;
+
+        case "show": // 48 fps
+            $fps =  48.0;
+        break;
+
+        case "palf": // 50 fps
+            $fps =  50.0;
+        break;
+
+        case "ntscf": // 60 fps
+            $fps =  60.0;
+        break;
+
+        default:
+            $fps = (float(substituteAllString($current_time_unit , "fps", ".0")));
+        break;
+
+
+    }
+
+    float $sec_to_frames = ($fps * $seconds);
+
+    print ("\n// " + $fps + " fps: " + $seconds + " seconds = " + $sec_to_frames + " frames");
+
+    return $sec_to_frames;
+}
+
+
+global proc craToggleOffsetSliders()
+{
+    // int $column_height = `columnLayout -q -h craOffsetSliderCL` * 0.5;
+    int $column_height = 0;
+    int $window_height = 155;
+    int $vis_state = `columnLayout -q -vis craOffsetSliderCL`;
+
+    columnLayout -e -vis (!$vis_state) craOffsetSliderCL;
+    optionVar -iv craOffsetKeysSlidersOV (!$vis_state);
+
+    if(`optionVar -q craOffsetKeysSlidersOV` == 0)
+        $column_height = -35;
+	window -e -s 1 craOffsetKeysWin;
+    window -e -h ($window_height + $column_height) craOffsetKeysWin;
+	window -e -s 0 craOffsetKeysWin;
+}
+
+
+global proc craOffsetSlider(string $mode)
+{
+    global int $craOffsetState;
+
+    if(size(`ls -sl`))
+    {
+        if(size(`craGetAnimated 1 "transform"`))
+        {
+            // open undo chunk
+            if(!$craOffsetState)
+            {
+                undoInfo -chunkName "craOffsetKeysUndo" -openChunk;
+                // set undo chunk state
+                $craOffsetState = 1;
+            }
+
+            float $value;
+            if($mode == " -tc ")
+                $value = `floatSlider -q -v craOffsetKeysTimeFS`;
+            else
+                $value = `floatSlider -q -v craOffsetKeysValueFS`;
+            int $sign = `sign($value)`;
+
+            craOffsetKeysWrapper $sign $mode;
+        }
+        else
+            warning "No animated object(s) selected";
+    }
+    else
+        warning "No object(s) selected";
+}
+
+global proc craStopOffsetSlider()
+{
+    global int $craOffsetState;
+
+    floatSlider -e -v 0 craOffsetKeysTimeFS;
+    floatSlider -e -v 0 craOffsetKeysValueFS;
+    // close undo chunk
+    undoInfo -closeChunk;
+    // set undo chunk state
+    $craOffsetState = 0;
+    // evalDeferred "dgdirty -a";
+}
+
+
+global proc craOffsetKeysWrapper( float $direction, string $changeMode )
+{
+    float $framesOffset = `floatField -q -v craOffsetKeysFramesIF`;
+
+	// int $mods = `getModifiers`;
+	// // control+shift
+ //    if ($mods == 5)
+	// 	$framesOffset *= 0.1;
+ //    // control
+ //    if ($mods == 4)
+ //        $framesOffset *= 0.5;
+ //    // shift
+	// if ($mods== 1)
+	// 	$framesOffset *= 1.5;
+ //    // alt
+ //    if ($mods == 8)
+ //        $framesOffset *= 2.0;
+
+    int $sorting = `optionMenu -q -sl craOffsetKeysSelectionOrderOM`;
+    int $mode = 0;
+    string $objects[] = `ls -sl -l`;
+
+    if(`iconTextCheckBox -q -v craStaggerOffsetCB`)
+        $mode = 1;
+    if(`iconTextCheckBox -q -v craRandomOffsetCB`)
+        $mode = 2;
+
+    undoInfo -chunkName "craOffsetKeysUndo" -openChunk;
+    craOffsetKeysProc( $objects, $framesOffset, $mode, $sorting, $direction, $changeMode);
+    undoInfo -closeChunk;
+	// if($mods)
+	// 	craInViewMessage "Offset value multiplier" $framesOffset;
+    // evalDeferred "dgdirty -a";
+}
+
+global proc craOffsetKeysProc( string $objects[], float $framesOffset, int $mode, int $sorting, int $direction, string $changeMode)
+{
+    global string $gPlayBackSlider;
+
+	if(!size($objects))
+    {
+        if (`confirmDialog -title "Nothing selected" -p "craOffsetKeysWin" -message "Use all animated objects?" -button "Yes" -button "No" -defaultButton "Yes" -cancelButton "No" -dismissString "No"` == "Yes")
+        {
+            if (`confirmDialog -title "Offset animated" -p "craOffsetKeysWin" -message "Transforms/Joints only?" -button "Yes" -button "No" -defaultButton "Yes" -cancelButton "No" -dismissString "No"` == "Yes")
+                $objects = craGetAnimated(1, "transform");
+            else
+                $objects = craGetAnimated(0, "");
+
+        select -r $objects;
+        }
+    }
+
+    if(size($objects))
+    {
+	    string $craOffsetKeysCBAttrs[] =`craOffsetKeysGetCBAttrs`;
+	    string $craOffsetKeysAttrs;
+
+	    string $craAnimCurves[] =`keyframe -q -sl -name`;
+	    int $craSizeAnimCurves = size(`keyframe -q -sl -name`);
+
+        float $timeRange[] = `timeControl -q -rangeArray $gPlayBackSlider`;
+        string $channels[] = `timeControl -q -animCurveNames $gPlayBackSlider`;
+        float $keys[] = `keyframe -time ($timeRange[0] + ":" + $timeRange[1])  -query -timeChange $channels`;
+
+        if(size($craOffsetKeysCBAttrs) && !$craSizeAnimCurves)
+	    {
+	        $craOffsetKeysAttrs = " -at \"";
+	        $craOffsetKeysAttrs+= stringArrayToString($craOffsetKeysCBAttrs, "\" -at \"");
+	        $craOffsetKeysAttrs+="\" ";
+	    }
+	    else if($craSizeAnimCurves)
+	        $objects = $craAnimCurves;
+
+	    if($sorting == 2)
+	        $objects = craOffsetKeysInvertArray($objects);
+
+	    if($sorting == 3)
+	        $objects = sort($objects);
+
+	    if($sorting == 4)
+	    {
+	        $objects = sort($objects);
+	        $objects = craOffsetKeysInvertArray($objects);
+	    }
+
+	    if($sorting == 5)
+	        $objects = craOffsetKeysRandArray($objects);
+
+	    $framesOffset *= $direction;
+
+	    float $offset;
+
+        float $craCount = 1;
+
+        for( $obj in $objects )
+        {
+            float $craOffsetKeysSelectedKeys[] = `keyframe -q -selected $obj`;
+            string $craOffsetKeysSelectedKeysFlag = "";
+
+            if($mode == 2)
+            {
+                if($changeMode == " -tc ")
+                    $offset = int(rand($framesOffset + (1*$direction)));
+                else
+                    $offset = rand($framesOffset + (1*$direction));
+            }
+            else if($mode == 1)
+            {
+                if(`iconTextCheckBox  -q -v craLinearOffsetCB`)
+                  $offset += $framesOffset;
+
+                if(`iconTextCheckBox  -q -v craSlopeOffsetCB`)
+                {
+                	if($craCount ==1)
+                		$offset += $framesOffset;
+                	else
+                    	$offset += ($framesOffset/(size($objects)/$craCount));
+                }
+
+                if(`iconTextCheckBox  -q -v craSlopeDownOffsetCB`)
+                {
+                	if($craCount ==1)
+                		$offset += $framesOffset;
+                	else
+                		$offset += ($framesOffset/$craCount);
+                }
+            }
+            else
+                $offset = $framesOffset;
+
+		    if(size($craOffsetKeysSelectedKeys))
+		    {
+		        for($key in $craOffsetKeysSelectedKeys)
+		            $craOffsetKeysSelectedKeysFlag+= (" -t " + string($key));
+		        $craOffsetKeysSelectedKeysFlag+=" ";
+		    }
+            else
+            {
+                if ($timeRange[1] > ($timeRange[0]+1))
+                {
+                    string $framesRange = ("\"" + $timeRange[0] + ":" + $timeRange[1] + "\"");
+                    $craOffsetKeysSelectedKeysFlag+= (" -t " + $framesRange);
+                    $craOffsetKeysSelectedKeysFlag+=" ";
+                }
+            }
+
+		    $cmd = "keyframe -e -abd 1 -option \"over\" -r" + $changeMode + $offset + " " + $craOffsetKeysAttrs + $craOffsetKeysSelectedKeysFlag + $obj;
+		    eval($cmd);
+            $craCount+=1;
+        }
+        // dgdirty -a;
+	}
+}
+
+global proc string[] craOffsetKeysInvertArray( string $array[] )
+{
+    string $crainvertedArray[];
+
+    for ($crai=size($array)-1,$j=0;$crai>=0;$crai--,$j++)
+        $crainvertedArray[$j] = $array[$crai];
+
+    return $crainvertedArray;
+}
+
+global proc string[] craOffsetKeysRandArray( string $stringArray[] )
+{
+    int $arraySize = size($stringArray);
+    python("list = range(" + ($arraySize) + ")");
+    python("import random");
+    python("random.shuffle(list)");
+    int $randomIndex[] = python("list");
+
+    for( $crai=0;$crai<($arraySize);$crai++)
+        $randomArray[$crai] =  strip($stringArray[$randomIndex[$crai]]);
+
+    return $randomArray;
+}
+
+global proc string[] craOffsetKeysGetCBAttrs()
+{
+    if(size(`channelBox -q -sma mainChannelBox`)||size(`channelBox -q -ssa mainChannelBox`)||size(`channelBox -q -sha mainChannelBox`))
+	{
+	    if(size(`channelBox -q -sma mainChannelBox`))
+	        return `channelBox -q -sma mainChannelBox`;
+	    if(size(`channelBox -q -ssa mainChannelBox`))
+	        return `channelBox -q -ssa mainChannelBox`;
+	    if(size(`channelBox -q -sha mainChannelBox`))
+	        return `channelBox -q -sha mainChannelBox`;
+	}
+	else
+	    return {};
+}
+
+global proc craOffsetKeysCycle(int $mode)
+{
+    string $craOffsetKeysCBAttrs[] =`craOffsetKeysGetCBAttrs`;
+    string $craOffsetKeysSelectedObjects[] = `ls -sl -l`;
+    string $craOffsetKeysSelectedAnimCurves[] = `ls -sl -type "animCurveTU" -type "animCurveTA" -type "animCurveTT" -type "animCurveTL"`;
+    string $craOffsetKeysSelectedCurves[];
+
+    if(size($craOffsetKeysCBAttrs) || size($craOffsetKeysSelectedAnimCurves))
+    {
+        if(size($craOffsetKeysCBAttrs))
+        {
+            for($craOffsetKeysCBAttr in $craOffsetKeysCBAttrs)
+            {
+                for($craOffsetKeysSelectedObject in $craOffsetKeysSelectedObjects)
+                {
+                    string $craCurrentObjectCnnections[] = `listConnections -d 0 -p 0 -s 1 -c 0 ($craOffsetKeysSelectedObject + "." + $craOffsetKeysCBAttr)`;
+                    $craOffsetKeysSelectedCurves[size($craOffsetKeysSelectedCurves)] = $craCurrentObjectCnnections[0];
+                }
+            }
+        }
+        else
+            $craOffsetKeysSelectedCurves = $craOffsetKeysSelectedAnimCurves;
+
+        for($craOffsetKeysSelectedCurve in $craOffsetKeysSelectedCurves)
+        {
+            switch ($mode)
+            {
+                case 0:
+                // 0 constant
+                catchQuiet(`setAttr ($craOffsetKeysSelectedCurve + ".preInfinity") 0`);
+                break;
+                case 1:
+                // 4 cycle with offset
+                catchQuiet(`setAttr ($craOffsetKeysSelectedCurve + ".preInfinity") 4`);
+                break;
+                case 2:
+                // 3 cycle
+                catchQuiet(`setAttr ($craOffsetKeysSelectedCurve + ".preInfinity") 3`);
+                break;
+                case 3:
+                // 3 cycle
+                catchQuiet(`setAttr ($craOffsetKeysSelectedCurve + ".postInfinity") 3`);
+                break;
+                case 4:
+                // 4 cycle with offset
+                catchQuiet(`setAttr ($craOffsetKeysSelectedCurve + ".postInfinity") 4`);
+                break;
+                case 5:
+                // 0 constant
+                catchQuiet(`setAttr ($craOffsetKeysSelectedCurve + ".postInfinity") 0`);
+                break;
+                case 6:
+                // 1 linear
+                catchQuiet(`setAttr ($craOffsetKeysSelectedCurve + ".preInfinity") 1`);
+                break;
+                case 7:
+                // 5 oscillate
+                catchQuiet(`setAttr ($craOffsetKeysSelectedCurve + ".preInfinity") 5`);
+                break;
+                case 8:
+                // 1 linear
+                catchQuiet(`setAttr ($craOffsetKeysSelectedCurve + ".postInfinity") 1`);
+                break;
+                case 9:
+                // 5 oscillate
+                catchQuiet(`setAttr ($craOffsetKeysSelectedCurve + ".postInfinity") 5`);
+                break;
+            }
+        }
+    }
+    else
+    {
+        if(size($craOffsetKeysSelectedObjects))
+        {
+            switch ($mode)
+            {
+                case 0:
+                setInfinity -pri "constant";
+                break;
+                case 1:
+                setInfinity -pri "cycleRelative";
+                break;
+                case 2:
+                setInfinity -pri "cycle";
+                break;
+                case 3:
+                setInfinity -poi "cycle";
+                break;
+                case 4:
+                setInfinity -poi "cycleRelative";
+                break;
+                case 5:
+                setInfinity -poi "constant";
+                break;
+                case 6:
+                setInfinity -pri "linear";
+                break;
+                case 7:
+                setInfinity -pri "oscillate";
+                break;
+                case 8:
+                setInfinity -poi "linear";
+                break;
+                case 9:
+                setInfinity -poi "oscillate";
+                break;
+            }
+        }
+    }
+}
+
+global proc string[] craGetAnimated(int $mode, string $type)
+{
+    string $aniObjects[];
+    string $objects[];
+
+    if(size(`ls -sl`))
+        $objects = `ls -sl`;
+    else
+    {
+        if($mode)
+        {
+            if($type == "nurbsCurve")
+            {
+                string $shapes[] = `ls -type $type`;
+                $objects = `listRelatives -p $shapes`;
+            }
+            else
+                $objects = `ls -type $type`;
+        }
+        else
+            $objects = `ls`;
+    }
+
+    for ($i in $objects)
+    {
+        if(size(`keyframe -q $i`))
+            if(!size(`ls -type "animCurve" $i`))
+                $aniObjects[size($aniObjects)] =  $i;
+    }
+
+    if(!size($aniObjects))
+        warning "no animated nodes found";
+    return $aniObjects;
+}
+
+global proc craGetCurrentChannelValue()
+{
+    string $sel[] = `ls -sl`;
+    string $craOffsetKeysCBAttrs[] =`craOffsetKeysGetCBAttrs`;
+    float $value;
+    if (size($craOffsetKeysCBAttrs))
+    {
+        $value = `getAttr ($sel[0] + "." + $craOffsetKeysCBAttrs[0])`;
+        floatField -e -v `abs($value)` craOffsetKeysFramesIF;
+    }
+    else
+        floatField -e -v 1 craOffsetKeysFramesIF;
+}
+
+global proc craSetZeroCurrentFrame( int $mode)
+{
+	int $cbPrecision = `optionVar -query channelsPrecision`;
+    string $sel[] = `ls -sl`;
+    string $craOffsetKeysCBAttrs[] =`craOffsetKeysGetCBAttrs`;
+    float $value;
+    float $currentValue = `floatField -q -v craOffsetKeysFramesIF`;
+    int $randomValue = `iconTextCheckBox -q -v craRandomOffsetCB`;
+    iconTextCheckBox -e -v 0 craRandomOffsetCB;
+
+    if(size($sel))
+    {
+        undoInfo -chunkName "craOffsetKeysUndo" -openChunk;
+        for( $s in $sel)
+        {
+    	    if(size($craOffsetKeysCBAttrs))
+    	    {
+    	        for ($attr in $craOffsetKeysCBAttrs)
+    	        {
+    	            $value = 0;
+    	            $value = `getAttr ($s + "." + $attr)`;
+    	            select -r ($s + "." + $attr);
+    	            floatField -e -pre $cbPrecision -v `abs($value)` craOffsetKeysFramesIF;
+
+    	            if($value <= 0)
+    	                craOffsetKeysWrapper 1 " -vc ";
+    	            if($value > 0)
+    	                craOffsetKeysWrapper -1 " -vc ";
+    	        }
+    	    }
+    	    else
+    	    {
+    	    	 int $mods = `getModifiers`;
+    		    // shift
+    			if ($mods == 1 || $mode == 1)
+    				$craOffsetKeysCBAttrs = {"tx", "ty", "tz"};
+    			// control+shift
+                else if ($mods == 5 || $mode == 5)
+    				$craOffsetKeysCBAttrs = {"tx", "tz"};
+                // control
+                else if ($mods == 4  || $mode == 4)
+                    $craOffsetKeysCBAttrs = {"rx", "ry", "rz"};
+                // alt
+                else if ($mods == 8  || $mode == 8)
+                    $craOffsetKeysCBAttrs = {"sx", "sy", "sz"};
+    			else
+    	    		$craOffsetKeysCBAttrs = {"tx", "ty", "tz", "rx", "ry", "rz"};
+
+    	    	for ($attr in $craOffsetKeysCBAttrs)
+    	        {
+    	            $value = `getAttr ($s + "." + $attr)`;
+    	            if($mods == 8)
+    	            	$value-=1;
+
+    	            select -r ($s + "." + $attr);
+
+    	            floatField -e -pre $cbPrecision -v `abs($value)` craOffsetKeysFramesIF;
+
+    	            if($value < 0)
+    	                craOffsetKeysWrapper 1 " -vc ";
+    	            if($value > 0)
+    	                craOffsetKeysWrapper -1 " -vc ";
+
+                    if(size(`keyframe -q`) && $mods != 8)
+                        setKeyframe -v 0;
+                    else if ($mods == 8)
+                        setKeyframe -v 1;
+    	        }
+    	    }
+        }
+
+	    floatField -e -pre 3 -v $currentValue craOffsetKeysFramesIF;
+        iconTextCheckBox -e -v $randomValue craRandomOffsetCB;
+        select -r $sel;
+
+        undoInfo -closeChunk;
+    }
+    else
+    	warning "nothing selected";
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+// create XPM icons start
+global proc string craXPMDataToString(string $xpmData[])
+{
+    string $craiconData = "";
+    int $lines = size($xpmData);
+
+    for($crai=0; $crai < $lines; $crai++)
+		$craiconData+=($xpmData[$crai] + "\n");
+
+	return $craiconData;
+}
+
+global proc craXPMCreator(string $outputFolder, string $outputFile, string $xpmData[])
+{
+    int $fileId = `fopen ( $outputFolder + $outputFile) "w"`;
+    fprint $fileId (craXPMDataToString($xpmData));
+    fclose $fileId;
+}
+// create XPM icons end
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+global proc craInViewMessage( string $message1, string $message2)
+// global proc craInViewMessage( string $message1, string $message2 , string $position)
+{
+    if(`getApplicationVersionAsFloat` > 2013)
+    {
+        int $inViewStatus = `optionVar -q inViewMessageEnable`;
+        optionVar -iv inViewMessageEnable true;
+        print ("\n" + $message1 + " " + $message2);
+        inViewMessage
+            -a .9
+            -smg ("<font color=\"orange\">" + $message1 + " </font><font color=\"limegreen\">" + $message2 + "</font>")
+            -pos "topCenter"
+            -bkc 0x00001100
+            -fade
+            -fadeInTime 100 -fadeStayTime 500
+            -fadeOutTime 500;
+        optionVar -iv inViewMessageEnable $inViewStatus;
+    }
+    else
+    {
+        print ("\n" + $message1 + " " + $message2 + "\n");
+        headsUpMessage -t 0.1 ($message1 + " " + $message2);
+    }
+}
+
+
+global proc craOffsetKeysAboutScript()
+{
+    if (`window -exists craOffsetKeysAboutWin`)
+        deleteUI craOffsetKeysAboutWin;
+
+    string $craIconPath = `internalVar -userTmpDir`;
+    string $linkedInIcon[] = { "/* XPM */", "static char *linkedin_xpm[] = {", "/* width height num_colors chars_per_pixel */", "\"    64    64       16            1\",", "/* colors */", "\"` c #047eac\",", "\". c #88cfdf\",", "\"# c #1ea7c6\",", "\"a c #c5e7ee\",", "\"b c #50b7d1\",", "\"c c #0497be\",", "\"d c #e7f6fc\",", "\"e c #72c6db\",", "\"f c #b0e0eb\",", "\"g c #35aecc\",", "\"h c #62c1da\",", "\"i c #059fc4\",", "\"j c #048cb6\",", "\"k c #9ad5e4\",", "\"l c #dbf1f4\",", "\"m c #fcfefc\",", "/* pixels */", "\"#i#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii#ii##\",", "\"iiciiciiciiciiciiciiciiciiciiciiciiciiciiciiciiciiciiciiciiciici\",", "\"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\",", "\"iiicicicicicicicicicicicicicicicicicicicicicicicicicicicicicicii\",", "\"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\",", "\"#cicicicicicicicicicicicicicicicicicicicicicicicicicicicicicicii\",", "\"iiiiiiiiiiiiccciiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\",", "\"iiiciciciicjjicjjiicicicicicicicicicicicicicicicicicicicicicicii\",", "\"iiiiiiiiijjhflakbjciiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\",", "\"#ciciciijiammmmmm.jcicicicicicicicicicicicicicicicicicicicicicii\",", "\"iiiiiiccclmmmmmmmmejiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\",", "\"iiiciiijemmmmmmmmmm#jiciciciciciciciciciciciciciciciciciciciciii\",", "\"iiiicicjammmmmmmmmmejiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiici\",", "\"#ciiiicidmmmmmmmmmmkjiciciciciciciciciciciciciciciciciciciciciii\",", "\"iiiciccidmmmmmmmmmmkjiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\",", "\"iiiiiiijammmmmmmmmmhjiciciciciciciciciciciciciciciciciciciciciii\",", "\"iiciciijbmmmmmmmmmmcciiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiicii\",", "\"#iiiiciijfmmmmmmmmbjiiciciciciciciciciciciciciciciciciciciciiiii\",", "\"iiciiiiijc.mmmmmdbjciiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiicicii\",", "\"iiiiciciicjgekkecjiiiciciciciciciciciciciciciciciciciciciciiiiii\",", "\"iiciiiiiiiccjcjjciiciiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiciciii\",", "\"#iiiciciciiciciiiciiiciciciciciciciciciciccccciciciciciciiiiiici\",", "\"iiciiiiiicjcccccccciiiiiicccccccccciiiicjjjccjjjjciiiiiiciciciii\",", "\"iiiiciicii#ii#iii#icicicii#ii#i#iiiiicjcb.faaaf.bcjciciiiiiiiiii\",", "\"iiciiiccgdmmdmdmdmfcciiciddmdmddmm.jjjelmmmmmmmmmlejjiicicicicii\",", "\"#iiiciijgmmmmmmmmmljiicc#mmmmmmmmmk`ilmmmmmmmmmmmmma#jiiiiiiiiii\",", "\"iiciiicjgmmmmmmmmmacciijimmmmmmmmmhjdmmmmmmmmmmmmmmmdcjiicicicii\",", "\"iiiiciicgmmmmmmmmmacciicimmmmmmmmmefmmmmmmmmmmmmmmmmmajiiiiiiiii\",", "\"iiciiicjgmmmmmmmmmacciccimmmmmmmmmmmmmmmmmmmmmmmmmmmmmbjicicicii\",", "\"#iiiciijgmmmmmmmmmacciicimmmmmmmmmmmmmmmmmmmmmmmmmmmmmajiiiiiiii\",", "\"iiciiiijgmmmmmmmmmacciicimmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#ccicicii\",", "\"iiiiciijgmmmmmmmmmacciccimmmmmmmmmmmmmmmddmmmmmmmmmmmmmbjiiiiiii\",", "\"iiciicicgmmmmmmmmmacciicidmmmmmmmmmmmab#ccgkmmmmmmmmmmm.jiciciii\",", "\"#iiiiiijgmmmmmmmmmaccicc#dmmmmmmmmmmfjjjccj`emmmmmmmmmmfjiiiiici\",", "\"iiciciijgmmmmmmmmmacciicimmmmmmmmmmdcjiiiiicjammmmmmmmmacciciiii\",", "\"iiiiicijgmmmmmmmmmacciccimmmmmmmmmm.jiiciciijemmmmmmmmmlcciiicii\",", "\"iiciiiijgmmmmmmmmmacciicidmmmmmmmmmgjiciiicijgmmmmmmmmmdcciiciii\",", "\"#iicicijgmmmmmmmmmaccicc#dmmmmmmmmm#ciiiiiicc#mmmmmmmmmdiciciiii\",", "\"iiiiiiicgmmmmmmmmmacciicimmmmmmmmmdicciciciicimmmmmmmmmdiciiiiii\",", "\"iiciciijgmmmmmmmmmacciccimmmmmmmmmdcciiiiicicidmmmmmmmmdicciciii\",", "\"iiiiiiccgmmmmmmmmmacciicidmmmmmmmmdiciciciiccimmmmmmmmmdiciiicii\",", "\"#ciciiijgmmmmmmmmmaccicc#dmmmmmmmmdcciiiiiiicidmmmmmmmmdicciiiii\",", "\"iiiiciijgmmmmmmmmmacciicimmmmmmmmmdicicicicicimmmmmmmmmdicicicii\",", "\"iiiiicijgmmmmmmmmmacciccimmmmmmmmmdcciiiiiiicidmmmmmmmmdicciiiii\",", "\"iiciiiijgmmmmmmmmmacciicidmmmmmmmmdicicicicicidmmmmmmmmdiciiciii\",", "\"#iicicijgmmmmmmmmmaccicc#dmmmmmmmmdcciiiiiiccimmmmmmmmmdicciiici\",", "\"iiiiiiicgmmmmmmmmmacciicimmmmmmmmmdiciciciiicidmmmmmmmmdiciciiii\",", "\"iiciciijgmmmmmmmmmacciccimmmmmmmmmdcciiiiicicimmmmmmmmmdicciicii\",", "\"iiiiiiccgmmmmmmmmmacciicidmmmmmmmmdiciciciiicidmmmmmmmmdiciiiiii\",", "\"#ciciiijgmmmmmmmmmaccicc#dmmmmmmmmdcciiiiicicidmmmmmmmmdicciciii\",", "\"iiiiciijgmmmmmmmmmacciicimmmmmmmmmdiciciciiccimmmmmmmmmdiciiiiii\",", "\"iiiiicijgmmmmmmmmmacciccimmmmmmmmmdcciiiiiiicidmmmmmmmmdicciciii\",", "\"iiciiiijgmmmmmmmmmacciicidmmmmmmmmdicicicicicimmmmmmmmmdiciiicii\",", "\"#iicicijgmmmmmmmmmaccicc#dmmmmmmmmdcciiiiiiicidmmmmmmmmdicciiiii\",", "\"iiiiiiijgmmmmmmmmmljiiijimmmmmmmmmmicciciciccimmmmmmmmmmicicicii\",", "\"iiciciic#dlldlldllfcciicilldlldlldacciiiiiiicillldlldldacciiiiii\",", "\"iiiiiiciicicciccicciciciiccciccicciiiiciiciiciccccicccciiiciciii\",", "\"#ciciiiiccccccccccciiiiiicccccccccciciiiciiiiicciccccicciciiiici\",", "\"iiiiciciiiiiiiiiiiiiciciciiiiiiiiiiiiciiiiciciiiiiiiiiiiiiiiciii\",", "\"iiiiiiiiiiciiciiciiiiiiiiiiiciiciiciiiiciiiiiciciciciciciciiiiii\",", "\"iiciciciciiiciiiiiciciciciciiiciiiiciciiciciiiiiiiiiiiiiiiciciii\",", "\"#iiiiiiiiciiiiciciiiiiiiiiiiciiiciiiiiiiiiiciciciciciciciiiiicii\",", "\"ciciciciiiiciiiiiiciciciciciiiciiiciciciciiiiiiiiiiiiiiiciciiiii\",", "\"#iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii#\"", "};", "",  "" };
+    string $vimeoIcon[] = { "/* XPM */", "static char *vimeo_xpm[] = {", "/* width height num_colors chars_per_pixel */", "\"    64    64       16            1\",", "/* colors */", "\"` c #049efc\",", "\". c #8ad7fc\",", "\"# c #49c1fc\",", "\"a c #caecfc\",", "\"b c #1cb2fc\",", "\"c c #69ccfc\",", "\"d c #a8e1fc\",", "\"e c #fcfefc\",", "\"f c #2bb6fc\",", "\"g c #04a6fc\",", "\"h c #59c6fc\",", "\"i c #d9f2fc\",", "\"j c #78d1fc\",", "\"k c #b9e6fc\",", "\"l c #38bdfc\",", "\"m c #98ddfc\",", "/* pixels */", "\"lffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffl\",", "\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",", "\"fbbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbgbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbgbf\",", "\"fbbbgbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbgggbbbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbggggggbbbbbbbbbbbbbbbbbgggbffbgggbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbggfcm.#ggbbbbbbbbbbbbbbggbcmieeeajbgbbbbbbbbbf\",", "\"fbbgbbbbbbbbbbbbggldeeeeeifgbbbbbbbbbbbbgb.ieeeeeeeei#gbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbgbmeeeeeeeeebgbbbbbbbbbgg#eeeeeeeeeeeeelgbbbbbbbf\",", "\"fbbbbbbbbbbbbbg#eeeeeeeeeeeagbbbbbbbbggmeeeeeeeeeeeeeeeggbbbbbbf\",", "\"fbbbbbbbbbbbggjeeeeeeeeeeeeelgbbbbbbbgdeeeeeeeeeeeeeeeecgbbbbbbb\",", "\"fbbgbbbbbbbggdeeeeeeeeeeeeeemgbbbbbbgmeeeeeeeeeeeeeeeeekgbbbbbbf\",", "\"fbbbbbbbbbggieeeeeeeeeeeeeeeagbbbbbg#eeeeeeeeeeeeeeeeeeebgbbbbbf\",", "\"fbbbbbbbbgbeeeeeeeeeeeeeeeeeefgbbbggieeeeeeeeeeeeeeeeeeebgbbbbbb\",", "\"fbbbbbbbgbeeeeeeeeeeeeeeeeeeelgbbbgheeeeeeeeeeeeeeeeeeedgbbbbbbf\",", "\"fbbbbbbgbieeeeeeeeeeeeeeeeeeehgbbbgmeeeeeeeeeeeeeeeeeee.gbbbbbbf\",", "\"fbbgbbbgdeeeeeeeeeeeeeeeeeeeejgbbbgdimm.ieeeeeeeeeeeeee#gbbbbbbb\",", "\"fbbbbbgbeeeeeieeeeeeeeeeeeeeemgbbbbbgg```meeeeeeeeeeeeegbbbbbbbf\",", "\"fbbbbbbgdeeihggieeeeeeeeeeeeedgbbbbgbbbbgfeeeeeeeeeeeedgbbbgbbbb\",", "\"fbbbbbbggkkb`gggeeeeeeeeeeeeedgbbbbbbbbbgfeeeeeeeeeeeec`bbbbbbbf\",", "\"fbbbbbbbbgggfbf`jeeeeeeeeeeeeagbbbbbbbbbgfeeeeeeeeeeeefgbbbbbbbf\",", "\"fbbgbbbbbbbbbbbggeeeeeeeeeeeeigbbgbbbbbbg#eeeeeeeeeeeagbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbg.eeeeeeeeeeeebgbbbbbbbbgjeeeeeeeeeeec`bbbgbbbbf\",", "\"fbbbbbbbbbbbbbbbgleeeeeeeeeeeefgbbbbbbbbgkeeeeeeeeeeebgbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbgieeeeeeeeeee#gbbbbbbbgbeeeeeeeeeeekgbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbgmeeeeeeeeeeecgbbbbbbbg.eeeeeeeeeee#gbbbbbbbbbf\",", "\"fbbgbbbbbbbbbbbbbgheeeeeeeeeeem`bbbbbbgbeeeeeeeeeeeigbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbgfeeeeeeeeeeeagbbbbbbgkeeeeeeeeeeec`bbbbgbbbbbf\",", "\"fbbbbbbbbbbbbbbbbggieeeeeeeeeeefgbbbbgceeeeeeeeeeeigbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbgdeeeeeeeeeee.gbbbgleeeeeeeeeeeec`bbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbgjeeeeeeeeeeeeggfgfeeeeeeeeeeeei`bbbbbgbbbbbbf\",", "\"fbbgbbbbbbbbbbbbbbgleeeeeeeeeeeeag`feeeeeeeeeeeeefgbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbgbeeeeeeeeeeeeek#eeeeeeeeeeeee.`bbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbgaeeeeeeeeeeeeeeeeeeeeeeeeeei`bbbbbbgbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbgmeeeeeeeeeeeeeeeeeeeeeeeeeebgbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbgheeeeeeeeeeeeeeeeeeeeeeeeeh`bbbbbgbbbbbbbbbb\",", "\"fbbgbbbbbbbbbbbbbbbgfeeeeeeeeeeeeeeeeeeeeeeeem`bbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbgieeeeeeeeeeeeeeeeeeeeeek`gbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbgmeeeeeeeeeeeeeeeeeeeeeiggfbbbbbgbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbgheeeeeeeeeeeeeeeeeeeeiggbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbgbeeeeeeeeeeeeeeeeeeeeggfbbbbbgbbbbbbbbbbbbf\",", "\"fbbgbbbbbbbbbbbbbbbbbgmeeeeeeeeeeeeeeeeeibgbbbbbbbbbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbbgleeeeeeeeeeeeeeeeiggbbbbbbgbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbgaeeeeeeeeeeeeeekggfbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbgfeeeeeeeeeeeee.`gbbbbbbbbbbbbbbbbbbbbbbbb\",", "\"fbbbbbbbbbbbbbbbbbbbbbbgjeeeeeeeeeeil`bbbbbbbbgbbbbbbbbbbbbbbbbf\",", "\"fbbgbbbbbbbbbbbbbbbbbbbb`.eeeeeeeejg`bbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbb`#keeeacb`gbbbbbbbbgbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbggflfg`gbbbbbbbbgbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbgggbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbgbbbbbbbbbbbbbbbbbbbbbgbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbgbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"fbbgbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbf\",", "\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",", "\"lbffffbffbffbffbffbffbffbffbffbffbffbffbffbffbffbffbffbffbffbfbl\"", "};", "",  "" };
+    string $youtubeIcon[] = { "/* XPM */", "static char *youtube_xpm[] = {", "/* width height num_colors chars_per_pixel */", "\"    64    64       16            1\",", "/* colors */", "\"` c #890204\",", "\". c #cf8787\",", "\"# c #b94e4f\",", "\"a c #eacaca\",", "\"b c #a82929\",", "\"c c #dba8a8\",", "\"d c #f5e8e9\",", "\"e c #c67171\",", "\"f c #9c0405\",", "\"g c #be5f60\",", "\"h c #af3839\",", "\"i c #d49998\",", "\"j c #f1dad9\",", "\"k c #e1b9b9\",", "\"l c #a31b1b\",", "\"m c #fcfefc\",", "/* pixels */", "\"lflfflfflfflfflfflfflfflfflfflfflfflfflfflfflfflfflfflfflfflffll\",", "\"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",", "\"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",", "\"fff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`fff\",", "\"lfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`f\",", "\"fff`fff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`ff`fffff\",", "\"fffff`ffffffffffffffffffffffffffffffffffffffffffffffffffffff`fff\",", "\"lff`fffff`fff`fff`fff`fff`fff`fff`fff`fff`fff`fff`fff`fff`ffffff\",", "\"fffffff`fffffff`fffffff`fffffff`fffffff`fffffff`fffffff`fffff`ff\",", "\"ffff`ffffff`fffffff`fffffff`fffffff`fffffff`fffffff`fffffff`ffff\",", "\"lf`fffff`ffff`fff`fff`fff`fff`fff`fff`fff`fff`fff`fff`fff`ffffff\",", "\"ffffff`ffff`fffffffffffffffffffffffffffffffffffffffffffffffff`ff\",", "\"ffff`fffffffff`f``````````````````````````````f``f`fff`ff`ffffff\",", "\"lfffffff`f`````ffffflllbbbhbhhhhhhhhhbhbblllfffff`````fffff`ffff\",", "\"ff`fff`ff`f#.ckaajddmmmmmmmmmmmmmmmmmmmmmmmmmddjakkigl``ffffff`f\",", "\"ffff`fff`hkmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm.``fff`fff\",", "\"lffffff`hmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmc`fffffff\",", "\"fff`ff`fmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmme`f`ffff\",", "\"ffffff`emmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmdf`fffff\",", "\"lff`f``ammmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#`ff`ff\",", "\"fffff`lmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmi`fffff\",", "\"fff`f`#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmma`fffff\",", "\"lffff`emmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmjf`f`ff\",", "\"fffff`.mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmdffffff\",", "\"ff`f``immmmmmmmmmmmmmmmmmmjimmmmmmmmmmmmmmmmmmmmmmmmmmmmmml`ffff\",", "\"lffff`cmmmmmmmmmmmmmmmmmmmj`bcmmmmmmmmmmmmmmmmmmmmmmmmmmmmb`ff`f\",", "\"fffff`kmmmmmmmmmmmmmmmmmmmjf``hcmmmmmmmmmmmmmmmmmmmmmmmmmmh`ffff\",", "\"fff`f`ammmmmmmmmmmmmmmmmmmjf`f``hkmmmmmmmmmmmmmmmmmmmmmmmm#`ffff\",", "\"lffff`ammmmmmmmmmmmmmmmmmmjffff```#kmmmmmmmmmmmmmmmmmmmmmm#`ffff\",", "\"fff`ffammmmmmmmmmmmmmmmmmmjf`fffff``#ammmmmmmmmmmmmmmmmmmm#`f`ff\",", "\"ffff`fammmmmmmmmmmmmmmmmmmjfff`ffff```gammmmmmmmmmmmmmmmmm#`ffff\",", "\"lffff`ammmmmmmmmmmmmmmmmmmjf`ffff`ffff``cmmmmmmmmmmmmmmmmm#`ffff\",", "\"ff`f`fammmmmmmmmmmmmmmmmmmjffff`ffff``hcdmmmmmmmmmmmmmmmmm#`ffff\",", "\"fffff`ammmmmmmmmmmmmmmmmmmdf`fffff``bcmmmmmmmmmmmmmmmmmmmm#`f`ff\",", "\"lfff`fammmmmmmmmmmmmmmmmmmjf`fff``bimmmmmmmmmmmmmmmmmmmmmm#`ffff\",", "\"fffff`ammmmmmmmmmmmmmmmmmmjfff``limmmmmmmmmmmmmmmmmmmmmmmm#`ffff\",", "\"ff`ff`ammmmmmmmmmmmmmmmmmmdf``l.mmmmmmmmmmmmmmmmmmmmmmmmmm#`ffff\",", "\"lfff`fkmmmmmmmmmmmmmmmmmmma``.mmmmmmmmmmmmmmmmmmmmmmmmmmmmh`ff`f\",", "\"fffff`cmmmmmmmmmmmmmmmmmmmj.dmmmmmmmmmmmmmmmmmmmmmmmmmmmmmh`ffff\",", "\"fff`f`immmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmml`ffff\",", "\"lffff`.mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmffffff\",", "\"fff`f`emmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmjff`fff\",", "\"fffff`gmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmaf`ffff\",", "\"lff`f`bmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmc`fffff\",", "\"ffffff`dmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmg`ff`ff\",", "\"fff`ff`.mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmf`fffff\",", "\"lfffff`lmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmi`ffffff\",", "\"fff`fff`emmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmjf`fff`ff\",", "\"fffff`ff`gdmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmkf`fffffff\",", "\"lff`ffff``lgcaddmdmdmdmdmdmdmdmdmdmdmdmdmdmdmdmdmddai#``ffff`fff\",", "\"ffffffffff```ffflfflfflfflfflfflfflfflfflfflfflfffff``ffffffffff\",", "\"ffff`ff`fffff`f`ff`ff`fff`ff`ff`ff`ff`ff`ff`ff`fff`fffffff`ff`ff\",", "\"lf`ffffffffffffffffffff`fffffffffffffffffffffffffffff`ff`fffffff\",", "\"ffffff`ff`ff`fff`ff`ffffffff`fff`fff`fff`fff`ff`ff`fffffffff`fff\",", "\"ffff`fffffffffffffffff`fff`fffffff`fffffff`ffffffffff`ffff`fffff\",", "\"lfffffff`ff`ff`ff`ff`fffffffff`fffffff`fffffff`ff`fffff`ffffff`f\",", "\"ff`fff`fffffffffffffffff`fff`fff`fff`fff`fff`ffffff`ffffff`fffff\",", "\"ffff`ffffff`fff`fff`ffffff`fffffffffffffffffffff`ffff`ff`ffff`ff\",", "\"lfffffff`ffff`fff`ffff`fffffff`ff`ff`ff`ff`ff`ffffffffffffffffff\",", "\"fff`fffffff`ffffffffffff`fff`ffffffffffffffffffff`ff`fffff`fffff\",", "\"ffffff`ff`ffffff`fff`fffffffffff`ff`ff`ff`ff`ff`ffffff`f`fff`fff\",", "\"lff`fffffffff`ffffffff`ff`ff`ffffffffffffffffffffff`ffffffffffff\",", "\"ffffff`fff`ffffff`ff`fffffffff`ff`fff`fff`fff`fff`ffffffff`ff`ff\",", "\"lffflfffflfffflffflfffflfffflffflffflffflffflffflfffflffflffflfl\"", "};", "",  "" };
+    string $highend3dIcon[] = { "/* XPM */", "static char *highend3d___xpm[] = {", "/* width height num_colors chars_per_pixel */", "\"    89    89       32            1\",", "/* colors */", "\"` c #292c37\",", "\". c #999997\",", "\"# c #845f17\",", "\"a c #ded17f\",", "\"b c #57595e\",", "\"c c #d89b24\",", "\"d c #c9d0de\",", "\"e c #aeafa8\",", "\"f c #9b7d32\",", "\"g c #606574\",", "\"h c #fcfeb8\",", "\"i c #4e3a14\",", "\"j c #b88520\",", "\"k c #717786\",", "\"l c #999fae\",", "\"m c #82868f\",", "\"n c #dadbe0\",", "\"o c #c4c4c4\",", "\"p c #d1b659\",", "\"q c #fcfa6f\",", "\"r c #3f434d\",", "\"s c #b2b8c8\",", "\"t c #4e4f58\",", "\"u c #fbd44c\",", "\"v c #f5b934\",", "\"w c #fafcfb\",", "\"x c #b4a574\",", "\"y c #a48e64\",", "\"z c #946c1d\",", "\"A c #676259\",", "\"B c #5e4c27\",", "\"C c #373537\",", "/* pixels */", "\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwnoellsdnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwo.kmkkkkmlsnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwn.kkmmmmmkggmmowwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwnwomk.snddllmmkgkksnwwwwwwwwwwwwwwwwwwwwdosssdnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwnnomklnwwwwwsllkkgtglnwwwwwwwwwwwwwwwwwoemkkgkkk.nwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwnndmklwwwwwwwndllkggrkswwwwwwwwwwwwwwwnlmkkmlmmmgbtlwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwnno.gmnwwwwwwwwndllkgtrkswwwwwwwwwwwnnn.kkldnddslmkgrmwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwnnoekgswwwwwwwwwwndlmgbrtldwwwwwwwwwnnn.gklwwwwwndlmkbrswwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwnoemAknwwwwwwwwwwwnslkbtrklwwwwwwwwnnn.gglwwwwwwwwdlkktrdwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwnns.kbmwwwwwwwwwwwwwdmmgtCtldwwwwwwnnoekbgdwwwwwwwwwdlgbrgwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwnoxmAbmwwwwwwwwwwwwnslkgtrCgswwwwwwndembbmwwwwwwwwwwwlmgrrdwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwns.kAbknwwnwwwwwwwwdslkggrrrkwwwwwnne.kbblwwwwwwwwwwdskkt`lwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwndemkbbkdnsdwwwwwwwndsmkgtrrmgdwwwwno.mAtgkswwwwwwwwwslmgbCkwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwndxmAbbgmllsdnwwwwwndlmkbtrrmtswwwnne.kbbgkmnwwwwwwwnslkgtCrnwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwndekkbbggkmlsdnwwwndslmkbtrrtrswwwnoemAbbgkmssdwwwwndslkbtrrdwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwnoekAbbgbkmllddwnwwdslmgttrrr`swwwno.mAbttbkmssddwnwdsmkbtCrdwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwndxmAbbgtgmllsdnwwwndlmkttrrC`owwwno.kAbrrtgkldddnnwnslgbtCbdwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwnoekAbtgbbgmsldnwwwndsmgttrC``owwnnsykAtrCrtgkldnnnwndlkbt`gwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwoemAbbggtbklldnwwwwdslgbtr``rnwwwns.AAbtCrtggmsnnwwwdlkgrrmwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwndemAbtbkbtgmlsnwwwwnslgbrr``gwwwnns.kAttt`Ctbksddwwwwsmgrrswwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwde.kAbtggbbgmsnwwwwwdmktrC``lnwwnno.kAbttt`Ctg.ddwwwwdmgrgnwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwno.mAtbtkgbgklnwwwwwdlktrC`tdnnwwnoemAbbrggrrtkedwwwwnlkrmwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwndemkbbttkgbglnwwwwwnlgrrC`mnnwnwnn.fA#bBCbgtrbmonwwwwogrmwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwno.fgbbttkgglwwwwwwwlgrtCrlddnwwoxfjjjjf#tbgtrksnwwwwnmrmwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwnde.kAbtttggmwwwwwwwlgtt`glonnnoyjccpcccjjzbgtt.nwwwwwmtknwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwnoe.kAbtbbgknwwwwwwsgttCgesooxzjcuququvcffzAgrgnwwwwwsbgnwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwnnoemkAbttbgdwwwwwwskttrklsoe#jcqhhhqqquczzzAbtlwwwwwsgtswwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwdoxmkAtttglwwwwwwsktbrkeeekzcqhwwwhqqqvczzfbtknwwwwdkb.wwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwnnolmAAttbmwwwwwwdmbbrkelm#juhwwwwwwqqqvz#zfbbewwwwwltknwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwnno.mAbttgdwwwwwdlbbrkl.Azcuwwwwwwwhqquc##fAbmnwwwwlggowwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwndeykbbtgswwwwwnlgttA.mbzcuwwwwwwwwqqucj##Abkewwwwdktlwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwno.mAbttlwwwwwnlgbAbmkBzcuwwwhwhhhqquvz###rglnwwwnltknwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwndemkbtt.wwwwwnskbybkABzcqhhqhhhhqqqucj##BrAmdwwwwlggswwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwnoykAbtknwwwwwskbxAAABzcuqqqqqqqqqqvcz###Ctkewwwwdmbmwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwnoekAbtknwwwwwsmbxfbgBfjvqqqqqqqqquvjz###CrAlnwwwdlggewwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwndemAAtgowwwwwslbxxrABfzjuqqqqqqqqvcjzzzBrCbmowwwnsmbkwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwnne.kAtgswwwwwdlgmabArzjzcvqqqqqquvcjzjzBtCtmewwwwslggswwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnsykAtblwwwwwdlkgaktbBj#zjvuuuuuvvcfjj#rbrrglnwwwslkgmdwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwno.kAbblwwwwwnsmbpxrbr#z##jccjccccfjf#ibbrrA.swwwslmgglnwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnoekAbgmwwwwwnsmg.prbtiB#####z#####z#CtAbrrbm.nwnslmkbmlnwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnoxmAbgkwwwwwnslgkabtbBiiiBB#B#BBiiiCBmAAtCbk.sdsllmmgglsdwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnnemgAgkdwwwwdlmggayrbbtiiiiiiiiiii`b.mkbtCbkmmlllmmmmggllswwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwoemAbgklwwwnsllkgaprbbttiiiiiiiiiimee.kAtrtAmmmlllmmmkgbkllnwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwndemkbgkmswnsllmmb.qArAAttriCiiBtkeoos.kAtCtkmkmlllllmmkkbgmldwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnnemAAgmmllllllmmkkqxBbkAbAAAggm.eoddo.mAtrtAmm.lsssssllkkgtkmdwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwoemkAkkmmllllmkkmkeqmrbmkkgkmy.eonnno.mArrbkmednwwwndsslmggtgmnwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwndxmAAkkkmmmlmmmkkmkxuyrA.....esonnwno.mArtbk.hwwwwwwwndslkggtgmwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnoemAgkkklmlllmmmkmkgxxfrkeoeoonnwwnno.kArtAkewwwwwwwwwwdllkgttbowwwwwwwww\",", "\"wwwwwwwwwwwwwwwno.mAkkkmmllllllmlmkggggArknnnnwwwwwne.ktrbAknwwwwwwwwwwndlmkttrkwwwwwwwww\",", "\"wwwwwwwwwwwwwwwns.kgkkkmlssdsssllmmkgbtgAt.wwwwwwwndeykrtbgmdwwwwwwwwwwwwsmmgbrtdwwwwwwww\",", "\"wwwwwwwwwwwwwwnne.kkkkmsnwwwwndsslmmkgbbkgbowwwwwwnoemAtAgkmdwwwwwwwwwwwwslkggrrlwwwwwwww\",", "\"wwwwwwwwwwwwwwnoemAkkmswwwwwwwndssllkggtbgtkwwwwwwno.mAbgbkklwwwwwwwwwwwdslkggtrkwwwwwwww\",", "\"wwwwwwwwwwwwwwne.kmkkswwwwwwwwwwddslmkgbrbtCdwwwwnnoykAggbgkmnwwwwwwwwwwdllkgbbrbnwwwwwww\",", "\"wwwwwwwwwwwwwnoeykkklwwwwwwwwwwwwdsllkgbtttCkwwwwwdemkbggrgkmsndwwwwwwwddllkgbbrtwwwwwwww\",", "\"wwwwwwwwwwwwnno.kkkkdwwwwwwwwwwwwndslmkbtrbgrnwwwndeygAgbrtgklssdnwwwwddslmkgtbtrnwwwwwww\",", "\"wwwwwwwwwwwwndemkmkmwwwwwwwwwwwwwwnslmkgtrgltswwwwoemAbtgCtbkmlssddnddddllkkbtgtrnwwwwwww\",", "\"wwwwwwwwwwwwns.kkkklwwwwwwwwwwwwwwwdllkkbrblbkwwwndemAAtbrrtggmsddsddssslmkgbggrtwwwwwwww\",", "\"wwwwwwwwwwwnoeykkkglwwwwwwwwwwwwwwwdlmkggrtkrgwwwnnemAbttrCttgklsddsssllmmkggggrgwwwwwwww\",", "\"wwwwwwwwwwwno.mAmkglwwwwwwwwwwwwwwnsllkgbbrbrtnwwwde.gAtttCrtgggkllslslmmmkgbkg`mwwwwwwww\",", "\"wwwwwwwwwwnne.kAmgkmwwnwwwwwwwwwwndslmkgbbtrrrdwwwdoykAtrtr`rbbggkkmlmlmmmkgggr`swwwwwwww\",", "\"wwwwwwwwwwwoemkgkkgklsddwwwwwwwwwndslmggtbtrCrdwwwno.mAttrtrrrtbbggggkkmkkgggb`tnwwwwwwww\",", "\"wwwwwwwwwwnoekAAkgkkklssdnwwwwwwndsllkgbtgbr`CdwwwndemAAtrCtrrrtttbbbggkkggkg``.wwwwwwwww\",", "\"wwwwwwwwwwno.mAgkkgkmmlsddnwwnndddslmkgtbgb``rdwwwwno.mAttCrrrrrrtrtttttbggb``bnwwwwwwwww\",", "\"wwwwwwwwwwno.kAAkgggmlllssdddddndsllkgbbgkt``rwwwwwnoemkbtrCCrrrrrrrrrrrrrr``tswwwwwwwwww\",", "\"wwwwwwwwwwno.kAtkgggklslsssssssosllkkggggkr``bwwwwwnno.mAbtrC`Cr`rrrrCrCC```bsnwwwwwwwwww\",", "\"wwwwwwwwwwno.mAbgggbgglsssssssslllmmkgggkg```mnwwwwwwde.mAbtrC````````````Cgednwwwwwwwwww\",", "\"wwwwwwwwwwno.mAbbggbggkmsssslllllmmmkggggb```swwwwwwnnne.mAbtrrC`````````tklsnwwwwwwwwwww\",", "\"wwwwwwwwwwnoemAbtggttgggklllllllmmmmkggggC``rdnwwwwwwwnde.mAAbrrrC````rrgmlsnnwwwwwwwwwww\",", "\"wwwwwwwwwwnnemAAtbgbtbgggkkmmlmmmmmkkggkr```mdwwwwwwwwwndo..kgAbtttttbgkmlsdnwwwwwwwwwwww\",", "\"wwwwwwwwwwwdoykAbtgbtttbgggggkkkkkkgggkt```rlnnwwwwwwwwwnnoe..mkkkgkkkmleonnwwwwwwwwwwwww\",", "\"wwwwwwwwwwwnolmAbtbbttttttbbgtbggggkgkt````konnwwwwwwwwwwnndoee.....lesodnwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwndemkAttbbrtttttttttrtrtttr````tlonwwwwwwwwwwwwwnnnodoooodnnnwwnwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwno.mAbtttbrrtttrtrrrrrrrr````rmednnwwwwwwwwwwwwwwwnnnnnwnnwwnwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwndeykAtbtttrrrrrrrrrCrC`````Cklsdnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwnoemAAbttrrrrrrrrCCC``````rgmsdnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwnns.mkbbtttrrr`C`````````tg.eonwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwnns.mAAAbttrrr`C`````Crgk.eonnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwnnexmkAgbbbttrrrrttggkmlsdnnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwnnoe.mkkAgAgggggkkmmlsodnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwnnoee.mmmkmkmm...esonnnwnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwnnnoseee.eeeeesodnnwnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwnnnnoooooddnnnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwwwwnwnwnnwnwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\",", "\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\"", "};", "",  "" };
+    string $gumroadIcon[] = { "/* XPM */", "static const char *const gumroad_icon_xpm[]={", "/* width height ncolors chars_per_pixel */", "\"64 64 256 2\",", "/* colors */", "\"   c #008779\",", "\" . c #58c8c8\",", "\" X c #b5080e\",", "\" o c #957c54\",", "\" O c #4b8a74\",", "\" + c #eaf4f8\",", "\" @ c #c95138\",", "\" # c #96a692\",", "\" $ c #0ca8a2\",", "\" % c #45ada5\",", "\" & c #facc9d\",", "\" * c #005bad\",", "\" = c #cb5055\",", "\" - c #f0521a\",", "\" ; c #d83919\",", "\" : c #f4730d\",", "\" > c #d77b7e\",", "\" , c #0c89b9\",", "\" < c #acd0e7\",", "\" 1 c #c2341f\",", "\" 2 c #28a4c1\",", "\" 3 c #ebe6df\",", "\" 4 c #e19d98\",", "\" 5 c #4094c7\",", "\" 6 c #02b0af\",", "\" 7 c #778263\",", "\" 8 c #f27c51\",", "\" 9 c #a3774e\",", "\" 0 c #62a8d1\",", "\" q c #a1a38b\",", "\" w c #f17432\",", "\" e c #0d9589\",", "\" r c #278cc0\",", "\" t c #c13339\",", "\" y c #fefefe\",", "\" u c #ec8b72\",", "\" i c #eabaaf\",", "\" p c #e45933\",", "\" a c #1fafaa\",", "\" s c #0679b8\",", "\" d c #358d7a\",", "\" f c #f8ab56\",", "\" g c #be251f\",", "\" h c #d3e8e6\",", "\" j c #42b9c3\",", "\" k c #8ba795\",", "\" l c #fcf1ea\",", "\" z c #65aca0\",", "\" x c #ee3700\",", "\" c c #da8789\",", "\" v c #f58a31\",", "\" b c #98c4e0\",", "\" n c #c46c3a\",", "\" m c #2cbebd\",", "\" M c #e47b64\",", "\" N c #f2c8c0\",", "\" B c #c07243\",", "\" V c #c9492c\",", "\" C c #118f81\",", "\" Z c #f36a05\",", "\" A c #a8805a\",", "\" S c #61876c\",", "\" D c #1aadba\",", "\" F c #f68312\",", "\" G c #f7b076\",", "\" H c #56bfbc\",", "\" J c #78b4d8\",", "\" K c #f4dad6\",", "\" L c #71d2d1\",", "\" P c #0ca1ba\",", "\" I c #d3341c\",", "\" U c #fac69b\",", "\" Y c #e2a3a5\",", "\" T c #328dc4\",", "\" R c #3ba3c3\",", "\" E c #f38b69\",", "\" W c #d6ebea\",", "\" Q c #be252a\",", "\" ! c #e16835\",", "\" ~ c #c2e2df\",", "\" ^ c #84805c\",", "\" / c #fbd7b9\",", "\" ( c #1eb5b3\",", "\" ) c #1da39c\",", "\" _ c #d19473\",", "\" ` c #e24317\",", "\" ' c #f2744a\",", "\" ] c #ed4510\",", "\" [ c #fbe9e2\",", "\" { c #d5715a\",", "\" } c #249385\",", "\" | c #147dbc\",", "\".  c #d5632d\",", "\".. c #006ab2\",", "\".X c #d35332\",", "\".o c #0c9bba\",", "\".O c #f48d3f\",", "\".+ c #78c2bb\",", "\".@ c #e0968e\",", "\".# c #54b7b2\",", "\".$ c #e28962\",", "\".% c #cb7445\",", "\".& c #73ab9e\",", "\".* c #c64338\",", "\".= c #f1631c\",", "\".- c #22b5b4\",", "\".; c #32a69c\",", "\".: c #cb4423\",", "\".> c #b7151c\",", "\"., c #d84c38\",", "\".< c #e35b24\",", "\".1 c #f59159\",", "\".2 c #5e907b\",", "\".3 c #fce7d4\",", "\".4 c #edbdbf\",", "\".5 c #99cae2\",", "\".6 c #d7f0f0\",", "\".7 c #f88c19\",", "\".8 c #eb6330\",", "\".9 c #12b6b5\",", "\".0 c #c6241c\",", "\".q c #afa085\",", "\".w c #938764\",", "\".e c #33b4c1\",", "\".r c #d34738\",", "\".t c #499482\",", "\".y c #d96c3b\",", "\".u c #ef592a\",", "\".i c #e3e8e2\",", "\".p c #118db9\",", "\".a c #e7b3ab\",", "\".s c #18998e\",", "\".d c #828b6c\",", "\".f c #b57d52\",", "\".g c #3b9dc2\",", "\".h c #c43c3a\",", "\".j c #2d9bc0\",", "\".k c #4d9dcd\",", "\".l c #f16839\",", "\".z c #099e96\",", "\".x c #718d74\",", "\".c c #f4741b\",", "\".v c #219d93\",", "\".b c #fce4ca\",", "\".n c #f5ac93\",", "\".m c #c43a1c\",", "\".M c #f3e3da\",", "\".N c #fbd7b3\",", "\".B c #f9cdbd\",", "\".V c #0683b9\",", "\".C c #c6ecec\",", "\".Z c #c12d1e\",", "\".A c #d26366\",", "\".S c #d86d67\",", "\".D c #bc1b1b\",", "\".F c #4cc5c4\",", "\".G c #f05422\",", "\".H c #fac18c\",", "\".J c #1da9a3\",", "\".K c #f58333\",", "\".L c #22baba\",", "\".P c #f0845d\",", "\".I c #f8a34d\",", "\".U c #009083\",", "\".Y c #d4441d\",", "\".T c #f04c15\",", "\".R c #db906c\",", "\".E c #dc8877\",", "\".W c #68bcb5\",", "\".Q c #f2612e\",", "\".! c #1bb3ba\",", "\".~ c #b07345\",", "\".^ c #36bcc0\",", "\"./ c #ef430a\",", "\".( c #c74c37\",", "\".) c #1f88bd\",", "\"._ c #0db1af\",", "\".` c #f26c24\",", "\".' c #c0784c\",", "\".] c #f2f8fa\",", "\".[ c #0074b5\",", "\".{ c #349586\",", "\".} c #d5e8f2\",", "\".| c #f8ab6c\",", "\"X  c #c69879\",", "\"X. c #8bbfdd\",", "\"XX c #cae1ee\",", "\"Xo c #6a8f77\",", "\"XO c #e4481c\",", "\"X+ c #f7c6b5\",", "\"X@ c #9d845f\",", "\"X# c #3795c2\",", "\"X$ c #fdf6f2\",", "\"X% c #f58020\",", "\"X& c #4fb0a8\",", "\"X* c #43c1c2\",", "\"X= c #f79430\",", "\"X- c #3aabc3\",", "\"X; c #f9e3db\",", "\"X: c #1e83be\",", "\"X> c #f89123\",", "\"X, c #27a4c1\",", "\"X< c #c92a1c\",", "\"X1 c #cc5a41\",", "\"X2 c #f1d1c9\",", "\"X3 c #cb3d39\",", "\"X4 c #559480\",", "\"X5 c #e07565\",", "\"X6 c #14988c\",", "\"X7 c #e5abab\",", "\"X8 c #13a4ba\",", "\"X9 c #d6713f\",", "\"X0 c #bf2c32\",", "\"Xq c #dbe9e5\",", "\"Xw c #e78b73\",", "\"Xe c #c43c21\",", "\"Xr c #ef5922\",", "\"Xt c #dd5234\",", "\"Xy c #1ab9b8\",", "\"Xu c #f47b2a\",", "\"Xi c #bc9b7f\",", "\"Xp c #efc4c0\",", "\"Xa c #1492ba\",", "\"Xs c #2cabc1\",", "\"Xd c #6f8668\",", "\"Xf c #ec4b19\",", "\"Xg c #0063af\",", "\"Xh c #e1f2f2\",", "\"Xj c #7ed5d4\",", "\"Xk c #f15d30\",", "\"Xl c #f15d18\",", "\"Xz c #1b9d93\",", "\"Xx c #f7993c\",", "\"Xc c #acd9d5\",", "\"Xv c #7faa9a\",", "\"Xb c #fad1a7\",", "\"Xn c #f16433\",", "\"Xm c #59ada3\",", "\"XM c #fbddd6\",", "\"XN c #2892c0\",", "\"XB c #8a8868\",", "\"XV c #f29273\",", "\"XC c #7a8c71\",", "\"XZ c #57a2ce\",", "\"XA c #deeeee\",", "\"XS c #ebf8f8\",", "\"XD c #0b84ba\",", "\"XF c #3e95c8\",", "\"XG c #57c5c4\",", "\"XH c #0c95ba\",", "\"XJ c #c53d42\",", "\"XK c #fad7c5\",", "\"XL c #3fb2c3\",", "\"XP c #16aaba\",", "\"XI c #b9141b\",", "\"XU c #3f9483\",", "/* pixels */", "\" y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y yXXXZ T TXZXX y y y y y y y y\",", "\" y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y <.[..XgXgXg...5 y y y y y y y\",", "\" y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y yXX s.[X: J J |....XX y y y y y y\",", "\" y y y y y y y y y.C L.FX*X*X* j j j j j j j j jXLX-X-X-X-X-X- RX- R R R R R.g.g.g.g.gX#X#X#X#X#.) s |XX y yXX | * 0 y y y y y y\",", "\" y y y y y y y yXj._ 6.9XyXy.!.!.!.!.! D DXPXPX8X8X8 P P.o.o.oXH.oXHXHXHXaXa.p.p.p.p ,.VXD.V.V.VXD.[ 0 y y y yXZ *XF y y y y y y\",", "\" y y y y y y yXj 6.L m.LXyXy.L.L.!.!.! D D D D DX8X8X8X8X8.o.o.o.o.oXaXaXaXaXa.p.pXa.pXDXDXDXDXDXD.[XZ y y y y.k *XF y y y y y y\",", "\" y y y y y y.6.9.L m.9 (.^.^.^.^.^.^.^.e.e.e.eXsXsXsXsXsXs 2 2 2X, 2.j.j.j.j.j.jXNXNXNXNXNXN rXNX: s sX. y y b s * J y y y y y y\",", "\" y y y y y yXj 6 mXyX*.C.]XSXSXSXSXSXSXSXS + + + + + + + + + + + + + + + + + + + + + + + + + +.].} r...[ 5X#.[Xg | + y y y y y y\",", "\" y y y y y y .._ m.9.C y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y.} r..XgXgXgX:.} y y y y y y y\",", "\" y y y y y yXG.9.L mXh y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y b 0 0 b.] y y y y y y y y\",", "\" y y y y y y ..9.L.L.6 y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y yXG.9.L.L.6 y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y yXG.9.L.L W y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y yXG._.-.-.6 y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y yXG._ (.-.6 y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y yXG._ (.-.6 y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y yXG._ (.-.6 y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y yXG._ (.-.6 y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y y H._ (.-.6 y y y y y y y y y y y y y y y K i.a.a.a.a.a.a.a.a.a.a.a.aX7X7X7X7X7X7X7X7X7X7 Y YXp y y y y y y y y y y y\",", "\" y y y y y y H._.-.- W y y y y y y y y y y y y yX2 { VXeXeXeXeXeXe 1 1 1 1.Z.Z.Z g g g g g g g.DXIXIXIXI.DXJX7 y y y y y y y y y\",", "\" y y y y y y H $ a a.6 y y y y y y y y y y y y i.m.m @ @ @ @ @.( @.(.(.(.(.*.*.*.*.h.*.h.h.h.h.h t t t t t.D X 4 y y y y y y y y\",", "\" y y y y y y H $.J a.6 y y y y y y y y y y y K.m VX1 @Xe.m.m.m 1 1 1.Z 1.Z.Z.Z.Z g g g.D.D.D.D.DXIXIXIXIX0.hX0 XXp y y y y y y y\",", "\" y y y y y y H $ a a.6 y y y y y y y y y y y {.mX1 V V.E 4.@.@.@.@.@.@.@.@.@.@.@.@.@ c c c c c c c c c >X0 Q.hXI = y y y y y y y\",", "\" y y y y y y H $ a a.6 y y y y y y y y y yX; V.(.( VXp y y y y y y y y y y y y y y y y y y y y y y y y y N QX0X0 Q K y y y y y y\",", "\" y y y y y y H $ a a.6 y y y y y y y y y y N.: @Xe.E y y y y y y y y y y y y y y y y y y y y y y y y y y y.AXI tXI.4 y y y y y y\",", "\" y y y y y y.# $ a.J W y y y y y y y y y y N.: @.m.E y y y y y y y y y y y y y y y y y y y y y y y y y y y.SXI tXI.4 y y y y y y\",", "\" y y y y y y.# $ a.J h y y y y y y y y y y N.:.X.:.E y y y y y y y y y y y y y y y y y y y y y y y y y y y.A.> tXI.4 y y y y y y\",", "\" y y y y y y.# $ a.J W y y y y y y y y y y N.Y.X.YXw y y y y y y y y y y y y y y y y y y y y y y y y y y y.A.D.h.D.4 y y y y y y\",", "\" y y y y y y.# $.J ) W y y y y y y y y y y NXOXt ` u y y y y y y y y y y y y y y y y y y y y y y y y y y y.A.0X3.0Xp y y y y y y\",", "\" y y y y y y.#.z ) ) W y y y y y y y y y y.BXO p ` u y y y y y y y y y y y y y y y y y y y y y y y y y y y.A.0X3.0Xp y y y y y y\",", "\" y y y y y y.#.z ) ) W y y y y y y y y y y.BXf.u ] u y y y y y y y y y y y y y y y y y y y y y y y y y y y.S.0X3.0Xp y y y y y y\",", "\" y y y y y y.#.z ) ) W y y y y y y y y y yX+ ].u./XV y y y y y y y y y y y y yXb UXb l y y y y y y y y y y.S.0.*X<Xp y y y y y y\",", "\" y y y y y y.#.z ) ) W y y y y y y y y y yX+./.u./ 8 y y y y y y y y y y y / v : : FX= & y y y y y y y y y.SX<.rX<Xp y y y y y y\",", "\" y y y y y y.#.z ) ) W y y y y y y y y y yX;.T.G.G.T.nX$ y y y y y y y yXK : :X%XxX=.7.7Xb y y y y y y y y.SX<.rX<Xp y y y y y y\",", "\" y y y y y y.#.z ) ) W y y y y y y y y y y y.P xXk.G./Xn ' ' 8 8 8.1.1.1.K.c.K.NX$.b.I.7Xx l y y y y y y yX5 I.r I N y y y y y y\",", "\" y y y y y y.#.z ) ) W y y y y y y y y y y yX; ]./Xk.uXf ].T -Xl.=.=.=.cXu.c U y y y.3X=.7.N y y y y y y yX5 I.r I N y y y y y y\",", "\" y y y y y y.#.z ) ) W y y y y y y y y y y y y.BXf x.T.G.GXr.=.=.`.`.`XuXu.c.3 y y y yXx.7Xb y y y y y y y M I., I N y y y y y y\",", "\" y y y y y yX&.z.JXz h y y y y y y y y y y y y y lXVXn.G.GXr.8XnXn w w.KXu.c G y y yXbX>X>.b y y y y y y y M ;Xt ; N y y y y y y\",", "\" y y y y y yX&.z.JXz h y y y y y y y y y y y y y y y yX;X;X; [ [ [ [ [ [.| ZX% G.N.HX=.7 f y y y y y y y y M ;Xt ; N y y y y y y\",", "\" y y y y y yX&.UX6.s W y y y y y y y y y y y y y y y y y y y y y y y y yX$.O Z :X% F FX=.3 y y y y y y y y M ;Xt I N y y y y y y\",", "\" y y y y y yX&.UX6.s W y y y y y y y y y y y y y y y y y y y y y y y y y yX$ G v vXx.| [ y y y y y y y y y M ;Xt ; N y y y y y y\",", "\" y y y y y yX&.UX6.s W y y y y y y y y y y y y y y y y y y y y y y y y y y y yX$.3 l y y y y y y y y y y y M ` p `.B y y y y y y\",", "\" y y y y y yX&.UX6.s W y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y E ` pXf.B y y y y y y\",", "\" y y y y y yX&.UX6.s W y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y E ` pXO.B y y y y y y\",", "\" y y y y y yX&.UX6.s W y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y E ` pXO.B y y y y y y\",", "\" y y y y y yX&.UX6.s W y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y E.TXn -.B y y y y y y\",", "\" y y y y y yX&.UX6.s W y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y E.TXn -.B y y y y y y\",", "\" y y y y y yX&.UX6.sXA y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y E.TXn.T.B y y y y y y\",", "\" y y y y y yX&.UXz.U ~ y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y 8 -Xn -XK y y y y y y\",", "\" y y y y y y.+  .v e.;.6 y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y.n -Xn.uXn l y y y y y y\",", "\" y y y y y y h.UX6.v.U.vX&Xm z z.&.&XvXv k k k # # q q q q.q.q.q.qXiX X X  _ _ _ _.R.R.R.$.$.$.$.P.P.P ' -.Q.l./XV y y y y y y y\",", "\" y y y y y y y.+  X6.v e.U C } d d O O O S S SXd 7 7 ^ ^ ^ o o o 9 9 9.~.~.~ B n n n n. . . . .<.<Xr -.GXn.l -.G [ y y y y y y y\",", "\" y y y y y y y y.W  .U eX6 }.{.t.tX4X4.2XoXo.xXCXC.dXBXB.w.wX@X@ A A A.f.f.f.'.'.'.%.%X9X9.y.y !.8.8.Q.QXr./.GXK y y y y y y y y\",", "\" y y y y y y y y yXc %XzX6 }.{XUXU.t.2.2.2Xo.xXCXC.dXBXB.w.wX@X@ A A A.f.f.'.'.' B.%.%.y.y.y.y !.8.8.u.u.l E [ y y y y y y y y y\",", "\" y y y y y y y y y y yXh hXqXqXq hXq.iXqXq.i.i.i.i.i 3 3 3 3 3 3 3 3 3 3.M.M.M.M.M.M.M.MX;X;.M.MXMXMXMXMX$ y y y y y y y y y y y\",", "\" y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "\" y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y\",", "};", "",  "" }; //
+
+    if(!`filetest -f ($craIconPath + "highend3dIcon.xpm")`)
+        craXPMCreator($craIconPath,"highend3dIcon.xpm" , $highend3dIcon);
+    if(!`filetest -f ($craIconPath + "linkedInIcon.xpm")`)
+        craXPMCreator($craIconPath,"linkedInIcon.xpm" , $linkedInIcon);
+    if(!`filetest -f ($craIconPath + "vimeoIcon.xpm")`)
+        craXPMCreator($craIconPath,"vimeoIcon.xpm" , $vimeoIcon);
+    if(!`filetest -f ($craIconPath + "youtubeIcon.xpm")`)
+        craXPMCreator($craIconPath,"youtubeIcon.xpm" , $youtubeIcon);
+    if(!`filetest -f ($craIconPath + "gumroadIcon.xpm")`)
+        craXPMCreator($craIconPath,"gumroadIcon.xpm" , $gumroadIcon);
+
+    string $highend3dIconPath = ($craIconPath + "highend3dIcon.xpm");
+    string $linkedInIconPath = ($craIconPath + "linkedInIcon.xpm");
+    string $vimeoIconPath = ($craIconPath + "vimeoIcon.xpm");
+    string $youtubeIconPath = ($craIconPath + "youtubeIcon.xpm");
+    string $gumroadIconPath = ($craIconPath + "gumroadIcon.xpm");
+
+    window -t " About this tool" -s 1 -tlb 0 -mnb 0 -mxb 0 craOffsetKeysAboutWin;
+    frameLayout -mw 5 -mh 5 -lv 0;
+    frameLayout -bv 1 -mw 5 -mh 5 -lv 0;
+    columnLayout -adj 1;
+    text -l "<font color=gold><h2>Offset Keyframes</h2></font>";
+    text -l "<font color=#057cf3><h3>v3.0.1</h3></font>";
+    text -l "";
+    text -l "Offset keyframe times\nand values. Stagger, cycle \nand randomize keyframe\nvalues and times.";
+    text -l "";
+    text -l "Works on selected objects,\nkeyframes, animation curves,\nselected timeline range\nor selected ChannelBox\nchannels.";
+    text -l "";
+    text -l "<a href=\"mailto:carlos.rico.3d@gmail.com\" style=\"color: red\"><h3>Carlos Rico Adega (2023)</h3></a>" -hyperlink 1 -ann "Send email to carlos.rico.3d@gmail.com";
+    text -l "";
+    rowLayout -nc 6 ;
+        separator -w 1 -st "none";
+        iconTextButton -w 34 -h 34 -i $gumroadIconPath -l "Gumroad" -ann "Gumroad profile" -c "showHelp -absolute \"https://gumroad.com/cra3d\"";
+        iconTextButton -w 34 -h 34 -i $highend3dIconPath -l "Downloads" -ann "highend3d downloads" -c "showHelp -absolute \"https://www.highend3d.com/users/charliewales/free/downloads\"";
+        iconTextButton -w 34 -h 34 -i $linkedInIconPath -ann "LinkedIn profile"-l "LinkedIn" -c "showHelp -absolute \"https://www.linkedin.com/in/carlos-rico-adega-3250586\"";
+        iconTextButton -w 34 -h 34 -i $vimeoIconPath -l "Vimeo" -ann "Vimeo Channel" -c "showHelp -absolute \"https://vimeo.com/channels/749131\"";
+        iconTextButton -w 34 -h 34 -i $youtubeIconPath -l "YouTube" -ann "Youtube Channel" -c "showHelp -absolute \"https://www.youtube.com/channel/UCXnSX8PHpQtwJR-uN-atO3Q\"";
+    setParent ..;
+    setParent ..;
+    setParent ..;
+    setParent ..;
+
+    python("win_name = 'craOffsetKeysAboutWin';win_icon = ':help.png';from shiboken2 import wrapInstance;from maya import OpenMayaUI as omui;from PySide2.QtGui import QIcon;from PySide2.QtWidgets import QWidget;import sys;qw = omui.MQtUtil.findWindow(win_name);widget = wrapInstance(int(qw), QWidget);icon = QIcon(win_icon);widget.setWindowIcon(icon)");
+    showWindow craOffsetKeysAboutWin;
+    window -e -s 0 craOffsetKeysAboutWin;
+}

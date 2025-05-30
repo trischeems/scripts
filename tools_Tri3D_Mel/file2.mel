@@ -1,0 +1,10 @@
+global proc accessVariableFromFile1() {
+    // Tải file1.mel, biến toàn cục trong file1 sẽ được khởi tạo
+    source "C:/Users/Tri 3D/Documents/maya/2020/scripts/tools_Tri3D_Mel/file1.mel";  // Đảm bảo đường dẫn chính xác
+
+    // Khai báo lại biến toàn cục để sử dụng trong file 2
+    global int $myGlobalVar;
+
+    // In giá trị biến toàn cục đã được khởi tạo trong file1
+    print("Accessed value from file1.mel: " + $myGlobalVar + "\n");
+}

@@ -1,0 +1,649 @@
+<!-- Họ tên : Phạm Minh Trí.
+24C1001S2059.
+Lớp : CNT521.
+Môn học : IT14.057 Thiết kế web.
+Đề 3 : Thiết kế web tin tức Game. -->
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GameT</title>
+        <link rel="icon" type="image/png" href = "Images/iconWeb.png">
+        <style>
+            /* body */
+                body
+                {
+                    font-family: Arial, sans-serif;
+                    justify-content: center;
+                    align-items: center;
+                    margin: 0;
+                    padding: 0;
+                    background: url('Images/Background2.jpg') no-repeat center center fixed;
+                    background-size: cover;
+                    overflow-y: auto;
+                }
+                .bg-blur {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    /* background: inherit; */
+                    background: rgba(0, 0, 0, 0);
+                    filter: blur(0px);
+                    z-index: -1;
+                    transition:background 1s ease;
+                }
+            /* Menu main */
+                .menu
+                {
+                    position: relative;
+                    background-color: #333;
+                    overflow: hidden;
+                    text-align: center;
+                    padding: 10px 0;
+                }
+                .menu a
+                {
+                    display: inline-block;
+                    color: white;
+                    padding: 14px 20px;
+                    text-decoration: none;
+                }
+                .menu a:hover
+                {
+                    background-color: #57575757;
+                }                
+            /* home page css */
+                .headerImg
+                {
+                    position: relative;
+                    left: 50%;
+                    transform: translateX(-50%);
+                }
+                .homePage
+                {
+                    position: relative;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    opacity: 0;
+                    transition: opacity 1s ease-in-out;
+                }
+
+                /* container news picture */
+                    .home-TrangChu
+                    {
+                        opacity: 0;
+                        position: absolute;
+                        left: 50%;
+                        transform: translate(-50%);
+                        transition: opacity 1s ease-in-out;
+                    }
+                    /* news game */
+                        .titleNews
+                        {
+                            position: relative;
+                            text-align: center;
+                            opacity: 1;
+                            transform: scale(1);
+                            transition: opacity 1s ease, transform 1s ease;
+                            color:rgb(191, 255, 157);
+                            text-shadow:1px 3px 10px #000000, 
+                                        1px 3px 20px #000000, 
+                                        1px 3px 30px #000000;
+                        }
+                    .newsContainerPicture
+                    {
+                        position: relative;
+                        top: -20px;
+                        left: -550px;
+                        transform: scale(0.8);
+                        overflow: hidden;
+                        opacity: 1;
+                    }
+                    /* slider */
+                        *{
+                            box-sizing: border-box;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .containerNews
+                        {
+                            position: relative;
+                            width: 100%; 
+                            max-width: 800px; 
+                            margin: auto;
+                            overflow: hidden;
+                        }
+                        .sliderNews
+                        {
+                            display: flex;
+                            transform: transform 0.5s ease-in-out;
+                        }
+                        .sliderNews img
+                        {
+                            width: 100%; 
+                            cursor: pointer;
+                        }
+                        .dotsNews
+                        {
+                            text-align: center;
+                            margin: 10px;
+                        }
+                        .dotNews
+                        {
+                            display: inline-block;
+                            width: 10px;
+                            height: 10px;
+                            margin: 5px;
+                            background: gray;
+                            border-radius: 50%;
+                            cursor: pointer;
+                        }
+                        .dotNews.active
+                        {
+                            background: rgb(255, 0, 0);
+                        }
+                /* frame news game new */
+                    .game-hot
+                    {
+                        position: relative;
+                        text-align: center;
+                        top: -470px;
+                        left: 110%;
+                        width: 360px;
+                        height: 1200px;
+                        padding: 20px;
+                        opacity: 1;
+                        border: 2px solid #fff;
+                        background: rgba(0, 0, 0, 0.7);
+                        color: white;
+                        border-radius: 10px;
+                        box-shadow: 0 0 10px rgba(255,255,255,0.5);
+                        overflow-y: auto;
+                        scrollbar-width: none;
+                        display: flex;
+                        flex-direction: column;                
+                        transition: opacity 1.5s ease;
+                    }
+                    .game-hot h3 
+                    {
+                        text-align: center;
+                        margin-bottom: 10px;
+                    }
+                    .game-hot ul 
+                    {
+                        list-style: none;
+                        padding: 0;
+                    }
+                    .game-hot ul li 
+                    {
+                        margin: 20px 0;
+                    }
+                    .game-hot ul li a 
+                    {
+                        color: #ffffff;
+                        text-decoration: none;
+                        transition: 0.3s;
+                    }
+                    .game-hot ul li a:hover 
+                    {
+                        text-decoration: underline;
+                        color: #fff;
+                    }
+                    .Title-gameHot
+                    {
+                        animation: blink 1s infinite alternate;
+                    }
+                    @keyframes blink
+                    {
+                        0%{color: white;}
+                        10%{color: rgb(235, 149, 149);}
+                        20%{color: rgb(59, 90, 247);}
+                        30%{color: rgb(128, 254, 38);}
+                        40%{color: rgb(255, 62, 245);}
+                        60%{color: rgb(62, 255, 236);}
+                        80%{color: rgb(226, 255, 62);}
+                        100%{color: rgb(255, 62, 62);}
+                    }
+                    .scroll-hint 
+                    {
+                        position: absolute;
+                        bottom: 5px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        font-size: 12px;
+                        color: rgba(255, 255, 255, 0.5);
+                        text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+                        pointer-events: none;
+                        text-align: center;
+                        width: 100%;
+                        padding: 5px 0;
+                    }   
+                /* news text */
+                    .news 
+                    {
+                        position: relative;
+                        top: 115px;
+                        left: 25%;  
+                        position: absolute;
+                        margin-top: 10px;
+                        width: 650px;
+                        opacity: 1;
+                        transition: opacity 1s ease-in-out;
+                    }
+                    .newsItemText 
+                    {
+                        color: #fff;
+                        background: rgb(103, 103, 103);
+                        padding: 15px;
+                        margin: 15px 0;
+                        border-radius: 10px;
+                        transition: transform 0.3s ease-in-out;
+                        cursor: pointer;
+                    }
+                    .newsItemText:hover {
+                        transform: scale(1.05);
+                        background: rgba(42, 101, 114, 0.655);
+                    }
+                /* news button text */
+                    .imageNewsBottom 
+                    {
+                        position: relative;
+                        width: 300px;
+                    }
+                    .imageNewsBottom img 
+                    {
+                        width: 100%;
+                        height: auto;
+                    }
+                    .newsBottom {
+                        display: flex;
+                        top: 600px;
+                        left: -59%;
+                        position: absolute;
+                        flex-wrap: wrap;
+                        justify-content: space-between;
+                        gap: 20px;
+                        max-width: 1400px;
+                        margin: auto;
+                        opacity: 1;
+                        transition: opacity 1s ease-in-out;
+                    }
+                    .imageNewsBottom 
+                    {
+                        position: relative;
+                        width: 32%;
+                        aspect-ratio: 16 / 9;
+                        overflow: hidden;
+                    }
+                    .imageNewsBottom img 
+                    {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                    }
+                    .TextInOver 
+                    {
+                        position: absolute;
+                        transform: translate(3%, -130%);
+                        color: white;
+                        font-size: 16px;
+                        font-weight: bold;
+                        text-shadow: 2px 2px 5px black;
+                    }  
+                    .textInBG 
+                    {
+                        position: absolute;
+                        bottom: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 80%;
+                        background: linear-gradient(to top, rgba(0, 0, 0, 4), rgba(0, 0, 0, 0));
+                    }
+                /* info student */
+                    .infoStudent
+                    {
+                        position: relative;
+                        top: -400px;
+                        line-height:40px;
+                    }
+                    .textInInfo
+                    {
+                        text-align: center;
+                        color: #fff;
+                        font-size: 18px;
+                        font-weight: bold;
+                        text-shadow: 2px 2px 5px black;
+                    }
+            /* cho cac cham xoay quanh man hinh */
+                .loading-wrapper
+                {
+                    position: absolute;
+                    top: 49%;
+                    left: 48%;
+                    transform: translate(-40%, -40%);
+                    width: 60px;
+                    height: 60px;
+                    transform: scale(2);
+                    opacity: 0;
+                }
+                .dot
+                {
+                    position: absolute;
+                    width: 10px;
+                    height: 10px;
+                    background: #36381d;
+                    border-radius: 50%;
+                    opacity: 0;
+                    animation: rotateDots 1.5s linear infinite;
+                }
+                .dot:nth-child(1) { 
+                    top: 0; left: 50%; transform: translateX(-50%); animation-delay: 0s; }
+                .dot:nth-child(2) { 
+                    top: 15%; left: 85%; transform: translate(-50%, -50%); animation-delay: 0.15s; }
+                .dot:nth-child(3) { 
+                    top: 50%; left: 100%; transform: translate(-50%, -50%); animation-delay: 0.3s; }
+                .dot:nth-child(4) { 
+                    top: 85%; left: 85%; transform: translate(-50%, -50%); animation-delay: 0.45s; }
+                .dot:nth-child(5) { 
+                    top: 100%; left: 50%; transform: translate(-50%, -50%); animation-delay: 0.6s; }
+                .dot:nth-child(6) { 
+                    top: 85%; left: 15%; transform: translate(-50%, -50%); animation-delay: 0.75s; }
+                .dot:nth-child(7) { 
+                    top: 50%; left: 0; transform: translate(-50%, -50%); animation-delay: 0.9s; }
+                .dot:nth-child(8) { 
+                    top: 15%; left: 15%; transform: translate(-50%, -50%); animation-delay: 1.05s; }
+
+
+                @keyframes rotateDots
+                {
+                    0% {opacity: 0;}
+                    50% {opacity: 1;}
+                    100% {opacity: 0;}
+                }
+
+            .loading-text {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                text-align: center;
+                transform: translate(-50%, -50%);
+                font-size: 20px;
+                font-weight: bold;
+                margin-top: 20px;
+                color: rgb(0, 0, 0);
+                transition: opacity 1s ease;
+            }
+        /* star anim */
+            .starAnim
+            {
+                position: relative;
+            }
+            .starAnim img
+            {
+                width: 70px;
+                height: 70px;
+                position: absolute;
+                animation: scaleCycle 2s infinite ease-in-out;
+            }
+            @keyframes scaleCycle {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.5); }
+            100% { transform: scale(1); }
+        }
+        </style>
+    </head>
+    <body>
+        <div class="bg-blur"></div>
+        <div class="homePage">
+            <img src="Images/Header.jpg" class="headerImg">
+            <div class="menu">
+                <a href="#">Trang chủ</a>
+                <a href="#">Thông tin</a>
+                <a href="#">Thư viện</a>
+                <a href="#">Liên hệ</a>
+                <a href="#">Log in</a>
+            </div>
+        </div>
+        <!-- Home page -->
+            <div class="home-TrangChu">
+                <!-- star -->
+                    <div class="starAnim">
+                        <!-- <img src="Images/star1.png" alt="Scaling Image" class="star1">
+                        <img src="Images/star1.png" alt="Scaling Image" class="star2"> -->
+                        <div class="animation-container" id="animationContainer"></div>
+                    </div>
+
+                <h1 class="titleNews"><p>-------</p>Tin tức về game mới nhất<p>-------</p></h1>
+                <!-- anim hinh anh -->
+                    <div class="newsContainerPicture">
+                        <div class="containerNews">
+                            <div class="sliderNews">
+                                <img src="Images/img1.jpg" onclick="location.href='https://gamevui.vn/biet-doi-anh-hung/game'">
+                                <img src="Images/img2.jpg" onclick="location.href='https://www.fortnite.com/?lang=en-US'">
+                                <img src="Images/img3.jpg" onclick="location.href='https://www.callofduty.com/mobile'">
+                                <img src="Images/img4.jpg" onclick="location.href='https://store.steampowered.com/franchise/AC?l=vietnamese'">
+                                <img src="Images/img5.jpg" onclick="location.href='https://www.pixels.xyz/'">
+                            </div>
+                        </div>
+                        <div class="dotsNews"></div>
+                    </div>
+                <!-- news -->
+                    <div class="news">
+                        <div class="newsItemText" onclick="location.href='https://www.fortnite.com/news/lego-fortnite-updates-what-to-expect-in-march-2025'">🔹 Fortnite đã cập nhập phiên bản mới nhất 16.6.2!</div>
+                        <div class="newsItemText" onclick="location.href='https://pubg.com/vi/news/6927'">🔥 Batle Pass mới nhất của PUBG cực ngầu!</div>
+                        <div class="newsItemText" onclick="location.href='https://www.leagueoflegends.com/vi-vn/'">🎁 Nhận quà điểm danh Liên Minh Huyền Thoại!</div>
+                        <div class="newsItemText" onclick="location.href='https://lienquan.garena.vn/tin-tuc/mo-ban/'">⚡ Sale các nhận vật mới trong Liên Quân!</div>
+                        <div class="newsItemText" onclick="location.href='https://www.fortnite.com/news/lego-fortnite-brick-life-the-valentines-2025-update'">💖 Tặng ngay gói quà tình nhân cho bạn gái chỉ với 3$!</div>
+                        <div class="newsItemText" onclick="location.href='https://www.fortnite.com/news/fortnite-anti-cheat-update-february-27-2025'">⛔ Nhà phát hành tích cự đẩy mạnh công tác anti cheat!</div>
+                    </div>
+                <!-- 10 Game hot nhat hien nay -->
+                    <div class="game-hot">
+                        <h3 class="Title-gameHot">Top các game hot vừa ra mắt !!!</h3>
+                        <ul>
+                            <li><a href="https://honkaiimpact3.hoyoverse.com/asia/vi-vn/home">- Honkai Impact 3 : mới ra mắt tại thị trường Việt Nam đã làm khuấy đảo game thủ trên cả nước, game có đồ họa cực đỉnh và có số lượng nhân vật lớn ! 👇👇👇</a></li>
+                            <img src="Images/honkaiImpact3.jpg" alt="honkaiIpact3Image" class="info-image">
+        
+                            <li><a href="https://www.bluestacks.com/vi/apps/action/pubg-mobile-on-pc.html">- PUBG Mobile : game sinh tồn số 1 vừa được ra mắt. Người chơi sẽ được nhập vai vào 1 nhà mạo hiểm, trở thành người sống sót duy nhất ! Hãy nhanh tay tải game ngay tại CH Play hoặc App Store !! 👇👇👇</a></li>
+                            <img src="Images/pubgMobi.jpg" alt="honkaiIpact3Image" class="info-image">
+        
+                            <li><a href="https://play.google.com/store/apps/details?id=com.teamobi.army2&hl=vi">- Mobi Army 2 : game bắn súng mobile tuổi thơ đã quay trở lại với diện mạo vô cùng bắt mắt ! 👇👇👇</a></li>
+                            <img src="Images/mobiarmy2.jpg" alt="honkaiIpact3Image" class="info-image">
+        
+                            <li><a href="#">- Tốc chiến mobile : được cho là sẽ cạnh tranh với Liên quân mobile, liệu có soán ngôi vị trí đầu bảng của dòng game moba trên điện thoại ? 👇👇👇 </a></li>
+                            <img src="Images/tocchien.jpg" alt="honkaiIpact3Image" class="info-image">
+        
+                            <li><a href="#">- Game RPG MU4 huyền thoại đã quay trở lại ! 👇👇👇</a></li>
+                            <img src="Images/mu4.jpg" alt="honkaiIpact3Image" class="info-image">
+        
+                            <li><a href="#">- Avatar : tựa game 2D đã từng nổi đình đám một thời trên java giừo đã quay trở lại ! 👇👇👇</a></li>
+                            <img src="Images/images.jpg" alt="honkaiIpact3Image" class="info-image">
+        
+                            <li><a href="#">- Black Mith Wukhong làm khuấy đảo thị trường steam, nhận về lượt đánh giá tích cực từ người chơi ! 👇👇👇</a></li>
+                            <img src="Images/blackm.jpg" alt="honkaiIpact3Image" class="info-image">
+        
+                            <li><a href="#">- Assasin Creed mới ra mắt phần mới ! 👇</a></li>
+                            <img src="Images/assasin.jpg" alt="honkaiIpact3Image" class="info-image">
+        
+                            <li><a href="#">- CSGO 2 vừa được ra mắt, liệu đồ họa phong cách mới này có thực sự đem đến trải nghiệm tốt cho game thủ FPS hay không  ! 👇👇👇</a></li>
+                            <img src="Images/cs2.jpg" alt="honkaiIpact3Image" class="info-image">
+        
+                            <li><a href="#">- Game sinh tồn mới nhất : ARK 2 vừa được Steam đưa lên kệ ! 👇👇👇</a></li>
+                            <img src="Images/ark.jpg" alt="honkaiIpact3Image" class="info-image">
+                        </ul>
+                        <div class="scroll-hint">Cuộn xuống !!</div>
+                    </div>
+                <!-- infomatioin student -->
+                    <div class="infoStudent">
+                        <div class="textInInfo">
+                            <div>Họ tên : Phạm Minh Trí</div>
+                            <div>24C1001S2059</div>
+                            <div>Lớp : CNT521</div>
+                            <div>Môn học : IT14.057 Thiết kế web</div>
+                            <div>Đề 3 : Thiết kế web tin tức Game</div>
+                        </div>
+                    </div>    
+                
+                <!-- news botton -->
+                    <div class="newsBottom">
+                        <a href="https#1.com" class="imageNewsBottom">
+                            <img src="Images/steam.png" alt="Ảnh 1">
+                            <div class="textInBG"></div>
+                            <div class="TextInOver">Steam bị chặn tại Việt Nam !</div>
+                        </a>
+                        <a href="#" class="imageNewsBottom">
+                            <img src="Images/img2.jpg" alt="Ảnh 2">
+                            <div class="textInBG"></div>
+                            <div class="TextInOver">Fortnite IOS kiện apple vì "thuế" quá cao !</div>
+                        </a>
+                        <a href="#" class="imageNewsBottom">
+                            <img src="Images/vng.png" alt="Ảnh 3">
+                            <div class="textInBG"></div>
+                            <div class="TextInOver">VNG bị cảnh sát bao kiểm tra đột xuất !</div>
+                        </a>
+                        <a href="#" class="imageNewsBottom">
+                            <img src="Images/genshin.jpg" alt="Ảnh 3">
+                            <div class="textInBG"></div>
+                            <div class="TextInOver">Genshin Impact chọn đối tác phát hành mới !</div>
+                        </a>
+                        <a href="#" class="imageNewsBottom">
+                            <img src="Images/cos.jpg" alt="Ảnh 3">
+                            <div class="textInBG"></div>
+                            <div class="TextInOver">Cosplay Liên minh huyền thoại !</div>
+                        </a>
+                        <a href="#" class="imageNewsBottom">
+                            <img src="Images/nghiengame.jpg" alt="Ảnh 3">
+                            <div class="textInBG"></div>
+                            <div class="TextInOver">Nhập viện vì "nghiện game" !</div>
+                        </a>
+                        <a href="#" class="imageNewsBottom">
+                            <img src="Images/lol2.jpg" alt="Ảnh 1">
+                            <div class="textInBG"></div>
+                            <div class="TextInOver">Game thủ LoL phản ánh về tướng mới !</div>
+                        </a>
+                        <a href="#" class="imageNewsBottom">
+                            <img src="Images/vn.jpeg" alt="Ảnh 2">
+                            <div class="textInBG"></div>
+                            <div class="TextInOver">Việt Nam vô địch thế giới giải LoL!</div>
+                        </a>
+                        <a href="#" class="imageNewsBottom">
+                            <img src="Images/hack.jfif" alt="Ảnh 3">
+                            <div class="textInBG"></div>
+                            <div class="TextInOver">Việt Nam hack bay game trung quốc !</div>
+                        </a>
+                    </div>
+            </div>
+        <!-- animation cham tron  -->
+            <div class="loading-wrapper">
+                <div class="loading-dot">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+            <div class="loading-text" id="loadingText">0%</div>            
+        <!-- scripts -->
+            <script>
+                let index = 0;
+                const slider = document.querySelector(".sliderNews");
+                const images = document.querySelectorAll(".sliderNews img");
+                const dotsContainer = document.querySelector(".dotsNews");
+
+                // script pan picture news
+                    images.forEach((_, i) => {
+                        let dot = document.createElement("span");
+                        dot.classList.add("dotNews");
+                        dot.addEventListener("click", () => goToSlide(i));
+                        dotsContainer.appendChild(dot);
+                    });
+                    
+                    function updateDots() {
+                        document.querySelectorAll(".dotNews").forEach((dot, i) => {
+                            dot.classList.toggle("active", i === index);
+                        });
+                    }
+                    
+                    function goToSlide(i) {
+                        index = i;
+                        slider.style.transform = `translateX(-${index * 100}%)`;
+                        updateDots();
+                    }
+                    
+                    function nextSlide() {
+                        index = (index + 1) % images.length;
+                        goToSlide(index);
+                    }
+                            
+                    updateDots();
+                    setInterval(nextSlide, 3000); 
+                // start page
+                    document.addEventListener("DOMContentLoaded", () => 
+                    {
+                        let loadingText = document.getElementById("loadingText");
+                        let homePageVar = document.querySelector(".homePage");
+                        let bgBlur = document.querySelector(".bg-blur");
+                        let title = document.querySelector(".TieuDe");
+                        let dot = document.querySelector(".loading-dot");
+                        let homeTrangChuVar = document.querySelector(".home-TrangChu");
+                        let dotVar = document.querySelector(".home-TrangChu");
+                        let percent = 0;
+                        let interval = setInterval(() =>
+                        {
+                            percent+= 1;
+                            loadingText.innerText = percent + "%";         
+                            if (percent >= 100) {
+                                clearInterval(interval);
+                                loadingText.style.opacity = "0";
+                                setTimeout(() => 
+                                {
+                                    loadingText.style.display = "none";
+                                    bgBlur.style.background = "rgba(0, 0, 0, 0.7)";
+                                    dot.style.opacity = "0";
+                                    homeTrangChuVar.style.opacity = "1";
+                                    homePageVar.style.opacity = "1";
+                                }, 500);
+                            }
+                        }, 30);
+                    });
+                // random star
+                    function getRandomPosition(existingPositions, max, minDistance) {
+                        let pos;
+                        let attempts = 0;
+                        do {
+                            pos = {
+                                left: Math.floor(Math.random() * (max - 100)),
+                                top: Math.floor(Math.random() * (2000))
+                            };
+                            attempts++;
+                            if (attempts > 1000) break; 
+                        } while (existingPositions.some(p => 
+                            Math.abs(p.left - pos.left) < minDistance && Math.abs(p.top - pos.top) < minDistance
+                        ));
+                        
+                        existingPositions.push(pos);
+                        return pos;
+                    }
+                    function createRandomImages(num) {
+                        const container = document.getElementById("animationContainer");
+                        let positions = [];
+                        const minDistance = 100; 
+                        for (let i = 0; i < num; i++) {
+                            let pos = getRandomPosition(positions, 1080, minDistance);
+                            let img = document.createElement("img");
+                            img.src = "Images/star1.png";
+                            img.className = "animated-image";
+                            img.style.left = pos.left + 'px';
+                            img.style.top = pos.top + 'px';
+                            container.appendChild(img);
+                        }
+                    }
+                    createRandomImages(30);
+            </script>
+    </body>
+</html>

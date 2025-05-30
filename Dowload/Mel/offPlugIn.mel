@@ -1,0 +1,41 @@
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;unloadPluginWithCheck( "C:/Program Files/Autodesk/Maya2019/plug-ins/ATF/plug-ins/ATFPlugin.mll", false );updatePluginUI( "58" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+updatePluginCallback();
+
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;unloadPluginWithCheck( "C:/Program Files/Autodesk/Bifrost/Maya2019/1.5.7.85/bifrost/plug-ins/bifmeshio.mll", false );updatePluginUI( "59" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+updatePluginCallback();
+bifMeshIODeleteUI;
+
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;unloadPluginWithCheck( "C:/Program Files/Autodesk/Bifrost/Maya2019/1.5.7.85/bifrost/plug-ins/bifrostshellnode.mll", false );updatePluginUI( "60" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+mw_unloadui;
+optionVar -exists "bifrostVerbosityVar";
+optionVar -query "bifrostVerbosityVar";
+updatePluginCallback();
+
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;unloadPluginWithCheck( "C:/Program Files/Autodesk/Bifrost/Maya2019/1.5.7.85/bifrost/plug-ins/bifrostvisplugin.mll", false );updatePluginUI( "61" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+updatePluginCallback();
+
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;unloadPluginWithCheck( "C:/Program Files/Autodesk/Bifrost/Maya2019/1.5.7.85/bifrost/plug-ins/Boss.mll", false );updatePluginUI( "62" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+mw_boss_unloadui;
+updatePluginCallback();
+
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;unloadPluginWithCheck( "C:/Program Files/Autodesk/Maya2019/plug-ins/MASH/plug-ins/MASH.mll", false );updatePluginUI( "63" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+MASHBinUI;
+deleteCustomOutlinerFilter("MashFilter");
+deregisterMASHContent;
+updatePluginCallback();
+
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;unloadPluginWithCheck( "C:/Program Files/Autodesk/Maya2019/plug-ins/camd/plug-ins/invertShape.mll", false );updatePluginUI( "68" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+updatePluginCallback();
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;unloadPluginWithCheck( "C:/Program Files/Autodesk/Maya2019/plug-ins/camd/plug-ins/poseInterpolator.mll", false );updatePluginUI( "69" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+updatePluginCallback();
+
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;unloadPluginWithCheck( "C:/Program Files/Autodesk/Maya2019/plug-ins/xgen/plug-ins/xgenToolkit.mll", false );updatePluginUI( "72" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+xgenCleanup;
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;unloadPluginWithCheck( "C:/Program Files/Autodesk/Maya2019/plug-ins/xgen/plug-ins/xgSplineDataToXpd.mll", false );updatePluginUI( "73" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+updatePluginCallback();
+
+
+
+
+
+

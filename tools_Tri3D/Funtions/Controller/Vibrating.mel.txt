@@ -1,0 +1,4 @@
+$min = -0.1 + ctrlloop.Level/10;
+$max = 0.1 + ctrlloop.Level/10;
+
+loop.translateX = rand(#min, $max);

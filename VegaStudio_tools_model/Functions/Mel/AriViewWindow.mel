@@ -1,0 +1,1316 @@
+//--------------------------------------------------------------------------
+//
+// ScriptName : AriViewWindow
+// Contents   : 新しいパネルビューを開きます。
+// Author     : Ari
+// URL        : http://cgjishu.net/
+// Since      : 2016/09
+//            : 管理をしやすくするため、MEL化。
+// LastUpdate : 2018/10/08 ブックマークパネル追加。
+//              2017/10/22 ビュー表示の設定を保存できるように。
+//              2017/03/12 MEL名変更 複数ウィンドウ機能実装 ビュー設定引継ぎ実装。
+//              2016/10/31 カメラを切り替えられるパネルを追加。
+//               
+//--------------------------------------------------------------------------
+
+
+
+
+proc TextSave(string $textArray[],string $savePath){
+	string $saveText;
+	for($text in $textArray){
+		$saveText = $saveText + $text +"\n";
+	}
+	int $fpid = `fopen $savePath "w"`;
+	fprint $fpid($saveText);
+	fclose $fpid;
+}
+proc string[] TextLoad(string $path){
+	string $loadText[];
+	string $LoadPath = $path;
+	if(!`filetest -f $LoadPath`)return $loadText;
+	int $fpid = `fopen $LoadPath "r"`;
+	string $get;
+	int $i=0;
+	do{
+		$get = `fgetline $fpid`;
+		string $sepa[];
+		tokenize $get "\n" $sepa;
+		$loadText[$i] = $sepa[0];
+    	$i++;
+	}
+	while(size($get));
+	fclose $fpid;
+	return $loadText;
+}
+proc string[] getBookMarkList(string $camera){
+	string $camShape[] = `listRelatives -c -s -pa $camera`;
+	string $bookMarkList[] = `listConnections -s true -type "cameraView" $camShape`;
+	return $bookMarkList;
+}
+proc getCamList(int $winNum){
+	global string $AriViewWindow_textScrollListCam[];
+	global string $AriViewWindow_modelPanels[];
+	string $camList[] = `ls -cameras `;
+	string $listCamerasList[] = `listCameras`;
+	textScrollList -e -ra $AriViewWindow_textScrollListCam[$winNum];
+	string $evalString;
+	if(size($camList)>0){
+		textScrollList -e -ra $AriViewWindow_textScrollListCam[$winNum];
+		string $evalString = "textScrollList -e";
+		for($cam in $camList){
+			string $camTrList[] = `listRelatives -pa -p $cam`;
+			string $parentTrList[] = `listRelatives -pa -p $camTrList[0]`;
+			if($parentTrList[0]!=""){
+				string $stereoRigList[] = `listRelatives -pa -c -type "stereoRigCamera" $parentTrList[0]`;
+				if($stereoRigList[0]!="")continue;
+			}
+			if(nodeType($cam)=="stereoRigCamera"){
+				continue;
+			}
+			string $viewCam = $cam;
+			if(stringArrayContains($camTrList[0], $listCamerasList)){
+				$viewCam = $camTrList[0];
+			}
+			if(`getAttr ($camTrList[0]+".orthographic")`== 0){
+				$evalString = $evalString +" -a \""+ $viewCam + "\"";
+			}
+		}
+		$evalString = $evalString +" -a \""+"------"+ "\"";
+		for($cam in $camList){
+			string $camTrList[] = `listRelatives -pa -p $cam`;
+			string $viewCam = $cam;
+			if(stringArrayContains($camTrList[0], $listCamerasList)){
+				$viewCam = $camTrList[0];
+			}
+			if(`getAttr ($camTrList[0]+".orthographic")`== 1){
+				$evalString = $evalString +" -a \""+ $viewCam + "\"";
+			}
+		}
+		$evalString = $evalString + $AriViewWindow_textScrollListCam[$winNum];
+		eval $evalString;
+		string $nowCammera = `modelEditor -q -camera  $AriViewWindow_modelPanels[$winNum]`;
+		//print $nowCammera;
+		textScrollList -e -si $nowCammera $AriViewWindow_textScrollListCam[$winNum];
+		AriViewWindow_Click_Cam($winNum);
+	}
+}
+proc string SavePath(){
+	string $scriptPass = `internalVar -usd`;
+	string $savePath = $scriptPass +"AriViewWindow";
+	return $savePath;
+}
+proc string[] stringSettingAllList(){
+	string $stringSettingListFlag[] = {
+		"-displayAppearance",
+		"-activeOnly",
+		"-useDefaultMaterial",
+		"-wireframeOnShaded",
+		"-xray",
+		"-jointXray",
+		"-activeComponentsXray",
+		"-sortTransparent",
+		"-useInteractiveMode",
+		"-backfaceCulling",
+		"-smoothWireframe",
+		"-displayTextures",
+		"-fogging",
+		"-displayLights",
+		"-twoSidedLighting",
+		"-shadows",
+		"-viewSelected",
+		"-nurbsCurves",
+		"-nurbsSurfaces",
+		"-controlVertices",
+		"-hulls",
+		"-polymeshes",
+		"-subdivSurfaces",
+		"-planes",
+		"-lights",
+		"-cameras",
+		"-imagePlane",
+		"-joints",
+		"-ikHandles",
+		"-deformers",
+		"-dynamics",
+		"-particleInstancers",
+		"-fluids",
+		"-hairSystems",
+		"-follicles",
+		"-nCloths",
+		"-nParticles",
+		"-nRigids",
+		"-dynamicConstraints",
+		"-locators",
+		"-dimensions",
+		"-pivots",
+		"-handles",
+		"-textures",
+		"-strokes",
+		"-motionTrails",
+		"-pluginShapes",
+		"-clipGhosts",
+		"-greasePencils",
+		"-manipulators",
+		"-grid",
+		"-headsUpDisplay",
+		"-selectionHiliteDisplay",
+		"-rendererName",
+		"-ignorePanZoom",
+		"-wireframeBackingStore",
+		"-textureAnisotropic",
+		"-textureHilight",
+		"-transpInShadows",
+		"-lowQualityLighting",
+		"-occlusionCulling",
+		"-useBaseRenderer",
+		"-camera",
+		"-bufferMode",
+		"-userNode",
+		"-textureDisplay",
+		"-fogSource",
+		"-fogMode",
+		"-transparencyAlgorithm",
+		"-cullingOverride"
+	};
+	return $stringSettingListFlag;
+}
+proc string[] stringSettingAllList_JP(){
+	string $stringSettingListFlag[] = {
+"シェーディングシェード",
+"選択項目をのみ",
+"既存のマテリアルの使用",
+"ワイヤーフレーム付きシェード",
+"X線表示",
+"ジョイントのX線表示",
+"アクティブコンポーネントのX線表示",
+"オブジェクト透明度ソート",
+"インタラクティブ シェーディング",
+"バックフェース カリング",
+"スムーズワイヤーフレーム",
+"ハードウェアテクスチャリング",
+"ハードウェアフォグ",
+"ライト表示",
+"両面ライティング",
+"シャドウ",
+"選択項目の分離",
+"NURBS カーブ",
+"NURBS サーフェス",
+"NURBS CV",
+"NURBS ハル",
+"ポリゴン",
+"サブディビジョンサーフェス",
+"プレーン",
+"ライト",
+"カメラ",
+"イメージプレーン",
+"ジョイント",
+"IK ハンドル",
+"デフォーマ",
+"ダイナミクス",
+"パーティクルインスタンサ",
+"流体",
+"ヘアシステム",
+"毛根",
+"nCloths",
+"nParticles",
+"nRigids",
+"ダイナミクスコンストレイント",
+"ロケータ",
+"寸法",
+"ピボット",
+"ハンドル",
+"テクスチャ配置",
+"ストローク",
+"モーション軌跡",
+"プラグイン シェイプ",
+"クリップゴースト",
+"グリースペンシル",
+"マニピュレータ",
+"グリッド",
+"ヘッドアップディスプレイ",
+"選択項目のハイライト",
+"レンダラ",
+"ignorePanZoom",
+"wireframeBackingStore",
+"textureAnisotropic",
+"textureHilight",
+"transpInShadows",
+"lowQualityLighting",
+"occlusionCulling",
+"useBaseRenderer",
+"camera",
+"bufferMode",
+"userNode",
+"textureDisplay",
+"fogSource",
+"fogMode",
+"transparencyAlgorithm",
+"cullingOverride"
+	};
+	return $stringSettingListFlag;
+}
+proc string[] stringSettingListPrc(){
+	string $stringSettingListFlag[] = {
+		"-camera",
+		"-displayLights",
+		"-bufferMode",
+		"-displayAppearance",
+		"-textureDisplay",
+		"-fogSource",
+		"-fogMode",
+		"-rendererName",
+		"-displayAppearance",
+		"-transparencyAlgorithm",
+		"-cullingOverride"		
+	};
+	return $stringSettingListFlag;
+}
+proc string[] intSettingListProc(){
+	string $intSettingListFlag[] = {
+		"-activeOnly",
+		"-ignorePanZoom",
+		"-twoSidedLighting",
+		"-wireframeOnShaded",
+		"-headsUpDisplay",
+		"-selectionHiliteDisplay",
+		"-useDefaultMaterial",
+		"-wireframeBackingStore",
+		"-backfaceCulling",
+		"-xray",
+		"-jointXray",
+		"-activeComponentsXray",
+		"-displayTextures",
+		"-smoothWireframe",
+		"-textureAnisotropic",
+		"-textureHilight",
+		"-fogging",
+		"-shadows",
+		"-transpInShadows",
+		"-lowQualityLighting",	
+		"-occlusionCulling",	
+		"-useBaseRenderer",		
+		"-nurbsCurves",
+		"-nurbsSurfaces",
+		"-polymeshes",
+		"-subdivSurfaces",
+		"-planes",
+		"-lights",
+		"-cameras",
+		"-imagePlane",	
+		"-particleInstancers",	
+		"-controlVertices",
+		"-grid",
+		"-hulls",
+		"-joints",
+		"-ikHandles",
+		"-deformers",
+		"-dynamics",
+		"-fluids",
+		"-hairSystems",
+		"-follicles",
+		"-nCloths",
+		"-nParticles",
+		"-nRigids",
+		"-dynamicConstraints",
+		"-locators",
+		"-manipulators",
+		"-dimensions",
+		"-handles",
+		"-pivots",
+		"-textures",
+		"-strokes",
+		"-useInteractiveMode",
+		"-sortTransparent",
+		"-viewSelected",
+		"-motionTrails",	
+		"-pluginShapes",	
+		"-clipGhosts",	
+		"-greasePencils"	
+	};
+	return $intSettingListFlag;
+}
+proc getModelPanelSetting(string $sorcePanel, string $targetPanel,int $num){
+	string $stringSettingListValue[];
+	int    $intSettingListValue[];
+	string $flagNameList[]    = stringSettingAllList();
+	string $stringSettingListFlag[] = stringSettingListPrc();
+	string $intSettingListFlag[] = intSettingListProc();
+	int $i=0;
+	if(!`modelEditor -ex $sorcePanel`)$sorcePanel = "modelPanel4";
+	for($i=0;$i<size($stringSettingListFlag);$i++){
+		$stringSettingListValue[$i] = `modelEditor -q ($stringSettingListFlag[$i]) $sorcePanel`;
+	}
+	for($i=0;$i<size($intSettingListFlag);$i++){
+		$intSettingListValue[$i]    = `modelEditor -q ($intSettingListFlag[$i]) $sorcePanel`;
+	}
+	for($i=0;$i<size($stringSettingListFlag);$i++){
+		modelEditor -e  ("-"+$stringSettingListFlag[$i]) $stringSettingListValue[$i] $targetPanel;
+	}
+	for($i=0;$i<size($intSettingListFlag);$i++){
+		modelEditor -e  ("-"+$intSettingListFlag[$i]) $intSettingListValue[$i] $targetPanel;
+	}
+	string $displayLights = `modelEditor -q -displayLights $sorcePanel`;
+	AriViewWindow_GetSettingUIFromPanel($num,0);
+}
+proc getSaveList(int $mode){
+	global string $AriViewWindow_textScrollListViewSave[];
+	global string $AriViewWindow_viewListtSList;
+	global string $AriViewWindow_settingSettingNameList[];
+	global string $AriViewWindow_settingStringList[];
+	string $textScrollName;
+	if($mode != 999) $textScrollName = $AriViewWindow_textScrollListViewSave[$mode];
+	else             $textScrollName = $AriViewWindow_viewListtSList;
+	string $savePath = SavePath();
+	string $loadList[] = TextLoad($savePath);
+	textScrollList -e -ra  $textScrollName; 
+	clear $AriViewWindow_settingSettingNameList;
+	clear $AriViewWindow_settingStringList;
+	int $i=0;
+	int $j=0;
+	int $loadTrue=false;
+	for($load in $loadList){
+		if($loadTrue){
+			int $num = $i*100+$j;
+			if(startsWith ($load,"AriViewWindow:End:")){
+				$loadTrue = false;
+				$i++;
+				$j=0;
+			}
+			else{
+				$AriViewWindow_settingStringList[$num] = $load;
+				$j++;
+			}
+		}
+		else{
+			if(startsWith ($load,"AriViewWindow:Start:")){
+				string $sepa[];
+				tokenize $load ":" $sepa;
+				$AriViewWindow_settingSettingNameList[$i] = $sepa[size($sepa)-1];
+				$loadTrue = true;
+			}
+		}
+	}
+	/*
+	string $evalString = "textScrollList -e ";
+	for($name in $AriViewWindow_settingSettingNameList){
+		$evalString = $evalString + (" -a "+ $name); 
+	}
+	$evalString = $evalString + (" "+$textScrollName);
+	eval $evalString;
+	*/
+	for($name in $AriViewWindow_settingSettingNameList){
+		textScrollList -e -a  $name $textScrollName; 
+	}
+}
+proc settingOptionSet(string $settingList[], int $num){
+	global string $AriViewWindowUI_radioButtonON[];
+	global string $AriViewWindowUI_radioButtonOFF[];
+	global string $AriViewWindowUI_settingNameTextField[];
+	global string $AriViewWindowUI_checkBoxChange[];
+	string $flagNameList[] = stringSettingAllList();
+	string $stringSettingListFlag[] = stringSettingListPrc();
+	string $intSettingListFlag[]    = intSettingListProc();
+	for($text in $settingList){
+		string $sepa[];
+		tokenize $text ":" $sepa;
+		string $flag = $sepa[0];
+		string $val  = $sepa[1];
+		int  $enable = true;
+		if(size($sepa)>=3)	$enable = $sepa[2];
+		for($i=0; $i<size($flagNameList); $i++){
+			string $UIflagName = $flagNameList[$i];
+			if($flag != $UIflagName)continue;
+			int $arrayNum = $num*100 + $i;
+			if(`checkBox -ex $AriViewWindowUI_checkBoxChange[$arrayNum]`)checkBox -e -v $enable $AriViewWindowUI_checkBoxChange[$arrayNum];
+			if(stringArrayContains($flag, $intSettingListFlag) ){
+				int $intVal = int($val);
+				if($intVal==1){
+					radioButton -e -sl $AriViewWindowUI_radioButtonON[$arrayNum];
+				}
+				else{
+					radioButton -e -sl $AriViewWindowUI_radioButtonOFF[$arrayNum];
+				}
+				radioButton -e -en $enable $AriViewWindowUI_radioButtonON[$arrayNum];
+				radioButton -e -en $enable $AriViewWindowUI_radioButtonOFF[$arrayNum];
+			}
+			if(stringArrayContains($flag, $stringSettingListFlag) ){
+				textField -e -text $val $AriViewWindowUI_radioButtonON[$arrayNum];
+			}
+		}
+	}
+}
+proc modelEditorSet(string $settingList[], int $num){
+	global string $AriViewWindow_modelPanels[];
+	string $stringSettingList[] = stringSettingListPrc();	
+	string $intSettingList[]    = intSettingListProc();		
+	string $nowPanel = $AriViewWindow_modelPanels[$num];
+	for($text in $settingList){
+		string $sepa[];
+		tokenize $text ":" $sepa;
+		string $flag = $sepa[0];
+		string $val  = $sepa[1];
+		int  $enable = true;
+		if(size($sepa)>=3)	$enable = $sepa[2];
+		if(!$enable)continue;
+		if(stringArrayContains($flag, $stringSettingList)){ 
+			if($flag == "-camera")continue;
+			string $getString =`modelEditor -q ($flag) $nowPanel`;
+			if($getString != $val){
+				print ($flag+"      "+($val)+"\n");
+				modelEditor -e ($flag) ($val) $nowPanel;
+			}
+		}
+		if(stringArrayContains($flag, $intSettingList)){ 
+			int $intVal = int($val);
+			int $getInt =`modelEditor -q ($flag) $nowPanel`;
+			if($getInt != $intVal){
+				print ($flag+"      "+$intVal+"\n");
+				modelEditor -e ($flag) $intVal $nowPanel;
+			}
+		}
+	}
+	print ("------------------------\n\n");
+}
+proc string getNewSaveName(string $name, string $saveStringList[]){
+	string $saveNameList[];
+	int $i=0;
+	for($text in $saveStringList){
+		if(startsWith ($text,"AriViewWindow:Start:")){
+			string $sepa[];
+			tokenize $text ":" $sepa;
+			$saveNameList[$i] = $sepa[2];
+			$i++;
+		}
+	}
+	$i=0;
+	string $newName = $name;
+	while($i<1000){
+		if(stringArrayContains($newName,$saveNameList)){
+			$newName = $name+$i;
+		}
+		else{
+			break;
+		}
+		$i++;
+	}
+	print $newName;
+	return $newName;
+}
+proc Save_NewNameNewSaveProc(string $oldName,string $newName,string $list[]){
+	string $savePath = SavePath();
+	string $loadList[] = TextLoad($savePath);
+	int $i=0;
+	string $saveText[];
+	int $changeTrue = false;
+	if($oldName!=""){
+		string $StartName = ("AriViewWindow:Start:"+$oldName);
+		string $EndName   = ("AriViewWindow:End:"+$oldName);
+		string $newReName = $newName;
+		if($oldName != $newName)$newReName = getNewSaveName($newName,$loadList);
+		for($text in $loadList){
+			if($text=="")continue;
+			if($StartName == $text){
+				$saveText[$i] = ("AriViewWindow:Start:"+$newReName);
+				$i++;
+				$changeTrue = true;
+				for($new in $list){
+					$saveText[$i] = $new;
+					$i++;
+				}
+				$saveText[$i] = ("AriViewWindow:End:"+$newReName);
+				$i++;
+			}
+			if($changeTrue == false){
+				$saveText[$i] = $text;
+				$i++;
+			}
+			if($EndName == $text){
+				$changeTrue = false;
+			}
+		}
+	}
+	else{
+		string $newReName = $newName;
+		$newReName = getNewSaveName($newName,$loadList);
+		$saveText = $loadList;
+		$i = size($saveText);
+		$saveText[$i] = ("AriViewWindow:Start:"+$newReName);
+		$i++;
+		for($new in $list){
+			$saveText[$i] = $new;
+			$i++;
+		}
+		$saveText[$i] = ("AriViewWindow:End:"+$newReName);
+		$i++;
+	}
+	TextSave($saveText, $savePath);
+}
+proc int Setting_TextRename(string $baseName, string $reName){
+	string $savePath = SavePath();
+	string $loadList[] = TextLoad($savePath);
+	string $newSaveList[];
+	string $findStart = ("AriViewWindow:Start:"+$baseName);
+	string $findEnd   = ("AriViewWindow:End:"+$baseName);
+	$containTrue = false;
+	for($text in $loadList){
+		if($text == ("AriViewWindow:Start:"+$reName)){
+			$containTrue = true;
+			break;
+		}
+	}
+	if($containTrue==true)return 0;
+	int $saveTrue=true;
+	int $i=0;
+	for($text in $loadList){
+		$saveTrue = true;
+		if($findStart == $text){
+			$newSaveList[$i] = ("AriViewWindow:Start:"+$reName);
+			$i++;
+			$saveTrue = false;
+		}
+		if($findEnd == $text){
+			$newSaveList[$i] = ("AriViewWindow:End:"+$reName);
+			$i++;
+			$saveTrue = false;
+		}
+		if($saveTrue){
+			$newSaveList[$i] = $text;
+			$i++;
+		}
+	}
+	TextSave($newSaveList, $savePath);
+	return 1;
+}
+proc Setting_TextDelete(string $name){
+	string $savePath = SavePath();
+	string $loadList[] = TextLoad($savePath);
+	string $newSaveList[];
+	string $findStart = ("AriViewWindow:Start:"+$name);
+	string $findEnd   = ("AriViewWindow:End:"+$name);
+	int $saveTrue=true;
+	int $i=0;
+	for($text in $loadList){
+		if($findStart == $text)$saveTrue=false;
+		if($saveTrue){
+			$newSaveList[$i] = $text;
+			$i++;
+		}
+		if($findEnd == $text)$saveTrue=true;
+	}
+	TextSave($newSaveList, $savePath);
+}
+global proc AriViewWindow_SavePaneLayout(int $paneNum){
+	global string $AriViewWindow_paneLayout1[];
+	global string $AriViewWindow_paneLayout2[];
+	global string $AriViewWindow_paneLayoutCamera[];
+	int $paneSizes1[] = `paneLayout -q -paneSize  $AriViewWindow_paneLayout1[$paneNum]`;
+	int $paneSize1 = $paneSizes1[0];
+	int $paneSizes2[] = `paneLayout -q -paneSize  $AriViewWindow_paneLayout2[$paneNum]`;
+	int $paneSize2 = $paneSizes2[3];
+	int $paneSizesCam[] = `paneLayout -q -paneSize  $AriViewWindow_paneLayoutCamera[$paneNum]`;
+	int $paneSizeCam = $paneSizesCam[1];
+	optionVar -intValue "AriViewWindow_paneLayoutSize1"   $paneSize1;
+	optionVar -intValue "AriViewWindow_paneLayoutSize2"   $paneSize2;
+	optionVar -intValue "AriViewWindow_paneLayoutSizeCam" $paneSizeCam;
+}
+proc AriViewWindow_ViewListBookMark(int $winNum){
+	global string $AriViewWindow_textScrollListCam[];
+	global string $AriViewWindow_textScrollListBookMark[];
+	string $selects[] = `textScrollList -q -si $AriViewWindow_textScrollListCam[$winNum]`;
+	if($selects[0]=="------")return;
+	string $bookMarkList[] = getBookMarkList($selects[0]);
+	textScrollList -e -ra  $AriViewWindow_textScrollListBookMark[$winNum]; 
+	for($bookMark in $bookMarkList){
+		textScrollList -e -a  $bookMark $AriViewWindow_textScrollListBookMark[$winNum]; 
+	}
+}
+global proc AriViewWindow_Click_Cam(int $winNum){
+	global string $AriViewWindow_textScrollListCam[];
+	global string $AriViewWindow_modelPanels[];
+	string $selects[] = `textScrollList -q -si $AriViewWindow_textScrollListCam[$winNum]`;
+	if($selects[0]=="------")return;
+	if(`modelEditor -ex $AriViewWindow_modelPanels[$winNum]`){
+		string $camera = `modelEditor -q -camera $AriViewWindow_modelPanels[$winNum]`;
+		modelEditor -e -camera $selects[0] $AriViewWindow_modelPanels[$winNum];
+	}
+	setFocus $AriViewWindow_modelPanels[$winNum];
+	setFocus $AriViewWindow_textScrollListCam[$winNum];
+	AriViewWindow_ViewListBookMark($winNum);
+}
+global proc AriViewWindow_Click_BookMark(int $winNum){
+	global string $AriViewWindow_textScrollListCam[];
+	global string $AriViewWindow_textScrollListBookMark[];
+	string $camera[]   = `textScrollList -q -si $AriViewWindow_textScrollListCam[$winNum]`;
+	string $bookmark[] = `textScrollList -q -si $AriViewWindow_textScrollListBookMark[$winNum]`;
+	print ("    "+$camera[0]+" "+$bookmark[0]+"\n");
+	cameraView -e -camera $camera[0] -setCamera $bookmark[0];
+}
+global proc AriViewWindow_Click_SettingList(int $num){
+	global string $AriViewWindow_textScrollListViewSave[];
+	global string $AriViewWindow_viewListtSList;
+	global string $AriViewWindowUI_viewListtScrollLayout;
+	global string $AriViewWindowUI_viewListtColumnLayout;
+	global string $AriViewWindowUI_ListtScrollLayout[];
+	global string $AriViewWindowUI_ListtColumnLayout[];
+	global string $AriViewWindowUI_checkBoxChange[];
+	global string $AriViewWindow_settingSettingNameList[];
+	global string $AriViewWindow_settingStringList[];
+	global string $AriViewWindowUI_settingNameTextField[];
+	string $textScrollName;
+	if($num != 999) $textScrollName = $AriViewWindow_textScrollListViewSave[$num];
+	else             $textScrollName = $AriViewWindow_viewListtSList;
+	int $selectNumbers[] = `textScrollList -q -sii $textScrollName`;
+	int $selectNumber = $selectNumbers[0]-1;
+	int $arrayNum = ($selectNumber)*100;
+	string $bookmarkName = $AriViewWindow_settingSettingNameList[$selectNumber];
+	string $bookMarkSetting[];
+	textField -e -text $bookmarkName $AriViewWindowUI_settingNameTextField[$num];
+	int $i=0;
+	for($i=0; $i<100; $i++){
+		$bookMarkSetting[$i] = $AriViewWindow_settingStringList[$arrayNum+$i];
+	}
+	string $flagNameList[];
+	int    $intList[];
+	string $valList[];
+	int    $enableList[];
+	modelEditorSet($bookMarkSetting, $num);
+	settingOptionSet($bookMarkSetting, $num);
+	AriViewWindow_viewFitGo($num);
+	AriViewWindow_SavePaneLayout($num);
+}
+global proc AriViewWindow_GetSettingUIFromPanel(int $num,int $changeCheck){
+	global string $AriViewWindow_modelPanels[];
+	global string $AriViewWindowUI_checkBoxChange[];
+	global string $AriViewWindowUI_radioButtonON[];
+	global string $AriViewWindowUI_radioButtonOFF[];
+	string $flagNameList[]    = stringSettingAllList();
+	string $stringSettingListFlag[] = stringSettingListPrc();
+	string $intSettingListFlag[]    = intSettingListProc();
+	string $nowPanel = $AriViewWindow_modelPanels[$num];
+	for($i=0; $i<size($flagNameList); $i++){
+		int $arrayNum = $num*100 + $i;
+		if(stringArrayContains($flagNameList[$i],$intSettingListFlag) ){
+			int $intTrue = `modelEditor -q ($flagNameList[$i]) $nowPanel`;
+			int $beforeTrue = `radioButton -q -sl $AriViewWindowUI_radioButtonON[$arrayNum]`;
+			if($intTrue){
+				radioButton -e -sl $AriViewWindowUI_radioButtonON[$arrayNum];
+			}
+			else{
+				radioButton -e -sl $AriViewWindowUI_radioButtonOFF[$arrayNum];
+			}
+			radioButton -e -bgc 0.2 0.2 0.2 $AriViewWindowUI_radioButtonON[$arrayNum];
+			radioButton -e -bgc 0.2 0.2 0.2 $AriViewWindowUI_radioButtonOFF[$arrayNum];
+			if($beforeTrue != $intTrue && $changeCheck==1){
+				radioButton -e -bgc 0.5 0 0 $AriViewWindowUI_radioButtonON[$arrayNum];
+				radioButton -e -bgc 0.5 0 0 $AriViewWindowUI_radioButtonOFF[$arrayNum];
+				if(!`checkBox -q -v $AriViewWindowUI_checkBoxChange[$arrayNum]`){
+					radioButton -e -bgc 0.2 0 0 $AriViewWindowUI_radioButtonON[$arrayNum];
+					radioButton -e -bgc 0.2 0 0 $AriViewWindowUI_radioButtonOFF[$arrayNum];
+				}
+			}
+		}
+		if(stringArrayContains($flagNameList[$i],$stringSettingListFlag) ){
+			string $stringValue = `modelEditor -q ($flagNameList[$i]) $nowPanel`;
+			string $beforeValue = `textField -q -text $AriViewWindowUI_radioButtonON[$arrayNum]`;
+			textField -e -text $stringValue $AriViewWindowUI_radioButtonON[$arrayNum];
+			textField -e -bgc 0.2 0.2 0.2 $AriViewWindowUI_radioButtonON[$arrayNum];
+			if($beforeValue != $stringValue && $changeCheck==1){
+				textField -e -bgc 0.4 0 0 $AriViewWindowUI_radioButtonON[$arrayNum];
+			}
+		}
+	}
+}
+global proc AriViewWindow_Setting_Add(int $mode){
+	global string $AriViewWindow_modelPanels[];
+	global string $AriViewWindow_textScrollListViewSave[];
+	string $stringSettingListValue[];
+	int    $intSettingListValue[];
+	string $stringSettingListFlag[] = stringSettingListPrc();
+	string $intSettingListFlag[] = intSettingListProc();
+	string $nowPanel = $AriViewWindow_modelPanels[$mode];
+	string $savePath = SavePath();
+	string $saveString[];
+	clear $saveString;
+	int $counter=0;
+	$saveString = TextLoad($savePath);
+	$counter = size($saveString);
+	if(!`modelEditor -ex $nowPanel`)return;
+	int $nameCount = 0;
+	string $baseStartName = "AriViewWindow:Start:ViewRender";
+	string $baseEndName   = "AriViewWindow:End:ViewRender";
+	string $bookmarkStartName = ($baseStartName + $nameCount);
+	string $bookmarkEndName   = ($baseEndName + $nameCount);
+	int $containTrue=true;
+	int $k=0;
+	while($k<100){
+		$containTrue = false;
+		for($text in $saveString){
+			if($text == $bookmarkStartName){
+				$nameCount++;
+				$bookmarkStartName = ($baseStartName + $nameCount);
+				$bookmarkEndName   = ($baseEndName + $nameCount);
+				$containTrue = true;
+				break;
+			}
+		}
+		if($containTrue==false)break;
+		$k++;
+	}
+	print $bookmarkStartName;
+	$saveString[$counter] = ($bookmarkStartName);
+	$counter++;
+	for($i=0;$i<size($stringSettingListFlag);$i++){
+		$stringSettingListValue[$i] = `modelEditor -q ($stringSettingListFlag[$i]) $nowPanel`;
+		$saveString[$counter] = $stringSettingListFlag[$i]+":"+$stringSettingListValue[$i]+":1";
+		$counter++;
+	}
+	for($i=0;$i<size($intSettingListFlag);$i++){
+		$intSettingListValue[$i]    = `modelEditor -q ($intSettingListFlag[$i]) $nowPanel`;
+		$saveString[$counter] = $intSettingListFlag[$i]+":"+$intSettingListValue[$i]+":1";
+		$counter++;
+	}
+	$saveString[$counter] = ($bookmarkEndName);
+	$counter++;
+	TextSave($saveString, $savePath);
+	getSaveList($mode);
+}
+global proc AriViewWindow_Setting_Delete(int $panelNum){
+	global string $AriViewWindow_textScrollListViewSave[];
+	string $selectText[] = `textScrollList -q -si $AriViewWindow_textScrollListViewSave[$panelNum]`;
+	for($text in $selectText){
+		Setting_TextDelete($text);
+	}
+	getSaveList($panelNum);
+}
+global proc AriViewWindow_Setting_UpDown(int $UpDown, int $panelNum){
+	global string $AriViewWindow_textScrollListViewSave[];
+	string $savePath = SavePath();
+	string $loadList[] = TextLoad($savePath);
+	int $selectindex[] = `textScrollList -q -sii $AriViewWindow_textScrollListViewSave[$panelNum]`;
+	int $total = `textScrollList -q -ni $AriViewWindow_textScrollListViewSave[$panelNum]`;
+	int $countA = $selectindex[0]-2;
+	int $countB = $selectindex[0]-1;	
+	if($UpDown==1){
+		$countA = $selectindex[0]-1;
+		$countB = $selectindex[0]-0;
+	}
+	if($countA<0)return;
+	if($countB>$total-1)return;
+	print ($countA+"  "+$countB+"\n\n");
+	string $findStart = ("AriViewWindow:Start:");
+	string $findEnd   = ("AriViewWindow:End:");
+	string $stringListBefore[];
+	string $stringListAfter[];
+	string $stringListA[];
+	string $stringListB[];
+	int $getBeforeTrue = true;
+	int $getTrueA = false;
+	int $getTrueB = false;
+	int $getAfterTrue = false;
+	int $i=0;
+	int $counter=0;
+	print $findStart;
+	for($text in $loadList){
+		if(startsWith ($text,$findStart)){
+			print ($counter+"\n");
+			if($countA==$counter){
+				$getBeforeTrue = false;
+				$getTrueA = true;
+				$getTrueB = false;
+				$getAfterTrue = false;
+				print ("A "+$counter +" "+ $text +" "+"\n");
+				$i=0;
+			}
+			if($countB==$counter){
+				$getBeforeTrue = false;
+				$getTrueA = false;
+				$getTrueB = true;
+				$getAfterTrue = false;
+				print ("B "+$counter +" "+ $text +" "+"\n");
+				$i=0;
+			}
+			if($counter == $countB+1){
+				$getBeforeTrue = false;
+				$getTrueA = false;
+				$getTrueB = false;
+				$getAfterTrue = true;
+				print ("After "+$counter +" "+ $text +" "+"\n");
+				$i=0;
+			}
+			$counter++;
+		}
+		if($getBeforeTrue == true){
+			$stringListBefore[$i] = $text;
+			$i++;
+		}
+		if($getAfterTrue == true){
+			$stringListAfter[$i] = $text;
+			$i++;
+		}
+		if($getTrueA){
+			$stringListA[$i] = $text;
+			$i++;
+		}
+		if($getTrueB){
+			$stringListB[$i] = $text;
+			$i++;
+		}
+		/*
+		if(startsWith ($text,$findEnd) ){
+			print "End---------------\n";
+			$getBeforeTrue = false;
+			$getTrueA = false;
+			$getTrueB = false;
+			$getAfterTrue = true;
+			$i=0;
+		}
+		*/
+	}
+	string $saveText[];
+	$saveText = $stringListBefore;
+	$saveText = stringArrayCatenate($saveText, $stringListB);
+	$saveText = stringArrayCatenate($saveText, $stringListA);
+	$saveText = stringArrayCatenate($saveText, $stringListAfter);
+	TextSave($saveText, $savePath);
+	AriViewWindow_Reload($panelNum);
+	int $selectNum;
+	if($UpDown==0)$selectNum = $selectindex[0]-1;
+	if($UpDown==1)$selectNum = $selectindex[0]+1;
+	textScrollList -e -sii $selectNum $AriViewWindow_textScrollListViewSave[$panelNum];
+}
+global proc AriViewWindow_Button_SettingRename(int $panelNum){
+	global string $AriViewWindow_textScrollListViewSave[];
+	string $selectText[] = `textScrollList -q -si $AriViewWindow_textScrollListViewSave[$panelNum]`;
+	if(size($selectText)==0)return;
+	string $rename = "";
+	string $result = `promptDialog
+	-title "Rename"
+	-message ("Rename: "+$selectText[0])
+	-button "OK" -button "Cancel"
+	-defaultButton "OK" -cancelButton "Cancel"
+	-dismissString "Cancel"
+	-text $selectText[0]`;
+	if ($result == "OK") {
+    	$rename = `promptDialog -query -text`;
+	}
+	else return;
+	string $sepa[];
+	tokenize $rename " \\,.:;!\"#$%&'(){}" $sepa;
+	if(size($sepa)>=2)return;
+	$rename = $sepa[0];
+	if($rename=="")return;
+	Setting_TextRename($selectText[0],$rename);
+	getSaveList($panelNum);
+}
+global proc AriViewWindow_viewFitGo(int $panelNum){
+	global string $AriViewWindow_modelPanels[];
+	global string $AriViewWindow_viewFit_fit[];
+	global string $AriViewWindow_viewFit_isolate[];
+	int $fitTrue     = `menuItem -q -cb $AriViewWindow_viewFit_fit[$panelNum]`;
+	int $isolateTrue = `menuItem -q -cb $AriViewWindow_viewFit_isolate[$panelNum]`;  
+	string $panelName = $AriViewWindow_modelPanels[$panelNum];
+	if($fitTrue){
+		string $camera = `modelEditor -q -camera $panelName`;
+		viewFit $camera;
+	}
+	if($isolateTrue){
+		isolateSelect -state 0 $panelName;
+		isolateSelect -state 1 $panelName;
+	}
+}
+global proc AriViewWindow_viewFit(int $panelNum){
+	global string $AriViewWindow_window[];
+	global string $AriViewWindow_modelPanels[];
+	global string $AriViewWindow_viewFit_fit[];
+	global string $AriViewWindow_viewFit_isolate [];
+	global int $AriViewWindow_scriptJob[];
+	int $fitTrue     = `menuItem -q -cb $AriViewWindow_viewFit_fit[$panelNum]`;
+	int $isolateTrue = `menuItem -q -cb $AriViewWindow_viewFit_isolate[$panelNum]`;
+	if($fitTrue==true || $isolateTrue==true){
+		if($AriViewWindow_scriptJob[$panelNum] == 0){
+			$AriViewWindow_scriptJob[$panelNum] = `scriptJob -p $AriViewWindow_window[$panelNum] -event "SelectionChanged" ("AriViewWindow_viewFitGo(\""+$panelNum+"\")")`;
+		}
+	}
+	else{
+		if($AriViewWindow_scriptJob[$panelNum] != 0){
+			scriptJob -kill $AriViewWindow_scriptJob[$panelNum];
+		}
+		$AriViewWindow_scriptJob[$panelNum] = 0;
+	}
+	if($isolateTrue == false){
+		isolateSelect -state 0 $AriViewWindow_modelPanels[$panelNum];
+	}
+}
+global proc AriViewWindow_Reload(int $panelNum){
+	getCamList($panelNum);
+	getSaveList($panelNum);
+}
+global proc AriViewWindow_SaveSettingOption(int $num,int $mode){
+	global string $AriViewWindow_textScrollListViewSave[];
+	global string $AriViewWindowUI_radioButtonON[];
+	global string $AriViewWindowUI_radioButtonOFF[];
+	global string $AriViewWindowUI_settingNameTextField[];
+	global string $AriViewWindowUI_checkBoxChange[];
+	global string $AriViewWindow_settingSettingNameList[];
+	global string $AriViewWindow_settingStringList[];
+	string $selectText[] = `textScrollList -q -selectItem $AriViewWindow_textScrollListViewSave[$num]`;
+	string $bookmarkName = `textField -q -text $AriViewWindowUI_settingNameTextField[$num]`;
+	string $flagNameList[]    = stringSettingAllList();
+	string $stringSettingListFlag[] = stringSettingListPrc();
+	string $intSettingListFlag[]    = intSettingListProc();
+	string $list[];
+	int $listCounter=0;
+	for($i = 0; $i < 100; $i++){
+		int $arrayNum = $num*100+$i;
+		if($AriViewWindowUI_checkBoxChange[$arrayNum]=="")continue;
+		if(!`checkBox -ex $AriViewWindowUI_checkBoxChange[$arrayNum]`)continue;
+		int $enableTrue = `checkBox -q -v $AriViewWindowUI_checkBoxChange[$arrayNum]`;
+		string $value;
+		if(stringArrayContains($flagNameList[$i],$intSettingListFlag) ){
+			int $selTrue = `radioButton -q -sl $AriViewWindowUI_radioButtonON[$arrayNum]`;
+			if($selTrue)$value = "1";
+			else		$value = "0";
+			radioButton -e -bgc 0.2 0.2 0.2 $AriViewWindowUI_radioButtonON[$arrayNum];
+			radioButton -e -bgc 0.2 0.2 0.2 $AriViewWindowUI_radioButtonOFF[$arrayNum];
+		}
+		if(stringArrayContains($flagNameList[$i],$stringSettingListFlag) ){
+			$value = `textField -q -text $AriViewWindowUI_radioButtonON[$arrayNum]`;
+			textField -e -bgc 0.2 0.2 0.2 $AriViewWindowUI_radioButtonON[$arrayNum];
+		}
+		$list[$listCounter] = $flagNameList[$i]+":"+$value+":"+$enableTrue;
+		$listCounter++;
+	}
+	print $list;
+	if($bookmarkName==""){
+		$bookmarkName = $selectText[0];
+		if($selectText[0]=="")$bookmarkName = "ViewRender";
+	}
+	if($mode==0)	Save_NewNameNewSaveProc($selectText[0], $bookmarkName,  $list);
+	if($mode==1)	Save_NewNameNewSaveProc("", $bookmarkName,  $list);
+	AriViewWindow_Reload($num);
+}
+global proc AriViewWindow_SettingOption(int $num){
+	global string $AriViewWindow_paneLayout1[];
+	global string $AriViewWindow_optionLayout[];
+	int $vis = `formLayout -q -vis $AriViewWindow_optionLayout[$num]`;
+	formLayout -e -vis (!$vis) $AriViewWindow_optionLayout[$num];
+}
+global proc AriViewWindow_paneUI_CheckChange(int $arrayNum){
+	global string $AriViewWindowUI_checkBoxChange[];
+	global string $AriViewWindowUI_textList[];
+	global string $AriViewWindowUI_radioButtonON[];
+	global string $AriViewWindowUI_radioButtonOFF[];
+	int $checkTrue = `checkBox -q -v $AriViewWindowUI_checkBoxChange[$arrayNum]`;
+	if(`radioButton -ex $AriViewWindowUI_radioButtonON[$arrayNum]`){
+		radioButton -e -en $checkTrue $AriViewWindowUI_radioButtonON[$arrayNum];
+		radioButton -e -en $checkTrue $AriViewWindowUI_radioButtonOFF[$arrayNum];
+	}
+	if(`textField -ex $AriViewWindowUI_radioButtonON[$arrayNum]`){
+		textField -e -en $checkTrue $AriViewWindowUI_radioButtonON[$arrayNum];
+	}
+}
+global proc AriViewWindow_BookMark_EditorOpen(int $winNum){
+	global string $AriViewWindow_textScrollListCam[];
+	string $camera[] = `textScrollList -q -si $AriViewWindow_textScrollListCam[$winNum]`;
+	if(`window -ex "cameraBookmarkWindow"`)deleteUI "cameraBookmarkWindow";
+	cameraBookmarkEditor $camera[0];
+}
+global proc AriViewWindow_BookMark_Save(int $winNum,int $mode){
+	global string $AriViewWindow_textScrollListCam[];
+	global string $AriViewWindow_textScrollListBookMark[];
+	string $camera[]   = `textScrollList -q -si $AriViewWindow_textScrollListCam[$winNum]`;
+	string $bookmark[] = `textScrollList -q -si $AriViewWindow_textScrollListBookMark[$winNum]`;
+	string $selectBookmark = $bookmark[0];
+	if($mode==0){
+		delete $bookmark[0];
+	}
+	if($mode==1)$selectBookmark = `cameraView    -camera $camera[0] -ab`;
+	if($mode==2)cameraView -e -camera $camera[0] -sv $selectBookmark;
+	AriViewWindow_Reload($winNum);
+	if($mode==1 || $mode==2)textScrollList -e -si $selectBookmark $AriViewWindow_textScrollListBookMark[$winNum];
+}
+global proc AriViewWindow_BookMark_Rename(int $winNum){
+	global string $AriViewWindow_textScrollListBookMark[];
+	string $bookmark[] = `textScrollList -q -si $AriViewWindow_textScrollListBookMark[$winNum]`;
+	print $bookmark;
+	string $result = `promptDialog
+    -title "Rename"
+	-message ("Rename "+$bookmark[0])
+	-text $bookmark[0]
+	-button "OK" -button "Cancel"
+	-defaultButton "OK" -cancelButton "Cancel"
+ 	-dismissString "Cancel"`;
+	string $resultName;
+	if ($result == "OK") {
+	    string $newName = `promptDialog -query -text`;
+		$resultName =`rename $bookmark[0] $newName`;
+	}
+	AriViewWindow_Reload($winNum);
+	textScrollList -e -si $resultName $AriViewWindow_textScrollListBookMark[$winNum];
+}
+proc string panelUI_SettingOption(int $num){
+	global string $AriViewWindowUI_ListtScrollLayout[];
+	global string $AriViewWindowUI_ListtColumnLayout[];
+	global string $AriViewWindow_modelPanels[];
+	global string $AriViewWindowUI_checkBoxChange[];
+	global string $AriViewWindowUI_textList[];
+	global string $AriViewWindowUI_radioButtonON[];
+	global string $AriViewWindowUI_radioButtonOFF[];
+	global string $AriViewWindowUI_settingNameTextField[];
+	string $stringSettingListFlag[] = stringSettingListPrc();
+	string $intSettingListFlag[]    = intSettingListProc();
+	string $flagNameList[]    = stringSettingAllList();
+	string $flagNameList_JP[] = stringSettingAllList_JP();
+	string $nowPanel = $AriViewWindow_modelPanels[$num];
+	string $form = `formLayout -w 320`;
+	$AriViewWindowUI_ListtScrollLayout[$num] = `scrollLayout -cr true`;
+	$AriViewWindowUI_ListtColumnLayout[$num] = `columnLayout -adj true -bgc 0.2 0.2 0.2`;
+	string $labelList[]={
+	};
+	string $labelList_jp[]={
+		"シェーディング",
+		"",
+		"",
+		"",
+		"ライティング",
+		"表示",
+		"",
+		"",
+		"レンダラ",
+		"",
+		""
+	};
+	int $labelNumList[]={0,2,9,11,13,16,17,49,53,54};
+	int $labelCounter=0;
+	$labelNum =  $labelNumList[0];
+	$labelList = $labelList_jp;
+	print $flagNameList;
+	string $parentColumn;
+	for($i=0; $i<size($flagNameList); $i++){
+		int $arrayNum = $num*100 + $i;
+		if($labelNum == $i){
+			if($labelList[$labelCounter]!=""){
+				print ($labelList[$labelCounter]+"\n");
+				frameLayout -l $labelList[$labelCounter] -cll true ;
+				$parentColumn = `columnLayout -adj true `;
+				setParent..;
+				setParent..;
+			}
+			else{
+				separator -st "in" -p $parentColumn ;
+			}
+			$labelCounter++;
+			$labelNum =  $labelNumList[$labelCounter];
+		}
+		string $row=`rowLayout -nc 3 -cw3 200 100 160`;
+		$AriViewWindowUI_checkBoxChange[$arrayNum] = `checkBox -l ($flagNameList_JP[$i]) -v true -cc ("AriViewWindow_paneUI_CheckChange("+$arrayNum+")")`;
+		if(stringArrayContains($flagNameList[$i],$intSettingListFlag) ){
+			rowLayout -nc 2 -cw2 40 40;
+				radioCollection;
+				$AriViewWindowUI_radioButtonON[$arrayNum]  = `radioButton -l "ON"  -onc ("modelEditor -e "+$flagNameList[$i]+" true  "+$nowPanel+";" )`;
+				$AriViewWindowUI_radioButtonOFF[$arrayNum] = `radioButton -l "OFF" -onc ("modelEditor -e "+$flagNameList[$i]+" false "+$nowPanel+";" )`;
+			setParent..;
+		}
+		if(stringArrayContains($flagNameList[$i],$stringSettingListFlag) ){
+			$AriViewWindowUI_radioButtonON[$arrayNum] = `textField -ed 0`;
+		}
+		text -label $flagNameList[$i];
+		setParent..;
+		print ($parentColumn+"\n"+$row+"\n");
+		rowLayout -e -p $parentColumn $row;
+	}
+	setParent..;
+	setParent..;
+	string $column = `columnLayout -adj true`;
+	rowLayout -nc 4 -adj 2;
+	button -w 60 -l "Get" -c ("AriViewWindow_GetSettingUIFromPanel("+$num+",1);");
+	$AriViewWindowUI_settingNameTextField[$num] = `textField `;
+	button -w 60 -l "Save"    -c ("AriViewWindow_SaveSettingOption("+$num+",0);");
+	button -w 60 -l "Save As" -c ("AriViewWindow_SaveSettingOption("+$num+",1);");;
+	setParent..;
+	setParent..;
+	setParent..;
+	formLayout -e
+	-af $column "left" 0
+	-af $column "right" 0
+	-af $column "bottom" 0
+	-af $AriViewWindowUI_ListtScrollLayout[$num] "top" 0
+	-af $AriViewWindowUI_ListtScrollLayout[$num] "left" 0
+	-af $AriViewWindowUI_ListtScrollLayout[$num] "right" 0
+	-ac $AriViewWindowUI_ListtScrollLayout[$num] "bottom" 0 $column
+	$form;
+	AriViewWindow_GetSettingUIFromPanel($num,0);
+	return $form;
+}
+proc panelUI_bookMarkList(int $num){
+	global string $AriViewWindow_textScrollListBookMark[];
+	string $frame = `frameLayout -l "Bookmark"`;
+	string $listForm = `formLayout -w 120`;
+	$AriViewWindow_textScrollListBookMark[$num] = `textScrollList -h 10 -ams false -sc ("AriViewWindow_Click_BookMark("+$num+")") -dcc ("AriViewWindow_BookMark_Rename("+$num+")")`;
+	string $buttonAdd    = `button -l "+"    -h 20 -w 28 -c ("AriViewWindow_BookMark_Save("+$num+",1)")`;
+	string $buttonDelete = `button -l "-"    -h 20 -w 28 -c ("AriViewWindow_BookMark_Save("+$num+",0)")`;
+	string $buttonSave   = `button -l "Save" -h 20 -w 40 -c ("AriViewWindow_BookMark_Save("+$num+",2)")`;
+	string $buttonEditor = `iconTextButton -i "gear" -h 20  -w 28   -c ("AriViewWindow_BookMark_EditorOpen("+$num+")")`;
+	setParent..;
+	formLayout -e 
+	-af $buttonEditor "bottom" 0
+	-af $buttonEditor "right" 0
+	-af $buttonAdd "bottom" 0
+	-af $buttonAdd "left"   0
+	-af $buttonDelete "bottom" 0
+	-ac $buttonDelete "left"  0 $buttonAdd
+	-af $buttonSave "bottom" 0
+	-ac $buttonSave "left"   0 $buttonDelete
+	-ac $buttonSave "right"  0 $buttonEditor
+	-af $AriViewWindow_textScrollListBookMark[$num] "top" 0
+	-af $AriViewWindow_textScrollListBookMark[$num] "left" 0
+	-af $AriViewWindow_textScrollListBookMark[$num] "right" 0
+	-ac $AriViewWindow_textScrollListBookMark[$num] "bottom" 0  $buttonSave
+	$listForm;
+	setParent..;
+}
+proc panelUI_cameraList(int $num){
+	global string $AriViewWindow_textScrollListCam[];
+	global string $AriViewWindow_viewFit_fit[];
+	global string $AriViewWindow_viewFit_isolate [];
+	global string $AriViewWindow_paneLayoutCamera[];
+	string $frame = `frameLayout -l "Camera"`;
+	$AriViewWindow_textScrollListCam[$num] = `textScrollList -h 10 -ams false -sc ("AriViewWindow_Click_Cam("+$num+")")`;
+	popupMenu;
+	$AriViewWindow_viewFit_fit[$num]     = `menuItem -label "Fit"           -cb false -c ("AriViewWindow_viewFit("+$num+")")`;
+	$AriViewWindow_viewFit_isolate[$num] = `menuItem -label "IsolateSelect" -cb false -c ("AriViewWindow_viewFit("+$num+")")`;
+	setParent..;
+}
+proc panelUI_cameraBookmarkList(int $num){
+	global string $AriViewWindow_paneLayoutCamera[];
+	int $paneSizeCam = 50;	
+	if(`optionVar -exists "AriViewWindow_paneLayoutSizeCam"`) $paneSizeCam = `optionVar -q "AriViewWindow_paneLayoutSizeCam"`;
+	$AriViewWindow_paneLayoutCamera[$num] = `paneLayout  -configuration "horizontal2" -paneSize 1 0 $paneSizeCam `;
+	panelUI_cameraList($num);
+	panelUI_bookMarkList($num);
+	setParent..;
+}
+proc string panelUI_settingList(int $i){
+	global string $AriViewWindow_textScrollListViewSave[];
+	frameLayout -l "ViewSetting";
+	string $downForm = `formLayout`;
+	$AriViewWindow_textScrollListViewSave[$i] = `textScrollList -ams true -sc ("AriViewWindow_Click_SettingList("+$i+")") -dcc ("AriViewWindow_Button_SettingRename("+$i+")")`;
+	popupMenu;
+	menuItem -label "Rename" -c ("AriViewWindow_Button_SettingRename("+$i+")");
+	string $downButton = `iconTextButton  -h 20 -bgc 0.3 0.3 0.3 -i "arrowUp.png"    -c ("AriViewWindow_Setting_UpDown(0,"+$i+");")`;
+	string $upButton   = `iconTextButton  -h 20 -bgc 0.3 0.3 0.3 -i "arrowDown.png"  -c ("AriViewWindow_Setting_UpDown(1,"+$i+");")`;
+	string $AddButton = `button -h 20 -bgc 0.3 0.3 0.3 -l "+" -c ("AriViewWindow_Setting_Add("+$i+");  AriViewWindow_SavePaneLayout("+$i+");")`;
+	string $delButton = `button -h 20 -bgc 0.3 0.3 0.3 -l "-" -c ("AriViewWindow_Setting_Delete("+$i+"); AriViewWindow_SavePaneLayout("+$i+");")`;
+	string $optionButton  = `iconTextButton  -vis false -i "gear" -h 20 -bgc 0.3 0.3 0.3 -c ("AriViewWindow_SettingOption("+$i+");")`;
+	setParent..;
+	formLayout -e 
+	-af $AddButton "left" 0
+	-af $AddButton "bottom" 0
+	-ap $AddButton "right" 0 50
+	-af $delButton "right" 0
+	-af $delButton "bottom" 0
+	-ap $delButton "left" 0 50
+	-af $optionButton "left" 0
+	-af $optionButton "right" 0
+	-ac $optionButton "bottom" 0 $AddButton
+	-af $downButton "left" 0
+	-ac $downButton "bottom" 0 $optionButton
+	-ap $downButton "right" 0 50
+	-af $upButton "right" 0
+	-ac $upButton "bottom" 0 $optionButton
+	-ap $upButton "left" 0 50
+	-af $AriViewWindow_textScrollListViewSave[$i] "top" 0
+	-af $AriViewWindow_textScrollListViewSave[$i] "left" 0
+	-af $AriViewWindow_textScrollListViewSave[$i] "right" 0
+	-ac $AriViewWindow_textScrollListViewSave[$i] "bottom" 0 $upButton
+	$downForm;
+	setParent..;
+	return $downForm;
+}
+global proc AriViewWindowMake(int $mode){
+	global string $AriViewWindow_modelPanels[];
+	global string $AriViewWindow_paneLayout1[];
+	global string $AriViewWindow_paneLayout2[];
+	global string $AriViewWindow_optionLayout[];
+	global string $AriViewWindow_window[];
+	int $paneSize1 = 5;	
+	int $paneSize2 = 50;
+	if(`optionVar -exists "AriViewWindow_paneLayoutSize1"`) $paneSize1 = `optionVar -q "AriViewWindow_paneLayoutSize1"`;
+	if(`optionVar -exists "AriViewWindow_paneLayoutSize2"`) $paneSize2 = `optionVar -q "AriViewWindow_paneLayoutSize2"`;
+	string $windowUIName = "AriViewWindow";
+	string $windowUINameBase = $windowUIName;
+	if($mode==0){
+		for($i=0;$i<10;$i++){
+			$windowUIName = ($windowUINameBase + ($i+1));
+			if(`window -ex $windowUIName`){
+				deleteUI $windowUIName;
+			}
+		}
+		$windowUIName = $windowUINameBase;
+		if(`window -ex $windowUIName`)	deleteUI $windowUIName;
+	}
+	int $i=0;
+	if($mode==1){
+		for($i=0;$i<10;$i++){
+			if(`window -ex $windowUIName`){
+				$windowUIName = ($windowUINameBase + ($i+1));
+			}
+			else{
+				break;
+			}
+		}
+	}
+	string $windowTitle = "Window";
+	if($i>=10)return;
+	if($i!=0) $windowTitle = $windowTitle + ($i+1);
+	$AriViewWindow_window[$i] = `window -title ($windowTitle) -w 800-h 600 $windowUIName`;
+	string $mainForm = `formLayout`;
+	$AriViewWindow_paneLayout1[$i] =`paneLayout  -configuration "vertical2" -paneSize 1 90 0 `;
+	$AriViewWindow_modelPanels[$i] = `modelPanel` ;
+	setParent..;
+	string $leftForm = `formLayout`;
+	$AriViewWindow_paneLayout2[$i] = `paneLayout  -configuration "horizontal2" -paneSize 2 100 $paneSize2`;
+	panelUI_cameraBookmarkList($i);
+	panelUI_settingList($i);
+	setParent..;
+	string $resetButton =`button -l "Reload" -c ("AriViewWindow_SavePaneLayout("+$i+"); AriViewWindow_Reload("+$i+");") -bgc 0.5 1 0.5`;
+	string $addButton   =`button -l "+"      -c ("AriViewWindow_SavePaneLayout("+$i+"); AriViewWindowMake(1);")`;
+	setParent..;
+	formLayout -e 
+	-af $addButton "left" 0
+	-af $addButton "right" 0
+	-af $addButton "bottom" 0
+	-af $resetButton "left" 0
+	-af $resetButton "right" 0
+	-ac $resetButton "bottom" 0 $addButton
+	-af $AriViewWindow_paneLayout2[$i] "top" 0
+	-af $AriViewWindow_paneLayout2[$i] "left" 0
+	-af $AriViewWindow_paneLayout2[$i] "right" 0
+	-ac $AriViewWindow_paneLayout2[$i] "bottom" 0 $resetButton
+	$leftForm;
+	setParent..;
+	$AriViewWindow_optionLayout[$i] = panelUI_SettingOption($i);
+	setParent..;
+	formLayout -e -vis false $AriViewWindow_optionLayout[$i];
+	formLayout -e
+	-af $AriViewWindow_optionLayout[$i] "right" 0
+	-af $AriViewWindow_optionLayout[$i] "top" 0
+	-af $AriViewWindow_optionLayout[$i] "bottom" 0
+	-af $AriViewWindow_paneLayout1[$i] "top"    0
+	-af $AriViewWindow_paneLayout1[$i] "bottom" 0
+	-af $AriViewWindow_paneLayout1[$i] "left"   0
+	-ac $AriViewWindow_paneLayout1[$i] "right"  0 $AriViewWindow_optionLayout[$i]
+	$mainForm;
+	string $sourcePanel = `getPanel -withFocus`;
+	getModelPanelSetting($sourcePanel , $AriViewWindow_modelPanels[$i],$i);
+	getCamList($i);
+	setFocus $AriViewWindow_modelPanels[$i];
+	getSaveList($i);
+	showWindow;
+	AriViewWindow_viewFit($i);
+}
+global proc AriViewWindow(){
+	AriViewWindowMake(0);
+	getBookMarkList("persp");
+}

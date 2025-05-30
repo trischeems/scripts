@@ -1,0 +1,1293 @@
+//___________ CUSTOME CURVE ___________________//
+// change Color curve //----------------------------------------------------------------
+global proc redColorCurve (){
+string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){
+setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 13;}}
+
+global proc yellowColorCurve (){
+string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){
+setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 17;}}
+
+global proc orangeColorCurve (){
+string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){
+setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 21;}}
+
+global proc pinkColorCurve (){
+string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){
+setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 20;}}
+
+global proc greenColorCurve (){
+string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){
+setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 14;}}
+
+global proc whiteColorCurve (){
+string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){
+setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 16;}}
+
+global proc purpleColorCurve (){
+string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){
+setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 9;}}
+
+global proc blueColorCurve (){
+string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){
+setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 18;}}
+
+global proc blueBlackColorCurve(){
+string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){
+setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 6;}}
+
+
+//--- Curve ---//----------------------------------------------------------------
+    //--- circleD ---//
+global proc cCicleD (){
+    global string $bNormalRDB;
+    global string $bValueRDB;
+    global string $bGroupRDB;
+    global string $tfValueCurveScale;
+    global string $bGroupAndJnt;
+    string $cSelectNormal = `radioButton -q -select rb_normal`;
+    string $cValueRDB = `radioButton -q -select rb_value`;
+    string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+    string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+
+    if ($cSelectNormal){
+        CicleD();
+    }
+    if ($cValueRDB){
+        CicleDValue();
+    }
+    if ($cSelectGroupRDB){
+        CicleDValueGrp();
+    }   
+    if ($cSelectGroupAndJnt){
+        CicleDValueGrpJnt();
+    }   
+}
+global proc CicleD(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $circleDCtrl = `curve -n $nameCtrl -d 1 -p 0 1 0 -p 0 0.92 0.38 -p 0 0.71 0.71 -p 0 0.38 0.92 
+-p 0 0 1 -p 0 -0.38 0.92 -p 0 -0.71 0.71 -p 0 -0.92 0.38 -p 0 -1 0 
+-p 0 -0.92 -0.38 -p 0 -0.71 -0.71 -p 0 -0.38 -0.92 -p 0 0 -1 -p 0 0.38 -0.92 
+-p 0 0.71 -0.71 -p 0 0.92 -0.38 -p 0 1 0 -p 0.38 0.92 0 -p 0.71 0.71 0 -p 0.92 0.38 0 
+-p 1 0 0 -p 0.92 -0.38 0 -p 0.71 -0.71 0 -p 0.38 -0.92 0 -p 0 -1 0 -p -0.38 -0.92 0 
+-p -0.71 -0.71 0 -p -0.92 -0.38 0 -p -1 0 0 -p -0.92 0.38 0 -p -0.71 0.71 0 -p -0.38 0.92 0 
+-p 0 1 0 -p 0 0.92 -0.38 -p 0 0.71 -0.71 -p 0 0.38 -0.92 -p 0 0 -1 -p -0.38 0 -0.92 
+-p -0.71 0 -0.71 -p -0.92 0 -0.38 -p -1 0 0 -p -0.92 0 0.38 -p -0.71 0 0.71 -p -0.38 0 0.92 
+-p 0 0 1 -p 0.38 0 0.92 -p 0.71 0 0.71 -p 0.92 0 0.38 -p 1 0 0 -p 0.92 0 -0.38 -p 0.71 0 -0.71 
+-p 0.38 0 -0.92 -p 0 0 -1 `;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $circleDCtrl;}}
+global proc CicleDValue(){
+global string $tfValueCurveScale;
+string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $circleDCtrl = `curve -n $nameCtrl -d 1 -p 0 1 0 -p 0 0.92 0.38 -p 0 0.71 0.71 -p 0 0.38 0.92 
+-p 0 0 1 -p 0 -0.38 0.92 -p 0 -0.71 0.71 -p 0 -0.92 0.38 -p 0 -1 0 
+-p 0 -0.92 -0.38 -p 0 -0.71 -0.71 -p 0 -0.38 -0.92 -p 0 0 -1 -p 0 0.38 -0.92 
+-p 0 0.71 -0.71 -p 0 0.92 -0.38 -p 0 1 0 -p 0.38 0.92 0 -p 0.71 0.71 0 -p 0.92 0.38 0 
+-p 1 0 0 -p 0.92 -0.38 0 -p 0.71 -0.71 0 -p 0.38 -0.92 0 -p 0 -1 0 -p -0.38 -0.92 0 
+-p -0.71 -0.71 0 -p -0.92 -0.38 0 -p -1 0 0 -p -0.92 0.38 0 -p -0.71 0.71 0 -p -0.38 0.92 0 
+-p 0 1 0 -p 0 0.92 -0.38 -p 0 0.71 -0.71 -p 0 0.38 -0.92 -p 0 0 -1 -p -0.38 0 -0.92 
+-p -0.71 0 -0.71 -p -0.92 0 -0.38 -p -1 0 0 -p -0.92 0 0.38 -p -0.71 0 0.71 -p -0.38 0 0.92 
+-p 0 0 1 -p 0.38 0 0.92 -p 0.71 0 0.71 -p 0.92 0 0.38 -p 1 0 0 -p 0.92 0 -0.38 -p 0.71 0 -0.71 
+-p 0.38 0 -0.92 -p 0 0 -1 `;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $circleDCtrl;
+setAttr ($circleDCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+}}
+global proc CicleDValueGrp(){
+global string $tfValueCurveScale;
+string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";
+string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;
+string $nameCtrl = $obj + "_Ctrl";
+string $circleDCtrl = `curve -n $nameCtrl -d 1 -p 0 1 0 -p 0 0.92 0.38 -p 0 0.71 0.71 -p 0 0.38 0.92 
+-p 0 0 1 -p 0 -0.38 0.92 -p 0 -0.71 0.71 -p 0 -0.92 0.38 -p 0 -1 0 
+-p 0 -0.92 -0.38 -p 0 -0.71 -0.71 -p 0 -0.38 -0.92 -p 0 0 -1 -p 0 0.38 -0.92 
+-p 0 0.71 -0.71 -p 0 0.92 -0.38 -p 0 1 0 -p 0.38 0.92 0 -p 0.71 0.71 0 -p 0.92 0.38 0 
+-p 1 0 0 -p 0.92 -0.38 0 -p 0.71 -0.71 0 -p 0.38 -0.92 0 -p 0 -1 0 -p -0.38 -0.92 0 
+-p -0.71 -0.71 0 -p -0.92 -0.38 0 -p -1 0 0 -p -0.92 0.38 0 -p -0.71 0.71 0 -p -0.38 0.92 0 
+-p 0 1 0 -p 0 0.92 -0.38 -p 0 0.71 -0.71 -p 0 0.38 -0.92 -p 0 0 -1 -p -0.38 0 -0.92 
+-p -0.71 0 -0.71 -p -0.92 0 -0.38 -p -1 0 0 -p -0.92 0 0.38 -p -0.71 0 0.71 -p -0.38 0 0.92 
+-p 0 0 1 -p 0.38 0 0.92 -p 0.71 0 0.71 -p 0.92 0 0.38 -p 1 0 0 -p 0.92 0 -0.38 -p 0.71 0 -0.71 
+-p 0.38 0 -0.92 -p 0 0 -1 `;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $circleDCtrl;
+parent $circleDCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+}}
+global proc CicleDValueGrpJnt(){
+global string $tfValueCurveScale;
+string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";
+string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;
+string $nameCtrl = $obj + "_Ctrl";
+string $circleDCtrl = `curve -n $nameCtrl -d 1 -p 0 1 0 -p 0 0.92 0.38 -p 0 0.71 0.71 -p 0 0.38 0.92 
+-p 0 0 1 -p 0 -0.38 0.92 -p 0 -0.71 0.71 -p 0 -0.92 0.38 -p 0 -1 0 
+-p 0 -0.92 -0.38 -p 0 -0.71 -0.71 -p 0 -0.38 -0.92 -p 0 0 -1 -p 0 0.38 -0.92 
+-p 0 0.71 -0.71 -p 0 0.92 -0.38 -p 0 1 0 -p 0.38 0.92 0 -p 0.71 0.71 0 -p 0.92 0.38 0 
+-p 1 0 0 -p 0.92 -0.38 0 -p 0.71 -0.71 0 -p 0.38 -0.92 0 -p 0 -1 0 -p -0.38 -0.92 0 
+-p -0.71 -0.71 0 -p -0.92 -0.38 0 -p -1 0 0 -p -0.92 0.38 0 -p -0.71 0.71 0 -p -0.38 0.92 0 
+-p 0 1 0 -p 0 0.92 -0.38 -p 0 0.71 -0.71 -p 0 0.38 -0.92 -p 0 0 -1 -p -0.38 0 -0.92 
+-p -0.71 0 -0.71 -p -0.92 0 -0.38 -p -1 0 0 -p -0.92 0 0.38 -p -0.71 0 0.71 -p -0.38 0 0.92 
+-p 0 0 1 -p 0.38 0 0.92 -p 0.71 0 0.71 -p 0.92 0 0.38 -p 1 0 0 -p 0.92 0 -0.38 -p 0.71 0 -0.71 
+-p 0.38 0 -0.92 -p 0 0 -1 `;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $circleDCtrl;
+parent $circleDCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+string $joint = `joint -n ($obj + "_jnt")`;
+}}
+
+    //--- cube ---//
+global proc cCubeCur (){
+    global string $bNormalRDB;
+    global string $bValueRDB;
+    global string $bGroupRDB;
+    global string $tfValueCurveScale;
+    global string $bGroupAndJnt;
+    string $cSelectNormal = `radioButton -q -select rb_normal`;
+    string $cValueRDB = `radioButton -q -select rb_value`;
+    string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+    string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+
+    if ($cSelectNormal){
+        Cube();
+    }
+    if ($cValueRDB){
+        CubeValue();
+    }
+    if ($cSelectGroupRDB){
+        CubeValueGrp();
+    }   
+    if ($cSelectGroupAndJnt){
+        CubeValueGrpJnt();
+    }   
+}
+global proc Cube(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $circleDCtrl = `curve -n $nameCtrl -d 1 -p 1 1 1 -p 1 1 -1 -p 1 -1 -1 -p 1 -1 1 -p -1 -1 1 -p -1 1 1 -p 1 1 1 
+-p 1 -1 1 -p -1 -1 1 -p -1 -1 -1 -p -1 1 -1 -p 1 1 -1 -p 1 -1 -1 -p -1 -1 -1 -p -1 1 -1 -p -1 1 1`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $circleDCtrl;}}
+global proc CubeValue(){
+global string $tfValueCurveScale;
+string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $circleDCtrl = `curve -n $nameCtrl -d 1 -p 1 1 1 -p 1 1 -1 -p 1 -1 -1 -p 1 -1 1 -p -1 -1 1 -p -1 1 1 -p 1 1 1 
+-p 1 -1 1 -p -1 -1 1 -p -1 -1 -1 -p -1 1 -1 -p 1 1 -1 -p 1 -1 -1 -p -1 -1 -1 -p -1 1 -1 -p -1 1 1`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $circleDCtrl;
+setAttr ($circleDCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);}}
+global proc CubeValueGrp(){
+global string $tfValueCurveScale;
+string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";
+string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;
+string $nameCtrl = $obj + "_Ctrl";
+string $circleDCtrl = `curve -n $nameCtrl -d 1 -p 1 1 1 -p 1 1 -1 -p 1 -1 -1 -p 1 -1 1 -p -1 -1 1 -p -1 1 1 -p 1 1 1 
+-p 1 -1 1 -p -1 -1 1 -p -1 -1 -1 -p -1 1 -1 -p 1 1 -1 -p 1 -1 -1 -p -1 -1 -1 -p -1 1 -1 -p -1 1 1`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $circleDCtrl;
+parent $circleDCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);}}
+global proc CubeValueGrpJnt(){
+global string $tfValueCurveScale;
+string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";
+string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;
+string $nameCtrl = $obj + "_Ctrl";
+string $circleDCtrl = `curve -n $nameCtrl -d 1 -p 1 1 1 -p 1 1 -1 -p 1 -1 -1 -p 1 -1 1 -p -1 -1 1 -p -1 1 1 -p 1 1 1 
+-p 1 -1 1 -p -1 -1 1 -p -1 -1 -1 -p -1 1 -1 -p 1 1 -1 -p 1 -1 -1 -p -1 -1 -1 -p -1 1 -1 -p -1 1 1`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $circleDCtrl;
+parent $circleDCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- circleCur ---//
+global proc cCircleCur (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){CircleCur();}
+if ($cValueRDB){CircleCurValue();}
+if ($cSelectGroupRDB){CircleCurValueGrp();}   
+if ($cSelectGroupAndJnt){CircleCurValueGrpJnt();}}
+global proc CircleCur(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $CircleCurCtrl[] = `circle -nr 0 1 0 -r 2 -n ($obj + "_Ctrl")`;
+xform -ws -t ($pivot_position[0])($pivot_position[1])($pivot_position[2]) $CircleCurCtrl;}}
+global proc CircleCurValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $CircleCurCtrl[] = `circle -nr 0 1 0 -r $scale_value -n ($obj + "_Ctrl")`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $CircleCurCtrl;
+makeIdentity -apply true -s 1 -n 0 -pn 1 $CircleCurCtrl;}}
+global proc CircleCurValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $CircleCurCtrl[] = `circle -nr 0 1 0 -r 1 -n ($obj + "_Ctrl")`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $CircleCurCtrl;parent $CircleCurCtrl[0] $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value) (1 * $scale_value) (1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc CircleCurValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";
+string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $CircleCurCtrl[] = `circle -nr 0 1 0 -r 1 -n ($obj + "_Ctrl")`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $CircleCurCtrl;
+parent $CircleCurCtrl[0] $group;string $joint = `joint -n ($obj + "_jnt")`;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value) (1 * $scale_value) (1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+    //--- circleCurHafl ---//
+global proc cCicleCurHafl (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){CicleCurHafl();}
+if ($cValueRDB){CicleCurHaflValue();}
+if ($cSelectGroupRDB){CicleCurHaflValueGrp();}   
+if ($cSelectGroupAndJnt){CicleCurHaflValueGrpJnt();}}
+global proc CicleCurHafl(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $CicleCurHaflCtrl = `curve -n $nameCtrl -d 3 -p -2 0 1 -p -2.01 0 0.68 -p -2 0 0 -p -0.97 0 -1.21 -p 0.97 0 -1.21 -p 2 0 0 -p 2.01 0 0.64 -p 2 0 1`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $CicleCurHaflCtrl;}}
+global proc CicleCurHaflValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $CicleCurHaflCtrl = `curve -n $nameCtrl -d 3 -p -2 0 1 -p -2.01 0 0.68 -p -2 0 0 -p -0.97 0 -1.21 -p 0.97 0 -1.21 -p 2 0 0 -p 2.01 0 0.64 -p 2 0 1`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $CicleCurHaflCtrl;
+setAttr ($CicleCurHaflCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $CicleCurHaflCtrl;}}
+global proc CicleCurHaflValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $CicleCurHaflCtrl = `curve -n $nameCtrl -d 3 -p -2 0 1 -p -2.01 0 0.68 -p -2 0 0 -p -0.97 0 -1.21 -p 0.97 0 -1.21 -p 2 0 0 -p 2.01 0 0.64 -p 2 0 1`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $CicleCurHaflCtrl;parent $CicleCurHaflCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc CicleCurHaflValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $CicleCurHaflCtrl = `curve -n $nameCtrl -d 3 -p -2 0 1 -p -2.01 0 0.68 -p -2 0 0 -p -0.97 0 -1.21 -p 0.97 0 -1.21 -p 2 0 0 -p 2.01 0 0.64 -p 2 0 1`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $CicleCurHaflCtrl;parent $CicleCurHaflCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- handCur ---//
+global proc cHandCur (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){HandCur();}
+if ($cValueRDB){HandCurValue();}
+if ($cSelectGroupRDB){HandCurValueGrp();}   
+if ($cSelectGroupAndJnt){HandCurValueGrpJnt();}}
+global proc HandCur(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $HandCurCtrl = `curve -n $nameCtrl -d 3 -p -0.03 0 -0.8 -p -0.03 0 -0.25 -p -0.03 0 0.48 -p 0.57 -0 1.48 -p 2.71 -0 2.66 
+-p 3.25 -0 3.12 -p 4 -0 2.94 -p 4.09 -0 2.11 -p 3.22 -0 1.69 -p 2.65 -0 1.4 -p 3.68 -0 1.4 -p 7 -0 1.4 -p 7.14 -0 0.9 -p 7 -0 0.52 
+-p 5.4 -0 0.52 -p 4.04 -0 0.52 -p 4.04 -0 0.39 -p 4.04 -0 0.22 -p 5.72 -0 0.22 -p 7.72 -0 0.22 -p 7.86 -0 -0.25 -p 7.72 -0 -0.71 
+-p 5.72 -0 -0.71 -p 4.1 -0 -0.71 -p 4.1 -0 -0.84 -p 4.1 -0 -1 -p 6.04 -0 -1 -p 7.26 -0 -1 -p 7.46 -0 -1.46 -p 7.24 -0 -1.92 
+-p 5.97 -0 -1.92 -p 3.92 -0 -1.92 -p 3.92 -0 -2.02 -p 3.92 -0 -2.12 -p 5.38 -0 -2.12 -p 6.25 -0 -2.12 -p 6.61 -0 -2.6 -p 6.31 -0 -3.12 
+-p 5.14 -0 -3.12 -p 3.88 -0 -3.12 -p 2.57 -0 -3.12 -p 1.1 -0 -3.16 -p -0.03 0 -2.17 -p -0.03 0 -1.47 -p -0.03 0 -0.8`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $HandCurCtrl;}}
+global proc HandCurValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $HandCurCtrl = `curve -n $nameCtrl -d 3 -p -0.03 0 -0.8 -p -0.03 0 -0.25 -p -0.03 0 0.48 -p 0.57 -0 1.48 -p 2.71 -0 2.66 -p 3.25 -0 3.12 
+-p 4 -0 2.94 -p 4.09 -0 2.11 -p 3.22 -0 1.69 -p 2.65 -0 1.4 -p 3.68 -0 1.4 -p 7 -0 1.4 -p 7.14 -0 0.9 -p 7 -0 0.52 -p 5.4 -0 0.52 -p 4.04 -0 0.52 
+-p 4.04 -0 0.39 -p 4.04 -0 0.22 -p 5.72 -0 0.22 -p 7.72 -0 0.22 -p 7.86 -0 -0.25 -p 7.72 -0 -0.71 -p 5.72 -0 -0.71 -p 4.1 -0 -0.71 -p 4.1 -0 -0.84 
+-p 4.1 -0 -1 -p 6.04 -0 -1 -p 7.26 -0 -1 -p 7.46 -0 -1.46 -p 7.24 -0 -1.92 -p 5.97 -0 -1.92 -p 3.92 -0 -1.92 -p 3.92 -0 -2.02 -p 3.92 -0 -2.12 
+-p 5.38 -0 -2.12 -p 6.25 -0 -2.12 -p 6.61 -0 -2.6 -p 6.31 -0 -3.12 -p 5.14 -0 -3.12 -p 3.88 -0 -3.12 -p 2.57 -0 -3.12 -p 1.1 -0 -3.16 -p -0.03 0 -2.17 
+-p -0.03 0 -1.47 -p -0.03 0 -0.8`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $HandCurCtrl;
+setAttr ($HandCurCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $HandCurCtrl;}}
+global proc HandCurValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $HandCurCtrl = `curve -n $nameCtrl -d 3 -p -0.03 0 -0.8 -p -0.03 0 -0.25 -p -0.03 0 0.48 -p 0.57 -0 1.48 -p 2.71 -0 2.66 
+-p 3.25 -0 3.12 -p 4 -0 2.94 -p 4.09 -0 2.11 -p 3.22 -0 1.69 -p 2.65 -0 1.4 -p 3.68 -0 1.4 -p 7 -0 1.4 -p 7.14 -0 0.9 -p 7 -0 0.52 
+-p 5.4 -0 0.52 -p 4.04 -0 0.52 -p 4.04 -0 0.39 -p 4.04 -0 0.22 -p 5.72 -0 0.22 -p 7.72 -0 0.22 -p 7.86 -0 -0.25 -p 7.72 -0 -0.71 
+-p 5.72 -0 -0.71 -p 4.1 -0 -0.71 -p 4.1 -0 -0.84 -p 4.1 -0 -1 -p 6.04 -0 -1 -p 7.26 -0 -1 -p 7.46 -0 -1.46 -p 7.24 -0 -1.92 -p 5.97 -0 -1.92 
+-p 3.92 -0 -1.92 -p 3.92 -0 -2.02 -p 3.92 -0 -2.12 -p 5.38 -0 -2.12 -p 6.25 -0 -2.12 -p 6.61 -0 -2.6 -p 6.31 -0 -3.12 
+-p 5.14 -0 -3.12 -p 3.88 -0 -3.12 -p 2.57 -0 -3.12 -p 1.1 -0 -3.16 -p -0.03 0 -2.17 -p -0.03 0 -1.47 -p -0.03 0 -0.8`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $HandCurCtrl;parent $HandCurCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc HandCurValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $HandCurCtrl = `curve -n $nameCtrl -d 3 -p -0.03 0 -0.8 -p -0.03 0 -0.25 -p -0.03 0 0.48 -p 0.57 -0 1.48 -p 2.71 -0 2.66 
+-p 3.25 -0 3.12 -p 4 -0 2.94 -p 4.09 -0 2.11 -p 3.22 -0 1.69 -p 2.65 -0 1.4 -p 3.68 -0 1.4 -p 7 -0 1.4 -p 7.14 -0 0.9 -p 7 -0 0.52 
+-p 5.4 -0 0.52 -p 4.04 -0 0.52 -p 4.04 -0 0.39 -p 4.04 -0 0.22 -p 5.72 -0 0.22 -p 7.72 -0 0.22 -p 7.86 -0 -0.25 -p 7.72 -0 -0.71 
+-p 5.72 -0 -0.71 -p 4.1 -0 -0.71 -p 4.1 -0 -0.84 -p 4.1 -0 -1 -p 6.04 -0 -1 -p 7.26 -0 -1 -p 7.46 -0 -1.46 -p 7.24 -0 -1.92 -p 5.97 -0 -1.92 
+-p 3.92 -0 -1.92 -p 3.92 -0 -2.02 -p 3.92 -0 -2.12 -p 5.38 -0 -2.12 -p 6.25 -0 -2.12 -p 6.61 -0 -2.6 -p 6.31 -0 -3.12 -p 5.14 -0 -3.12 
+-p 3.88 -0 -3.12 -p 2.57 -0 -3.12 -p 1.1 -0 -3.16 -p -0.03 0 -2.17 -p -0.03 0 -1.47 -p -0.03 0 -0.8`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $HandCurCtrl;parent $HandCurCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cLegCur ---//
+global proc cLegCur (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){LegCur();}
+if ($cValueRDB){LegCurValue();}
+if ($cSelectGroupRDB){LegCurValueGrp();}   
+if ($cSelectGroupAndJnt){LegCurValueGrpJnt();}}
+global proc LegCur(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $LegCurCtrl = `curve -n $nameCtrl -d 3 -p 1.35 0 0.65 -p 0.03 0 -0.26 -p -1.48 -0.01 0.4 -p -1.4 0 2.42 -p 0.13 0 3.9 -p -1.27 0 6.03 
+-p -1.52 0 7.95 -p -0.53 0 9.28 -p 0.74 0 9.76 -p 1.98 0 8.92 -p 2.46 0 7.95 -p 2.67 0 6.03 -p 2.43 0 3.9 -p 1.9 0 1.98 -p 1.35 0 0.65`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LegCurCtrl;}}
+global proc LegCurValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $LegCurCtrl = `curve -n $nameCtrl -d 3 -p 1.35 0 0.65 -p 0.03 0 -0.26 -p -1.48 -0.01 0.4 -p -1.4 0 2.42 -p 0.13 0 3.9 -p -1.27 0 6.03 
+-p -1.52 0 7.95 -p -0.53 0 9.28 -p 0.74 0 9.76 -p 1.98 0 8.92 -p 2.46 0 7.95 -p 2.67 0 6.03 -p 2.43 0 3.9 -p 1.9 0 1.98 -p 1.35 0 0.65`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LegCurCtrl;
+setAttr ($LegCurCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $LegCurCtrl;}}
+global proc LegCurValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $LegCurCtrl = `curve -n $nameCtrl -d 3 -p 1.35 0 0.65 -p 0.03 0 -0.26 -p -1.48 -0.01 0.4 -p -1.4 0 2.42 -p 0.13 0 3.9 -p -1.27 0 6.03 
+-p -1.52 0 7.95 -p -0.53 0 9.28 -p 0.74 0 9.76 -p 1.98 0 8.92 -p 2.46 0 7.95 -p 2.67 0 6.03 -p 2.43 0 3.9 -p 1.9 0 1.98 -p 1.35 0 0.65`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LegCurCtrl;parent $LegCurCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc LegCurValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $LegCurCtrl = `curve -n $nameCtrl -d 3 -p 1.35 0 0.65 -p 0.03 0 -0.26 -p -1.48 -0.01 0.4 -p -1.4 0 2.42 -p 0.13 0 3.9 -p -1.27 0 6.03 
+-p -1.52 0 7.95 -p -0.53 0 9.28 -p 0.74 0 9.76 -p 1.98 0 8.92 -p 2.46 0 7.95 -p 2.67 0 6.03 -p 2.43 0 3.9 -p 1.9 0 1.98 -p 1.35 0 0.65`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LegCurCtrl;parent $LegCurCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cTarget ---//
+global proc cTarget (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){Target();}
+if ($cValueRDB){TargetValue();}
+if ($cSelectGroupRDB){TargetValueGrp();}   
+if ($cSelectGroupAndJnt){TargetValueGrpJnt();}}
+global proc Target(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $TargetCtrl = `curve -n $nameCtrl -d 1 -p -2 0 0 -p 1 0 1 -p 1 0 -1 -p -2 0 0 -p 1 1 0 -p 1 0 0 -p 1 -1 0 -p -2 0 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $TargetCtrl;}}
+global proc TargetValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $TargetCtrl = `curve -n $nameCtrl -d 1 -p -2 0 0 -p 1 0 1 -p 1 0 -1 -p -2 0 0 -p 1 1 0 -p 1 0 0 -p 1 -1 0 -p -2 0 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $TargetCtrl;
+setAttr ($TargetCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $TargetCtrl;}}
+global proc TargetValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $TargetCtrl = `curve -n $nameCtrl -d 1 -p -2 0 0 -p 1 0 1 -p 1 0 -1 -p -2 0 0 -p 1 1 0 -p 1 0 0 -p 1 -1 0 -p -2 0 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $TargetCtrl;parent $TargetCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc TargetValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $TargetCtrl = `curve -n $nameCtrl -d 1 -p -2 0 0 -p 1 0 1 -p 1 0 -1 -p -2 0 0 -p 1 1 0 -p 1 0 0 -p 1 -1 0 -p -2 0 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $TargetCtrl;parent $TargetCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cLocator ---//
+global proc cLocator (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){Locator();}
+if ($cValueRDB){LocatorValue();}
+if ($cSelectGroupRDB){LocatorValueGrp();}   
+if ($cSelectGroupAndJnt){LocatorValueGrpJnt();}}
+global proc Locator(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $LocatorCtrl = `curve -n $nameCtrl -d 1 -p -2 0 0 -p 2 0 0 -p 0 0 0 -p 0 0 2 -p 0 0 -2 -p 0 0 0 -p 0 2 0 -p 0 -2 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LocatorCtrl;}}
+global proc LocatorValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $LocatorCtrl = `curve -n $nameCtrl -d 1 -p -2 0 0 -p 2 0 0 -p 0 0 0 -p 0 0 2 -p 0 0 -2 -p 0 0 0 -p 0 2 0 -p 0 -2 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LocatorCtrl;
+setAttr ($LocatorCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $LocatorCtrl;}}
+global proc LocatorValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $LocatorCtrl = `curve -n $nameCtrl -d 1 -p -2 0 0 -p 2 0 0 -p 0 0 0 -p 0 0 2 -p 0 0 -2 -p 0 0 0 -p 0 2 0 -p 0 -2 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LocatorCtrl;parent $LocatorCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc LocatorValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $LocatorCtrl = `curve -n $nameCtrl -d 1 -p -2 0 0 -p 2 0 0 -p 0 0 0 -p 0 0 2 -p 0 0 -2 -p 0 0 0 -p 0 2 0 -p 0 -2 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LocatorCtrl;parent $LocatorCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cTargetCircle ---//
+global proc cTargetCircle (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){TargetCircle();}
+if ($cValueRDB){TargetCircleValue();}
+if ($cSelectGroupRDB){TargetCircleValueGrp();}   
+if ($cSelectGroupAndJnt){TargetCircleValueGrpJnt();}}
+global proc TargetCircle(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $TargetCircleCtrl = `curve -n $nameCtrl -d 1 -p 0 5.6 0 -p 2 5.6 -0 -p 1.85 5.6 0.76 -p 1.41 5.6 1.41 -p 0.76 5.6 1.85 -p 0 5.6 2 
+-p 0 5.6 0 -p 0 5.6 2 -p -0.76 5.6 1.85 -p -1.41 5.6 1.41 -p -1.85 5.6 0.76 -p -2 5.6 -0 -p 0 5.6 0 -p -2 5.6 -0 -p -1.85 5.6 -0.76 -p -1.41 5.6 -1.41 
+-p -0.76 5.6 -1.85 -p 0 5.6 -2 -p 0 5.6 0 -p 0 5.6 -2 -p 0.76 5.6 -1.85 -p 1.41 5.6 -1.41 -p 1.85 5.6 -0.76 -p 2 5.6 -0 -p 0 5.6 0 -p 0 1.6 0 
+-p 0 1.6 0.8 -p 0 -0 0 -p 0 1.6 -0.8 -p 0 1.6 0 -p -0.8 1.6 0 -p 0 -0 0 -p 0.8 1.6 0 -p 0 1.6 0.8 -p -0.8 1.6 0 -p 0 1.6 -0.8 -p 0.8 1.6 0 -p 0 1.6 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $TargetCircleCtrl;}}
+global proc TargetCircleValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $TargetCircleCtrl = `curve -n $nameCtrl -d 1 -p 0 5.6 0 -p 2 5.6 -0 -p 1.85 5.6 0.76 -p 1.41 5.6 1.41 -p 0.76 5.6 1.85 -p 0 5.6 2 
+-p 0 5.6 0 -p 0 5.6 2 -p -0.76 5.6 1.85 -p -1.41 5.6 1.41 -p -1.85 5.6 0.76 -p -2 5.6 -0 -p 0 5.6 0 -p -2 5.6 -0 -p -1.85 5.6 -0.76 -p -1.41 5.6 -1.41 
+-p -0.76 5.6 -1.85 -p 0 5.6 -2 -p 0 5.6 0 -p 0 5.6 -2 -p 0.76 5.6 -1.85 -p 1.41 5.6 -1.41 -p 1.85 5.6 -0.76 -p 2 5.6 -0 -p 0 5.6 0 -p 0 1.6 0 
+-p 0 1.6 0.8 -p 0 -0 0 -p 0 1.6 -0.8 -p 0 1.6 0 -p -0.8 1.6 0 -p 0 -0 0 -p 0.8 1.6 0 -p 0 1.6 0.8 -p -0.8 1.6 0 -p 0 1.6 -0.8 -p 0.8 1.6 0 -p 0 1.6 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $TargetCircleCtrl;
+setAttr ($TargetCircleCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $TargetCircleCtrl;}}
+global proc TargetCircleValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $TargetCircleCtrl = `curve -n $nameCtrl -d 1 -p 0 5.6 0 -p 2 5.6 -0 -p 1.85 5.6 0.76 -p 1.41 5.6 1.41 -p 0.76 5.6 1.85 -p 0 5.6 2 
+-p 0 5.6 0 -p 0 5.6 2 -p -0.76 5.6 1.85 -p -1.41 5.6 1.41 -p -1.85 5.6 0.76 -p -2 5.6 -0 -p 0 5.6 0 -p -2 5.6 -0 -p -1.85 5.6 -0.76 -p -1.41 5.6 -1.41 
+-p -0.76 5.6 -1.85 -p 0 5.6 -2 -p 0 5.6 0 -p 0 5.6 -2 -p 0.76 5.6 -1.85 -p 1.41 5.6 -1.41 -p 1.85 5.6 -0.76 -p 2 5.6 -0 -p 0 5.6 0 -p 0 1.6 0 
+-p 0 1.6 0.8 -p 0 -0 0 -p 0 1.6 -0.8 -p 0 1.6 0 -p -0.8 1.6 0 -p 0 -0 0 -p 0.8 1.6 0 -p 0 1.6 0.8 -p -0.8 1.6 0 -p 0 1.6 -0.8 -p 0.8 1.6 0 -p 0 1.6 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $TargetCircleCtrl;parent $TargetCircleCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc TargetCircleValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $TargetCircleCtrl = `curve -n $nameCtrl -d 1 -p 0 5.6 0 -p 2 5.6 -0 -p 1.85 5.6 0.76 -p 1.41 5.6 1.41 -p 0.76 5.6 1.85 -p 0 5.6 2 
+-p 0 5.6 0 -p 0 5.6 2 -p -0.76 5.6 1.85 -p -1.41 5.6 1.41 -p -1.85 5.6 0.76 -p -2 5.6 -0 -p 0 5.6 0 -p -2 5.6 -0 -p -1.85 5.6 -0.76 -p -1.41 5.6 -1.41 
+-p -0.76 5.6 -1.85 -p 0 5.6 -2 -p 0 5.6 0 -p 0 5.6 -2 -p 0.76 5.6 -1.85 -p 1.41 5.6 -1.41 -p 1.85 5.6 -0.76 -p 2 5.6 -0 -p 0 5.6 0 -p 0 1.6 0 
+-p 0 1.6 0.8 -p 0 -0 0 -p 0 1.6 -0.8 -p 0 1.6 0 -p -0.8 1.6 0 -p 0 -0 0 -p 0.8 1.6 0 -p 0 1.6 0.8 -p -0.8 1.6 0 -p 0 1.6 -0.8 -p 0.8 1.6 0 -p 0 1.6 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $TargetCircleCtrl;parent $TargetCircleCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cPlus ---//
+global proc cPlus (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){Plus();}
+if ($cValueRDB){PlusValue();}
+if ($cSelectGroupRDB){PlusValueGrp();}   
+if ($cSelectGroupAndJnt){PlusValueGrpJnt();}}
+global proc Plus(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $PlusCtrl = `curve -n $nameCtrl -d 1 -p -0.64 -2.56 0 -p -0.64 -0.64 0 -p -2.56 -0.64 0 -p -2.56 0.64 0 -p -0.64 0.64 0 
+-p -0.64 2.56 0 -p 0.64 2.56 0 -p 0.64 0.64 0 -p 2.56 0.64 0 -p 2.56 -0.64 0 -p 0.64 -0.64 0 -p 0.64 -2.56 0 -p -0.64 -2.56 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $PlusCtrl;}}
+global proc PlusValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $PlusCtrl = `curve -n $nameCtrl -d 1 -p -0.64 -2.56 0 -p -0.64 -0.64 0 -p -2.56 -0.64 0 -p -2.56 0.64 0 -p -0.64 0.64 0 
+-p -0.64 2.56 0 -p 0.64 2.56 0 -p 0.64 0.64 0 -p 2.56 0.64 0 -p 2.56 -0.64 0 -p 0.64 -0.64 0 -p 0.64 -2.56 0 -p -0.64 -2.56 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $PlusCtrl;
+setAttr ($PlusCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $PlusCtrl;}}
+global proc PlusValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $PlusCtrl = `curve -n $nameCtrl -d 1 -p -0.64 -2.56 0 -p -0.64 -0.64 0 -p -2.56 -0.64 0 -p -2.56 0.64 0 -p -0.64 0.64 0 
+-p -0.64 2.56 0 -p 0.64 2.56 0 -p 0.64 0.64 0 -p 2.56 0.64 0 -p 2.56 -0.64 0 -p 0.64 -0.64 0 -p 0.64 -2.56 0 -p -0.64 -2.56 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $PlusCtrl;parent $PlusCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc PlusValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $PlusCtrl = `curve -n $nameCtrl -d 1 -p -0.64 -2.56 0 -p -0.64 -0.64 0 -p -2.56 -0.64 0 -p -2.56 0.64 0 -p -0.64 0.64 0 
+-p -0.64 2.56 0 -p 0.64 2.56 0 -p 0.64 0.64 0 -p 2.56 0.64 0 -p 2.56 -0.64 0 -p 0.64 -0.64 0 -p 0.64 -2.56 0 -p -0.64 -2.56 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $PlusCtrl;parent $PlusCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cCirclePlus ---//
+global proc cCirclePlus (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){CirclePlus();}
+if ($cValueRDB){CirclePlusValue();}
+if ($cSelectGroupRDB){CirclePlusValueGrp();}   
+if ($cSelectGroupAndJnt){CirclePlusValueGrpJnt();}}
+global proc CirclePlus(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $CirclePlusCtrl = `curve -n $nameCtrl -d 1 -p 0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 
+-p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p 0 0 0 -p 0 0 -2 -p -0.76 0 -1.85 -p -1.41 0 -1.41 -p -1.85 0 -0.76 
+-p -2 0 -0 -p 0 0 0 -p 2 0 -0 -p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p -0.76 0 1.85 -p -1.41 0 1.41 -p -1.85 0 0.76 -p -2 0 -0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $CirclePlusCtrl;}}
+global proc CirclePlusValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $CirclePlusCtrl = `curve -n $nameCtrl -d 1 -p 0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 
+-p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p 0 0 0 -p 0 0 -2 -p -0.76 0 -1.85 -p -1.41 0 -1.41 -p -1.85 0 -0.76 
+-p -2 0 -0 -p 0 0 0 -p 2 0 -0 -p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p -0.76 0 1.85 -p -1.41 0 1.41 -p -1.85 0 0.76 -p -2 0 -0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $CirclePlusCtrl;
+setAttr ($CirclePlusCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $CirclePlusCtrl;}}
+global proc CirclePlusValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $CirclePlusCtrl = `curve -n $nameCtrl -d 1 -p 0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 
+-p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p 0 0 0 -p 0 0 -2 -p -0.76 0 -1.85 -p -1.41 0 -1.41 -p -1.85 0 -0.76 
+-p -2 0 -0 -p 0 0 0 -p 2 0 -0 -p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p -0.76 0 1.85 -p -1.41 0 1.41 -p -1.85 0 0.76 -p -2 0 -0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $CirclePlusCtrl;parent $CirclePlusCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc CirclePlusValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $CirclePlusCtrl = `curve -n $nameCtrl -d 1 -p 0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 
+-p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p 0 0 0 -p 0 0 -2 -p -0.76 0 -1.85 -p -1.41 0 -1.41 -p -1.85 0 -0.76 
+-p -2 0 -0 -p 0 0 0 -p 2 0 -0 -p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p -0.76 0 1.85 -p -1.41 0 1.41 -p -1.85 0 0.76 -p -2 0 -0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $CirclePlusCtrl;parent $CirclePlusCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cRotate ---//
+global proc cRotate (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){Rotate();}
+if ($cValueRDB){RotateValue();}
+if ($cSelectGroupRDB){RotateValueGrp();}   
+if ($cSelectGroupAndJnt){RotateValueGrpJnt();}}
+global proc Rotate(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $RotateCtrl = `curve -n $nameCtrl -d 1 -p 0 0 -2.4 -p 0 0 -3.2 -p 0.83 0 -3.09 -p 1.6 0 -2.77 -p 2.26 0 -2.26 -p 2.77 0 -1.6 -p 3.09 0 -0.83 
+-p 3.2 0 0 -p 3.09 0 0.83 -p 2.77 0 1.6 -p 2.26 0 2.26 -p 1.6 0 2.77 -p 0.83 0 3.09 -p 0 0 3.2 -p -0.83 0 3.09 -p -1.6 0 2.77 -p -2.26 0 2.26 -p -2.77 0 1.6 
+-p -3.09 0 0.83 -p -3.2 0 0 -p -4.05 0 0 -p -2.78 0 -2.53 -p -1.52 0 0 -p -2.4 0 0 -p -2.32 0 0.62 -p -2.08 0 1.2 -p -1.7 0 1.7 -p -1.2 0 2.08 -p -0.62 0 2.32 
+-p 0 0 2.4 -p 0.62 0 2.32 -p 1.2 0 2.08 -p 1.7 0 1.7 -p 2.08 0 1.2 -p 2.32 0 0.62 -p 2.4 0 0 -p 2.32 0 -0.62 -p 2.08 0 -1.2 -p 1.7 0 -1.7 -p 1.2 0 -2.08 -p 0.62 0 -2.32 -p 0 0 -2.4`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $RotateCtrl;}}
+global proc RotateValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $RotateCtrl = `curve -n $nameCtrl -d 1 -p 0 0 -2.4 -p 0 0 -3.2 -p 0.83 0 -3.09 -p 1.6 0 -2.77 -p 2.26 0 -2.26 -p 2.77 0 -1.6 -p 3.09 0 -0.83 
+-p 3.2 0 0 -p 3.09 0 0.83 -p 2.77 0 1.6 -p 2.26 0 2.26 -p 1.6 0 2.77 -p 0.83 0 3.09 -p 0 0 3.2 -p -0.83 0 3.09 -p -1.6 0 2.77 -p -2.26 0 2.26 -p -2.77 0 1.6 
+-p -3.09 0 0.83 -p -3.2 0 0 -p -4.05 0 0 -p -2.78 0 -2.53 -p -1.52 0 0 -p -2.4 0 0 -p -2.32 0 0.62 -p -2.08 0 1.2 -p -1.7 0 1.7 -p -1.2 0 2.08 -p -0.62 0 2.32 
+-p 0 0 2.4 -p 0.62 0 2.32 -p 1.2 0 2.08 -p 1.7 0 1.7 -p 2.08 0 1.2 -p 2.32 0 0.62 -p 2.4 0 0 -p 2.32 0 -0.62 -p 2.08 0 -1.2 -p 1.7 0 -1.7 -p 1.2 0 -2.08 -p 0.62 0 -2.32 -p 0 0 -2.4`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $RotateCtrl;
+setAttr ($RotateCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $RotateCtrl;}}
+global proc RotateValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $RotateCtrl = `curve -n $nameCtrl -d 1 -p 0 0 -2.4 -p 0 0 -3.2 -p 0.83 0 -3.09 -p 1.6 0 -2.77 -p 2.26 0 -2.26 -p 2.77 0 -1.6 -p 3.09 0 -0.83 
+-p 3.2 0 0 -p 3.09 0 0.83 -p 2.77 0 1.6 -p 2.26 0 2.26 -p 1.6 0 2.77 -p 0.83 0 3.09 -p 0 0 3.2 -p -0.83 0 3.09 -p -1.6 0 2.77 -p -2.26 0 2.26 -p -2.77 0 1.6 
+-p -3.09 0 0.83 -p -3.2 0 0 -p -4.05 0 0 -p -2.78 0 -2.53 -p -1.52 0 0 -p -2.4 0 0 -p -2.32 0 0.62 -p -2.08 0 1.2 -p -1.7 0 1.7 -p -1.2 0 2.08 -p -0.62 0 2.32 
+-p 0 0 2.4 -p 0.62 0 2.32 -p 1.2 0 2.08 -p 1.7 0 1.7 -p 2.08 0 1.2 -p 2.32 0 0.62 -p 2.4 0 0 -p 2.32 0 -0.62 -p 2.08 0 -1.2 -p 1.7 0 -1.7 -p 1.2 0 -2.08 -p 0.62 0 -2.32 -p 0 0 -2.4`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $RotateCtrl;parent $RotateCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc RotateValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $RotateCtrl = `curve -n $nameCtrl -d 1 -p 0 0 -2.4 -p 0 0 -3.2 -p 0.83 0 -3.09 -p 1.6 0 -2.77 -p 2.26 0 -2.26 -p 2.77 0 -1.6 -p 3.09 0 -0.83 
+-p 3.2 0 0 -p 3.09 0 0.83 -p 2.77 0 1.6 -p 2.26 0 2.26 -p 1.6 0 2.77 -p 0.83 0 3.09 -p 0 0 3.2 -p -0.83 0 3.09 -p -1.6 0 2.77 -p -2.26 0 2.26 -p -2.77 0 1.6 
+-p -3.09 0 0.83 -p -3.2 0 0 -p -4.05 0 0 -p -2.78 0 -2.53 -p -1.52 0 0 -p -2.4 0 0 -p -2.32 0 0.62 -p -2.08 0 1.2 -p -1.7 0 1.7 -p -1.2 0 2.08 -p -0.62 0 2.32 
+-p 0 0 2.4 -p 0.62 0 2.32 -p 1.2 0 2.08 -p 1.7 0 1.7 -p 2.08 0 1.2 -p 2.32 0 0.62 -p 2.4 0 0 -p 2.32 0 -0.62 -p 2.08 0 -1.2 -p 1.7 0 -1.7 -p 1.2 0 -2.08 -p 0.62 0 -2.32 -p 0 0 -2.4`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $RotateCtrl;parent $RotateCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cArrow ---//
+global proc cArrow (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){Arrow();}
+if ($cValueRDB){ArrowValue();}
+if ($cSelectGroupRDB){ArrowValueGrp();}   
+if ($cSelectGroupAndJnt){ArrowValueGrpJnt();}}
+global proc Arrow(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $ArrowCtrl = `curve -n $nameCtrl -d 1 -p -2.09 -0 0 -p 2.09 -0 2.83 -p 1.59 -0 2.22 -p 1.22 -0 1.53 -p 0.99 -0 0.78 -p 0.91 -0 0 -p 0.99 0 -0.78 
+-p 1.22 0 -1.53 -p 1.59 0 -2.22 -p 2.09 0 -2.83 -p -2.09 -0 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $ArrowCtrl;}}
+global proc ArrowValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $ArrowCtrl = `curve -n $nameCtrl -d 1 -p -2.09 -0 0 -p 2.09 -0 2.83 -p 1.59 -0 2.22 -p 1.22 -0 1.53 -p 0.99 -0 0.78 -p 0.91 -0 0 -p 0.99 0 -0.78 
+-p 1.22 0 -1.53 -p 1.59 0 -2.22 -p 2.09 0 -2.83 -p -2.09 -0 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $ArrowCtrl;
+setAttr ($ArrowCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $ArrowCtrl;}}
+global proc ArrowValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $ArrowCtrl = `curve -n $nameCtrl -d 1 -p -2.09 -0 0 -p 2.09 -0 2.83 -p 1.59 -0 2.22 -p 1.22 -0 1.53 -p 0.99 -0 0.78 -p 0.91 -0 0 -p 0.99 0 -0.78 
+-p 1.22 0 -1.53 -p 1.59 0 -2.22 -p 2.09 0 -2.83 -p -2.09 -0 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $ArrowCtrl;parent $ArrowCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc ArrowValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $ArrowCtrl = `curve -n $nameCtrl -d 1 -p -2.09 -0 0 -p 2.09 -0 2.83 -p 1.59 -0 2.22 -p 1.22 -0 1.53 -p 0.99 -0 0.78 -p 0.91 -0 0 -p 0.99 0 -0.78 
+-p 1.22 0 -1.53 -p 1.59 0 -2.22 -p 2.09 0 -2.83 -p -2.09 -0 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $ArrowCtrl;parent $ArrowCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cColorRange ---//
+global proc cColorRange (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){ColorRange();}
+if ($cValueRDB){ColorRangeValue();}
+if ($cSelectGroupRDB){ColorRangeValueGrp();}   
+if ($cSelectGroupAndJnt){ColorRangeValueGrpJnt();}}
+global proc ColorRange(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $ColorRangeCtrl = `curve -n $nameCtrl -d 1 -p 3.69 -0 1.53 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 1.85 -0 0.76 -p 3.69 -0 1.53 -p 4 0 -0 -p 2 0 -0 -p 1.85 -0 0.76 
+-p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 1.53 -0 3.69 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 0 -0 2 -p 0 -0 4 -p 1.53 -0 3.69 -p 0.76 -0 1.85 -p 0 -0 2 
+-p -0.76 -0 1.85 -p -1.53 -0 3.69 -p 0 -0 4 -p 0 -0 2 -p -0.76 -0 1.85 -p -1.41 -0 1.41 -p -2.83 -0 2.83 -p -1.53 -0 3.69 -p -0.76 -0 1.85 -p -1.41 -0 1.41 
+-p -1.85 -0 0.76 -p -3.69 -0 1.53 -p -2.83 -0 2.83 -p -1.41 -0 1.41 -p -1.85 -0 0.76 -p -2 0 -0 -p -4 0 -0 -p -3.69 -0 1.53 -p -1.85 -0 0.76 -p -2 0 -0 -p -1.85 0 -0.76 
+-p -3.69 0 -1.53 -p -4 0 -0 -p -2 0 -0 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -2.83 0 -2.83 -p -3.69 0 -1.53 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -0.76 0 -1.85 
+-p -1.53 0 -3.69 -p -2.83 0 -2.83 -p -1.41 0 -1.41 -p -0.76 0 -1.85 -p -0 0 -2 -p -0 0 -4 -p -1.53 0 -3.69 -p -0.76 0 -1.85 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.53 0 -3.69 
+-p -0 0 -4 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 2.83 0 -2.83 -p 1.53 0 -3.69 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 3.69 0 -1.53 -p 2.83 0 -2.83 
+-p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 -p 4 0 -0 -p 3.69 0 -1.53`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $ColorRangeCtrl;}}
+global proc ColorRangeValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $ColorRangeCtrl = `curve -n $nameCtrl -d 1 -p 3.69 -0 1.53 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 1.85 -0 0.76 -p 3.69 -0 1.53 -p 4 0 -0 -p 2 0 -0 -p 1.85 -0 0.76 
+-p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 1.53 -0 3.69 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 0 -0 2 -p 0 -0 4 -p 1.53 -0 3.69 -p 0.76 -0 1.85 -p 0 -0 2 
+-p -0.76 -0 1.85 -p -1.53 -0 3.69 -p 0 -0 4 -p 0 -0 2 -p -0.76 -0 1.85 -p -1.41 -0 1.41 -p -2.83 -0 2.83 -p -1.53 -0 3.69 -p -0.76 -0 1.85 -p -1.41 -0 1.41 
+-p -1.85 -0 0.76 -p -3.69 -0 1.53 -p -2.83 -0 2.83 -p -1.41 -0 1.41 -p -1.85 -0 0.76 -p -2 0 -0 -p -4 0 -0 -p -3.69 -0 1.53 -p -1.85 -0 0.76 -p -2 0 -0 -p -1.85 0 -0.76 
+-p -3.69 0 -1.53 -p -4 0 -0 -p -2 0 -0 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -2.83 0 -2.83 -p -3.69 0 -1.53 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -0.76 0 -1.85 
+-p -1.53 0 -3.69 -p -2.83 0 -2.83 -p -1.41 0 -1.41 -p -0.76 0 -1.85 -p -0 0 -2 -p -0 0 -4 -p -1.53 0 -3.69 -p -0.76 0 -1.85 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.53 0 -3.69 
+-p -0 0 -4 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 2.83 0 -2.83 -p 1.53 0 -3.69 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 3.69 0 -1.53 -p 2.83 0 -2.83 
+-p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 -p 4 0 -0 -p 3.69 0 -1.53`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $ColorRangeCtrl;
+setAttr ($ColorRangeCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $ColorRangeCtrl;}}
+global proc ColorRangeValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $ColorRangeCtrl = `curve -n $nameCtrl -d 1 -p 3.69 -0 1.53 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 1.85 -0 0.76 -p 3.69 -0 1.53 -p 4 0 -0 -p 2 0 -0 -p 1.85 -0 0.76 
+-p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 1.53 -0 3.69 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 0 -0 2 -p 0 -0 4 -p 1.53 -0 3.69 -p 0.76 -0 1.85 -p 0 -0 2 
+-p -0.76 -0 1.85 -p -1.53 -0 3.69 -p 0 -0 4 -p 0 -0 2 -p -0.76 -0 1.85 -p -1.41 -0 1.41 -p -2.83 -0 2.83 -p -1.53 -0 3.69 -p -0.76 -0 1.85 -p -1.41 -0 1.41 
+-p -1.85 -0 0.76 -p -3.69 -0 1.53 -p -2.83 -0 2.83 -p -1.41 -0 1.41 -p -1.85 -0 0.76 -p -2 0 -0 -p -4 0 -0 -p -3.69 -0 1.53 -p -1.85 -0 0.76 -p -2 0 -0 -p -1.85 0 -0.76 
+-p -3.69 0 -1.53 -p -4 0 -0 -p -2 0 -0 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -2.83 0 -2.83 -p -3.69 0 -1.53 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -0.76 0 -1.85 
+-p -1.53 0 -3.69 -p -2.83 0 -2.83 -p -1.41 0 -1.41 -p -0.76 0 -1.85 -p -0 0 -2 -p -0 0 -4 -p -1.53 0 -3.69 -p -0.76 0 -1.85 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.53 0 -3.69 
+-p -0 0 -4 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 2.83 0 -2.83 -p 1.53 0 -3.69 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 3.69 0 -1.53 -p 2.83 0 -2.83 
+-p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 -p 4 0 -0 -p 3.69 0 -1.53`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $ColorRangeCtrl;parent $ColorRangeCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc ColorRangeValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $ColorRangeCtrl = `curve -n $nameCtrl -d 1 -p 3.69 -0 1.53 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 1.85 -0 0.76 -p 3.69 -0 1.53 -p 4 0 -0 -p 2 0 -0 -p 1.85 -0 0.76 
+-p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 1.53 -0 3.69 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 0 -0 2 -p 0 -0 4 -p 1.53 -0 3.69 -p 0.76 -0 1.85 -p 0 -0 2 
+-p -0.76 -0 1.85 -p -1.53 -0 3.69 -p 0 -0 4 -p 0 -0 2 -p -0.76 -0 1.85 -p -1.41 -0 1.41 -p -2.83 -0 2.83 -p -1.53 -0 3.69 -p -0.76 -0 1.85 -p -1.41 -0 1.41 
+-p -1.85 -0 0.76 -p -3.69 -0 1.53 -p -2.83 -0 2.83 -p -1.41 -0 1.41 -p -1.85 -0 0.76 -p -2 0 -0 -p -4 0 -0 -p -3.69 -0 1.53 -p -1.85 -0 0.76 -p -2 0 -0 -p -1.85 0 -0.76 
+-p -3.69 0 -1.53 -p -4 0 -0 -p -2 0 -0 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -2.83 0 -2.83 -p -3.69 0 -1.53 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -0.76 0 -1.85 
+-p -1.53 0 -3.69 -p -2.83 0 -2.83 -p -1.41 0 -1.41 -p -0.76 0 -1.85 -p -0 0 -2 -p -0 0 -4 -p -1.53 0 -3.69 -p -0.76 0 -1.85 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.53 0 -3.69 
+-p -0 0 -4 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 2.83 0 -2.83 -p 1.53 0 -3.69 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 3.69 0 -1.53 -p 2.83 0 -2.83 
+-p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 -p 4 0 -0 -p 3.69 0 -1.53`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $ColorRangeCtrl;parent $ColorRangeCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cDirections ---//
+global proc cDirections (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){Directions();}
+if ($cValueRDB){DirectionsValue();}
+if ($cSelectGroupRDB){DirectionsValueGrp();}   
+if ($cSelectGroupAndJnt){DirectionsValueGrpJnt();}}
+global proc Directions(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $DirectionsCtrl = `curve -n $nameCtrl -d 1 -p 0 0 0 -p 0 2.4 -2.4 -p 0 2.4 -1.6 -p 0 4.8 -1.6 -p 0 4.8 1.6 -p 0 2.4 1.6 -p 0 2.4 2.4 -p 0 0 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $DirectionsCtrl;}}
+global proc DirectionsValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $DirectionsCtrl = `curve -n $nameCtrl -d 1 -p 0 0 0 -p 0 2.4 -2.4 -p 0 2.4 -1.6 -p 0 4.8 -1.6 -p 0 4.8 1.6 -p 0 2.4 1.6 -p 0 2.4 2.4 -p 0 0 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $DirectionsCtrl;
+setAttr ($DirectionsCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $DirectionsCtrl;}}
+global proc DirectionsValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $DirectionsCtrl = `curve -n $nameCtrl -d 1 -p 0 0 0 -p 0 2.4 -2.4 -p 0 2.4 -1.6 -p 0 4.8 -1.6 -p 0 4.8 1.6 -p 0 2.4 1.6 -p 0 2.4 2.4 -p 0 0 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $DirectionsCtrl;parent $DirectionsCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc DirectionsValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $DirectionsCtrl = `curve -n $nameCtrl -d 1 -p 0 0 0 -p 0 2.4 -2.4 -p 0 2.4 -1.6 -p 0 4.8 -1.6 -p 0 4.8 1.6 -p 0 2.4 1.6 -p 0 2.4 2.4 -p 0 0 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $DirectionsCtrl;parent $DirectionsCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cBody ---//
+global proc cBody (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){Body();}
+if ($cValueRDB){BodyValue();}
+if ($cSelectGroupRDB){BodyValueGrp();}   
+if ($cSelectGroupAndJnt){BodyValueGrpJnt();}}
+global proc Body(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $BodyCtrl = `curve -n $nameCtrl -d 1 -p -3.14 -0 0.62 -p -4 0 0.8 -p -4 0 1.6 -p -5.6 0 0 -p -4 0 -1.6 -p -4 0 -0.8 -p -3.14 0 -0.62 
+-p -2.95 0 -1.22 -p -2.66 0 -1.78 -p -2.26 0 -2.26 -p -1.78 0 -2.66 -p -1.22 0 -2.95 -p -0.62 0 -3.14 -p -0.8 0 -4 -p -1.6 0 -4 -p 0 0 -5.6 
+-p 1.6 0 -4 -p 0.8 0 -4 -p 0.62 0 -3.14 -p 1.22 0 -2.95 -p 1.78 0 -2.66 -p 2.26 0 -2.26 -p 2.66 0 -1.78 -p 2.95 0 -1.22 -p 3.14 0 -0.62 
+-p 4 0 -0.8 -p 4 0 -1.6 -p 5.6 0 0 -p 4 0 1.6 -p 4 0 0.8 -p 3.14 -0 0.62 -p 2.95 -0 1.22 -p 2.66 -0 1.78 -p 2.26 -0 2.26 -p 1.78 -0 2.66 
+-p 1.22 -0 2.95 -p 0.62 -0 3.14 -p 0.8 0 4 -p 1.6 0 4 -p 0 0 5.6 -p -1.6 0 4 -p -0.8 0 4 
+-p -0.62 -0 3.14 -p -1.22 -0 2.95 -p -1.78 -0 2.66 -p -2.26 -0 2.26 -p -2.66 -0 1.78 -p -2.95 -0 1.22 -p -3.14 -0 0.62`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $BodyCtrl;}}
+global proc BodyValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $BodyCtrl = `curve -n $nameCtrl -d 1 -p -3.14 -0 0.62 -p -4 0 0.8 -p -4 0 1.6 -p -5.6 0 0 -p -4 0 -1.6 -p -4 0 -0.8 -p -3.14 0 -0.62 
+-p -2.95 0 -1.22 -p -2.66 0 -1.78 -p -2.26 0 -2.26 -p -1.78 0 -2.66 -p -1.22 0 -2.95 -p -0.62 0 -3.14 -p -0.8 0 -4 -p -1.6 0 -4 -p 0 0 -5.6 
+-p 1.6 0 -4 -p 0.8 0 -4 -p 0.62 0 -3.14 -p 1.22 0 -2.95 -p 1.78 0 -2.66 -p 2.26 0 -2.26 -p 2.66 0 -1.78 -p 2.95 0 -1.22 -p 3.14 0 -0.62 
+-p 4 0 -0.8 -p 4 0 -1.6 -p 5.6 0 0 -p 4 0 1.6 -p 4 0 0.8 -p 3.14 -0 0.62 -p 2.95 -0 1.22 -p 2.66 -0 1.78 -p 2.26 -0 2.26 -p 1.78 -0 2.66 
+-p 1.22 -0 2.95 -p 0.62 -0 3.14 -p 0.8 0 4 -p 1.6 0 4 -p 0 0 5.6 -p -1.6 0 4 -p -0.8 0 4 
+-p -0.62 -0 3.14 -p -1.22 -0 2.95 -p -1.78 -0 2.66 -p -2.26 -0 2.26 -p -2.66 -0 1.78 -p -2.95 -0 1.22 -p -3.14 -0 0.62`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $BodyCtrl;
+setAttr ($BodyCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $BodyCtrl;}}
+global proc BodyValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $BodyCtrl = `curve -n $nameCtrl -d 1 -p -3.14 -0 0.62 -p -4 0 0.8 -p -4 0 1.6 -p -5.6 0 0 -p -4 0 -1.6 -p -4 0 -0.8 -p -3.14 0 -0.62 
+-p -2.95 0 -1.22 -p -2.66 0 -1.78 -p -2.26 0 -2.26 -p -1.78 0 -2.66 -p -1.22 0 -2.95 -p -0.62 0 -3.14 -p -0.8 0 -4 -p -1.6 0 -4 -p 0 0 -5.6 
+-p 1.6 0 -4 -p 0.8 0 -4 -p 0.62 0 -3.14 -p 1.22 0 -2.95 -p 1.78 0 -2.66 -p 2.26 0 -2.26 -p 2.66 0 -1.78 -p 2.95 0 -1.22 -p 3.14 0 -0.62 
+-p 4 0 -0.8 -p 4 0 -1.6 -p 5.6 0 0 -p 4 0 1.6 -p 4 0 0.8 -p 3.14 -0 0.62 -p 2.95 -0 1.22 -p 2.66 -0 1.78 -p 2.26 -0 2.26 -p 1.78 -0 2.66 
+-p 1.22 -0 2.95 -p 0.62 -0 3.14 -p 0.8 0 4 -p 1.6 0 4 -p 0 0 5.6 -p -1.6 0 4 -p -0.8 0 4 
+-p -0.62 -0 3.14 -p -1.22 -0 2.95 -p -1.78 -0 2.66 -p -2.26 -0 2.26 -p -2.66 -0 1.78 -p -2.95 -0 1.22 -p -3.14 -0 0.62`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $BodyCtrl;parent $BodyCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc BodyValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $BodyCtrl = `curve -n $nameCtrl -d 1 -p -3.14 -0 0.62 -p -4 0 0.8 -p -4 0 1.6 -p -5.6 0 0 -p -4 0 -1.6 -p -4 0 -0.8 -p -3.14 0 -0.62 
+-p -2.95 0 -1.22 -p -2.66 0 -1.78 -p -2.26 0 -2.26 -p -1.78 0 -2.66 -p -1.22 0 -2.95 -p -0.62 0 -3.14 -p -0.8 0 -4 -p -1.6 0 -4 -p 0 0 -5.6 
+-p 1.6 0 -4 -p 0.8 0 -4 -p 0.62 0 -3.14 -p 1.22 0 -2.95 -p 1.78 0 -2.66 -p 2.26 0 -2.26 -p 2.66 0 -1.78 -p 2.95 0 -1.22 -p 3.14 0 -0.62 
+-p 4 0 -0.8 -p 4 0 -1.6 -p 5.6 0 0 -p 4 0 1.6 -p 4 0 0.8 -p 3.14 -0 0.62 -p 2.95 -0 1.22 -p 2.66 -0 1.78 -p 2.26 -0 2.26 -p 1.78 -0 2.66 
+-p 1.22 -0 2.95 -p 0.62 -0 3.14 -p 0.8 0 4 -p 1.6 0 4 -p 0 0 5.6 -p -1.6 0 4 -p -0.8 0 4 
+-p -0.62 -0 3.14 -p -1.22 -0 2.95 -p -1.78 -0 2.66 -p -2.26 -0 2.26 -p -2.66 -0 1.78 -p -2.95 -0 1.22 -p -3.14 -0 0.62`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $BodyCtrl;parent $BodyCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cLockCircle ---//
+global proc cLockCircle (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){LockCircle();}
+if ($cValueRDB){LockCircleValue();}
+if ($cSelectGroupRDB){LockCircleValueGrp();}   
+if ($cSelectGroupAndJnt){LockCircleValueGrpJnt();}}
+global proc LockCircle(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $LockCircleCtrl = `curve -n $nameCtrl -d 1 -p 0 0 0 -p 0 5.6 0 -p 0.21 5.63 0 -p 0.4 5.71 0 -p 0.57 5.83 0 -p 0.69 6 0 -p 0.77 6.19 0 -p 0.8 6.4 0 
+-p 0 6.4 0 -p 0 5.6 0 -p -0.21 5.63 0 -p -0.4 5.71 0 -p -0.57 5.83 0 -p -0.69 6 0 -p -0.77 6.19 0 -p -0.8 6.4 0 -p -0.77 6.61 0 -p -0.69 6.8 0 
+-p -0.57 6.97 0 -p -0.4 7.09 0 -p -0.21 7.17 0 -p 0 7.2 0 -p 0.21 7.17 0 -p 0.4 7.09 0 -p 0.57 6.97 0 -p 0.69 6.8 0 -p 0.77 6.61 0 -p 0.8 6.4 0 
+-p -0.8 6.4 0 -p 0 6.4 0 -p 0 7.2 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LockCircleCtrl;}}
+global proc LockCircleValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $LockCircleCtrl = `curve -n $nameCtrl -d 1 -p 0 0 0 -p 0 5.6 0 -p 0.21 5.63 0 -p 0.4 5.71 0 -p 0.57 5.83 0 -p 0.69 6 0 -p 0.77 6.19 0 -p 0.8 6.4 0 
+-p 0 6.4 0 -p 0 5.6 0 -p -0.21 5.63 0 -p -0.4 5.71 0 -p -0.57 5.83 0 -p -0.69 6 0 -p -0.77 6.19 0 -p -0.8 6.4 0 -p -0.77 6.61 0 -p -0.69 6.8 0 
+-p -0.57 6.97 0 -p -0.4 7.09 0 -p -0.21 7.17 0 -p 0 7.2 0 -p 0.21 7.17 0 -p 0.4 7.09 0 -p 0.57 6.97 0 -p 0.69 6.8 0 -p 0.77 6.61 0 -p 0.8 6.4 0 
+-p -0.8 6.4 0 -p 0 6.4 0 -p 0 7.2 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LockCircleCtrl;
+setAttr ($LockCircleCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $LockCircleCtrl;}}
+global proc LockCircleValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $LockCircleCtrl = `curve -n $nameCtrl -d 1 -p 0 0 0 -p 0 5.6 0 -p 0.21 5.63 0 -p 0.4 5.71 0 -p 0.57 5.83 0 -p 0.69 6 0 -p 0.77 6.19 0 -p 0.8 6.4 0 
+-p 0 6.4 0 -p 0 5.6 0 -p -0.21 5.63 0 -p -0.4 5.71 0 -p -0.57 5.83 0 -p -0.69 6 0 -p -0.77 6.19 0 -p -0.8 6.4 0 -p -0.77 6.61 0 -p -0.69 6.8 0 
+-p -0.57 6.97 0 -p -0.4 7.09 0 -p -0.21 7.17 0 -p 0 7.2 0 -p 0.21 7.17 0 -p 0.4 7.09 0 -p 0.57 6.97 0 -p 0.69 6.8 0 -p 0.77 6.61 0 -p 0.8 6.4 0 
+-p -0.8 6.4 0 -p 0 6.4 0 -p 0 7.2 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LockCircleCtrl;parent $LockCircleCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc LockCircleValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $LockCircleCtrl = `curve -n $nameCtrl -d 1 -p 0 0 0 -p 0 5.6 0 -p 0.21 5.63 0 -p 0.4 5.71 0 -p 0.57 5.83 0 -p 0.69 6 0 -p 0.77 6.19 0 -p 0.8 6.4 0 
+-p 0 6.4 0 -p 0 5.6 0 -p -0.21 5.63 0 -p -0.4 5.71 0 -p -0.57 5.83 0 -p -0.69 6 0 -p -0.77 6.19 0 -p -0.8 6.4 0 -p -0.77 6.61 0 -p -0.69 6.8 0 
+-p -0.57 6.97 0 -p -0.4 7.09 0 -p -0.21 7.17 0 -p 0 7.2 0 -p 0.21 7.17 0 -p 0.4 7.09 0 -p 0.57 6.97 0 -p 0.69 6.8 0 -p 0.77 6.61 0 -p 0.8 6.4 0 
+-p -0.8 6.4 0 -p 0 6.4 0 -p 0 7.2 0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LockCircleCtrl;parent $LockCircleCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cLockSquare ---//
+global proc cLockSquare (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){LockSquare();}
+if ($cValueRDB){LockSquareValue();}
+if ($cSelectGroupRDB){LockSquareValueGrp();}   
+if ($cSelectGroupAndJnt){LockSquareValueGrpJnt();}}
+global proc LockSquare(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $LockSquareCtrl = `curve -n $nameCtrl -d 1 -p 0 0 0 -p -0 5.6 -0 -p -0.7 5.6 -0 -p -0.7 7 -0 -p 0.7 7 -0 -p 0.7 5.6 -0 -p -0 5.6 -0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LockSquareCtrl;}}
+global proc LockSquareValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $LockSquareCtrl = `curve -n $nameCtrl -d 1 -p 0 0 0 -p -0 5.6 -0 -p -0.7 5.6 -0 -p -0.7 7 -0 -p 0.7 7 -0 -p 0.7 5.6 -0 -p -0 5.6 -0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LockSquareCtrl;
+setAttr ($LockSquareCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $LockSquareCtrl;}}
+global proc LockSquareValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $LockSquareCtrl = `curve -n $nameCtrl -d 1 -p 0 0 0 -p -0 5.6 -0 -p -0.7 5.6 -0 -p -0.7 7 -0 -p 0.7 7 -0 -p 0.7 5.6 -0 -p -0 5.6 -0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LockSquareCtrl;parent $LockSquareCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc LockSquareValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $LockSquareCtrl = `curve -n $nameCtrl -d 1 -p 0 0 0 -p -0 5.6 -0 -p -0.7 5.6 -0 -p -0.7 7 -0 -p 0.7 7 -0 -p 0.7 5.6 -0 -p -0 5.6 -0`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $LockSquareCtrl;parent $LockSquareCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+    //--- cSquare ---//
+global proc cSquare (){
+global string $bNormalRDB;global string $bValueRDB;global string $bGroupRDB;global string $tfValueCurveScale;global string $bGroupAndJnt;
+string $cSelectNormal = `radioButton -q -select rb_normal`;
+string $cValueRDB = `radioButton -q -select rb_value`;
+string $cSelectGroupRDB = `radioButton -q -select rb_group`;
+string $cSelectGroupAndJnt = `radioButton -q -select rb_joint`;
+if ($cSelectNormal){Square();}
+if ($cValueRDB){SquareValue();}
+if ($cSelectGroupRDB){SquareValueGrp();}   
+if ($cSelectGroupAndJnt){SquareValueGrpJnt();}}
+global proc Square(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $SquareCtrl = `curve -n $nameCtrl -d 1 -p 1 0 -1 -p -1 0 -1 -p -1 0 1 -p 1 0 1 -p 1 0 -1`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $SquareCtrl;}}
+global proc SquareValue(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+string $nameCtrl = $obj + "_Ctrl";float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $SquareCtrl = `curve -n $nameCtrl -d 1 -p 1 0 -1 -p -1 0 -1 -p -1 0 1 -p 1 0 1 -p 1 0 -1`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $SquareCtrl;
+setAttr ($SquareCtrl + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $SquareCtrl;}}
+global proc SquareValueGrp(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $SquareCtrl = `curve -n $nameCtrl -d 1 -p 1 0 -1 -p -1 0 -1 -p -1 0 1 -p 1 0 1 -p 1 0 -1`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $SquareCtrl;parent $SquareCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);makeIdentity -apply true -s 1 -n 0 -pn 1 $group;}}
+global proc SquareValueGrpJnt(){
+global string $tfValueCurveScale;string $selected[] = `ls -sl`;
+float $scale_value = `textField -q -tx value_scale_customeCurve`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;string $nameGroup = $obj + "_grp";string $group = `group -n $nameGroup -empty`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;string $nameCtrl = $obj + "_Ctrl";
+string $SquareCtrl = `curve -n $nameCtrl -d 1 -p 1 0 -1 -p -1 0 -1 -p -1 0 1 -p 1 0 1 -p 1 0 -1`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $SquareCtrl;parent $SquareCtrl $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value)(1 * $scale_value)(1 * $scale_value);
+makeIdentity -apply true -s 1 -n 0 -pn 1 $group;string $joint = `joint -n ($obj + "_jnt")`;}}
+global proc cFaceCtrl (){
+float $scale_value = 0.2;
+    // group Ctrl //----------------------------------------------------------------
+string $groupScaleBox = `group -empty -n "ScaleGrp"`;string $groupMainFace = `group -empty -n "Main_Grp"`;
+string $groupEyeR = `group -empty -n "EyeR_grp"`;string $groupEyeL = `group -empty -n "EyeL_grp"`;
+string $groupBrowR = `group -empty -n "BrowR_grp"`;string $groupBrowL = `group -empty -n "BrowL_grp"`;
+string $groupCheckR = `group -empty -n "CheckR_grp"`;string $groupCheckL = `group -empty -n "CheckL_grp"`;
+string $groupMouth = `group -empty -n "Mouth_grp"`;
+    //Curve Line //----------------------------------------------------------------
+string $mainFaceCur = `curve -n "MainFace" -d 1 -p 0 0 -11 -p 6 0 -11 -p 6 0 12 -p -6 0 12 -p -6 0 -11 -p 0 0 -11`;
+rename |MainFace|curveShape1 "MainFaceShapes" ;setAttr "MainFaceShapes.overrideEnabled" 1;setAttr "MainFaceShapes.overrideColor" 18;
+string $browLineR = `curve -n "BrowLineR" -d 1 -p 2 0 -2 -p 2 0 2 -p -2 0 2 -p -2 0 -2 -p 2 0 -2`;rename |BrowLineR|curveShape1 "BrowLineRShapes" ;
+string $browLineL = `curve -n "BrowLineL" -d 1 -p 2 0 -2 -p 2 0 2 -p -2 0 2 -p -2 0 -2 -p 2 0 -2`;rename |BrowLineL|curveShape1 "BrowLineLShapes" ;
+string $eyeLineR = `curve -n "EyeLineR" -d 1 -p 2 0 -2 -p 2 0 2 -p -2 0 2 -p -2 0 -2 -p 2 0 -2`;rename |EyeLineR|curveShape1 "EyeLineRShapes" ;
+string $eyeLineL = `curve -n "EyeLineL" -d 1 -p 2 0 -2 -p 2 0 2 -p -2 0 2 -p -2 0 -2 -p 2 0 -2`;rename |EyeLineL|curveShape1 "EyeLineLShapes" ;
+string $checkLineR = `curve -n "CheckLineR" -d 1 -p 2 0 -2 -p 2 0 2 -p -2 0 2 -p -2 0 -2 -p 2 0 -2`;rename |CheckLineR|curveShape1 "CheckLineRShapes" ;
+string $checkLineL = `curve -n "CheckLineL" -d 1 -p 2 0 -2 -p 2 0 2 -p -2 0 2 -p -2 0 -2 -p 2 0 -2`;rename |CheckLineL|curveShape1 "CheckLineLShapes" ;
+string $functionsFace = `curve -n "FunctionsLineFace" -d 1 -p -5 0 -0.63 -p 5 0 -0.63 -p 5 0 0.63 -p -5 0 0.63 -p -5 0 -0.63`;rename |FunctionsLineFace|curveShape1 "FunctionsLineFaceShapes" ;
+setAttr "FunctionsLineFaceShapes.overrideEnabled" 1;setAttr "FunctionsLineFaceShapes.overrideColor" 14;
+string $mouthLine = `curve -n "MouthLine" -d 1 -p -4 0 -2.5 -p 4 0 -2.5 -p 4 0 2.5 -p -4 0 2.5 -p -4 0 -2.5`;rename |MouthLine|curveShape1 "MouthShapes" ;
+    // Curve Ctrl //----------------------------------------------------------------
+string $browRCur = `curve -n "Brow_R" -d 1 -p 0 0 -1 -p -1 0 0 -p 0 0 1 -p 1 0 0 -p 0 0 -1`; 
+rename |Brow_R|curveShape1 "Brow_RShapes" ;setAttr "Brow_RShapes.overrideEnabled" 1;setAttr "Brow_RShapes.overrideColor" 17;
+string $browLCur = `curve -n "Brow_L" -d 1 -p 0 0 -1 -p -1 0 0 -p 0 0 1 -p 1 0 0 -p 0 0 -1`; 
+rename |Brow_L|curveShape1 "Brow_LShapes" ;setAttr "Brow_LShapes.overrideEnabled" 1;setAttr "Brow_LShapes.overrideColor" 17;
+string $eyeRCur = `curve -n "Eye_R" -d 1 -p 0 0 -1 -p -1 0 0 -p 0 0 1 -p 1 0 0 -p 0 0 -1`; 
+rename |Eye_R|curveShape1 "Eye_RShapes" ;setAttr "Eye_RShapes.overrideEnabled" 1;setAttr "Eye_RShapes.overrideColor" 17;
+string $eyeLCur = `curve -n "Eye_L" -d 1 -p 0 0 -1 -p -1 0 0 -p 0 0 1 -p 1 0 0 -p 0 0 -1`; 
+rename |Eye_L|curveShape1 "Eye_LShapes" ;setAttr "Eye_LShapes.overrideEnabled" 1;setAttr "Eye_LShapes.overrideColor" 17;
+string $checkRCur = `curve -n "Check_R" -d 1 -p 0 0 -1 -p -1 0 0 -p 0 0 1 -p 1 0 0 -p 0 0 -1`; 
+rename |Check_R|curveShape1 "Check_RShapes" ;setAttr "Check_RShapes.overrideEnabled" 1;setAttr "Check_RShapes.overrideColor" 17;
+string $checkLCur = `curve -n "Check_L" -d 1 -p 0 0 -1 -p -1 0 0 -p 0 0 1 -p 1 0 0 -p 0 0 -1`; 
+rename |Check_L|curveShape1 "Check_LShapes" ;setAttr "Check_LShapes.overrideEnabled" 1;setAttr "Check_LShapes.overrideColor" 17;
+string $mouthCur = `curve -n "Mouth" -d 1 -p 0 0 -1 -p -1 0 0 -p 0 0 1 -p 1 0 0 -p 0 0 -1`; 
+rename |Mouth|curveShape1 "MouthCurShapes" ;setAttr "MouthCurShapes.overrideEnabled" 1;setAttr "MouthCurShapes.overrideColor" 17;
+    // parent ctrl to grp //----------------------------------------------------------------
+parent $browRCur $groupBrowR;parent $browLCur $groupBrowL;parent $eyeRCur $groupEyeR;parent $eyeLCur $groupEyeL;
+parent $checkRCur $groupCheckR;parent $checkLCur $groupCheckL;parent $mouthCur $groupMouth;
+parent $groupBrowR $browLineR;parent $groupBrowL $browLineL;parent $groupEyeR $eyeLineR;parent $groupEyeL $eyeLineL;
+parent $groupCheckR $checkLineL;parent $groupCheckL $checkLineR;parent $groupMouth $mouthLine;parent $functionsFace $mainFaceCur;
+parent $browLineR $mainFaceCur;parent $browLineL $mainFaceCur;parent $eyeLineR $mainFaceCur;parent $eyeLineL $mainFaceCur;
+parent $checkLineL $mainFaceCur;parent $checkLineR $mainFaceCur;parent $mouthLine $mainFaceCur;parent $mainFaceCur $groupScaleBox;
+parent $groupScaleBox $groupMainFace;
+    // move ctrl Line to position //----------------------------------------------------------------
+setAttr "BrowLineR.translateX" -3 ;setAttr "BrowLineR.translateZ" -8 ;setAttr "BrowLineL.translateX" 3 ;setAttr "BrowLineL.translateZ" -8 ;
+setAttr "EyeLineR.translateX" -3 ;setAttr "EyeLineR.translateZ" -3 ;setAttr "EyeLineL.translateX" 3 ;setAttr "EyeLineL.translateZ" -3 ; ;
+setAttr "CheckLineL.translateX" 3 ;setAttr "CheckLineL.translateZ" 2 ;setAttr "CheckLineR.translateX" -3 ;setAttr "CheckLineR.translateZ" 2 ;
+setAttr "MouthLine.translateZ" 9 ;setAttr "FunctionsLineFace.translateZ" 5.25 ;setAttr ($groupMainFace + ".rotateX") 90;setAttr "Mouth_grp.translateZ" -2.5; 
+    // set transformation and lock attribute //----------------------------------------------------------------
+setAttr -lock true -keyable false -channelBox false "FunctionsLineFace.tx";setAttr -lock true -keyable false -channelBox false "FunctionsLineFace.ty";
+setAttr -lock true -keyable false -channelBox false "FunctionsLineFace.tz";setAttr -lock true -keyable false -channelBox false "FunctionsLineFace.rx";
+setAttr -lock true -keyable false -channelBox false "FunctionsLineFace.ry";setAttr -lock true -keyable false -channelBox false "FunctionsLineFace.rz";
+setAttr -lock true -keyable false -channelBox false "FunctionsLineFace.sx";setAttr -lock true -keyable false -channelBox false "FunctionsLineFace.sy";
+setAttr -lock true -keyable false -channelBox false "FunctionsLineFace.sz";setAttr -lock true -keyable false -channelBox false "FunctionsLineFace.visibility";
+setAttr -lock true -keyable false -channelBox false "Mouth.ty";setAttr -lock true -keyable false -channelBox false "Check_R.ty";
+setAttr -lock true -keyable false -channelBox false "Eye_L.ty";setAttr -lock true -keyable false -channelBox false "Brow_L.ty";
+setAttr -lock true -keyable false -channelBox false "Brow_R.ty";setAttr -lock true -keyable false -channelBox false "Eye_R.ty";
+setAttr -lock true -keyable false -channelBox false "Check_L.ty";setAttr -lock true -keyable false -channelBox false "Mouth.rx";
+setAttr -lock true -keyable false -channelBox false "Check_R.rx";setAttr -lock true -keyable false -channelBox false "Eye_L.rx";
+setAttr -lock true -keyable false -channelBox false "Brow_L.rx";setAttr -lock true -keyable false -channelBox false "Brow_R.rx";
+setAttr -lock true -keyable false -channelBox false "Eye_R.rx";setAttr -lock true -keyable false -channelBox false "Check_L.rx";
+setAttr -lock true -keyable false -channelBox false "Mouth.ry";setAttr -lock true -keyable false -channelBox false "Check_R.ry";
+setAttr -lock true -keyable false -channelBox false "Eye_L.ry";setAttr -lock true -keyable false -channelBox false "Brow_L.ry";
+setAttr -lock true -keyable false -channelBox false "Brow_R.ry";setAttr -lock true -keyable false -channelBox false "Eye_R.ry";
+setAttr -lock true -keyable false -channelBox false "Check_L.ry";setAttr -lock true -keyable false -channelBox false "Mouth.rz";
+setAttr -lock true -keyable false -channelBox false "Check_R.rz";setAttr -lock true -keyable false -channelBox false "Eye_L.rz";
+setAttr -lock true -keyable false -channelBox false "Brow_L.rz";setAttr -lock true -keyable false -channelBox false "Brow_R.rz";
+setAttr -lock true -keyable false -channelBox false "Eye_R.rz";setAttr -lock true -keyable false -channelBox false "Check_L.rz";
+setAttr -lock true -keyable false -channelBox false "Mouth.sx";setAttr -lock true -keyable false -channelBox false "Check_R.sx";
+setAttr -lock true -keyable false -channelBox false "Eye_L.sx";setAttr -lock true -keyable false -channelBox false "Brow_L.sx";
+setAttr -lock true -keyable false -channelBox false "Brow_R.sx";setAttr -lock true -keyable false -channelBox false "Eye_R.sx";
+setAttr -lock true -keyable false -channelBox false "Check_L.sx";setAttr -lock true -keyable false -channelBox false "Mouth.sy";
+setAttr -lock true -keyable false -channelBox false "Check_R.sy";setAttr -lock true -keyable false -channelBox false "Eye_L.sy";
+setAttr -lock true -keyable false -channelBox false "Brow_L.sy";setAttr -lock true -keyable false -channelBox false "Brow_R.sy";
+setAttr -lock true -keyable false -channelBox false "Eye_R.sy";setAttr -lock true -keyable false -channelBox false "Check_L.sy";
+setAttr -lock true -keyable false -channelBox false "Mouth.sz";setAttr -lock true -keyable false -channelBox false "Check_R.sz";
+setAttr -lock true -keyable false -channelBox false "Eye_L.sz";setAttr -lock true -keyable false -channelBox false "Brow_L.sz";
+setAttr -lock true -keyable false -channelBox false "Brow_R.sz";setAttr -lock true -keyable false -channelBox false "Eye_R.sz";
+setAttr -lock true -keyable false -channelBox false "Check_L.sz";setAttr -lock true -keyable false -channelBox false "Mouth.v";
+setAttr -lock true -keyable false -channelBox false "Check_R.v";setAttr -lock true -keyable false -channelBox false "Eye_L.v";
+setAttr -lock true -keyable false -channelBox false "Brow_L.v";setAttr -lock true -keyable false -channelBox false "Brow_R.v";
+setAttr -lock true -keyable false -channelBox false "Eye_R.v";setAttr -lock true -keyable false -channelBox false "Check_L.v";
+setAttr "MouthShapes.template" 1;setAttr "CheckLineLShapes.template" 1;setAttr "CheckLineRShapes.template" 1;
+setAttr "EyeLineRShapes.template" 1;setAttr "EyeLineLShapes.template" 1;setAttr "BrowLineLShapes.template" 1;setAttr "BrowLineRShapes.template" 1;
+setAttr ($groupScaleBox + ".scale") -type double3 (1*$scale_value)(1*$scale_value)(1*$scale_value);setAttr ($groupScaleBox + ".translateZ") -2.4;
+transformLimits -tx -2 2 -etx 1 1 Brow_R;transformLimits -tz -2 2 -etz 1 1 Brow_R;transformLimits -tx -2 2 -etx 1 1 Brow_L;transformLimits -tz -2 2 -etz 1 1 Brow_L;
+transformLimits -tx -2 2 -etx 1 1 Eye_R;transformLimits -tz -2 2 -etz 1 1 Eye_R;transformLimits -tx -2 2 -etx 1 1 Eye_L;transformLimits -tz -2 2 -etz 1 1 Eye_L;
+transformLimits -tx -2 2 -etx 1 1 Check_L;transformLimits -tz -2 2 -etz 1 1 Check_L;transformLimits -tx -2 2 -etx 1 1 Check_R;transformLimits -tz -2 2 -etz 1 1 Check_R;
+transformLimits -tx -4 4 -etx 1 1 Mouth;transformLimits -tz 0 5 -etz 1 1 Mouth;
+setAttr -keyable false -channelBox true "MainFace.tx";setAttr -keyable false -channelBox true "MainFace.ty";
+setAttr -keyable false -channelBox true "MainFace.tz";setAttr -keyable false -channelBox true "MainFace.rx";
+setAttr -keyable false -channelBox true "MainFace.ry";setAttr -keyable false -channelBox true "MainFace.rz";
+setAttr -keyable false -channelBox true "MainFace.sx";setAttr -keyable false -channelBox true "MainFace.sy";
+setAttr -keyable false -channelBox true "MainFace.sz";setAttr -keyable false -channelBox true "MainFace.v";
+setAttr -keyable false -channelBox true "ScaleGrp.tx";setAttr -keyable false -channelBox true "ScaleGrp.ty";
+setAttr -keyable false -channelBox true "ScaleGrp.tz";setAttr -keyable false -channelBox true "ScaleGrp.rx";
+setAttr -keyable false -channelBox true "ScaleGrp.ry";setAttr -keyable false -channelBox true "ScaleGrp.rz";
+setAttr -keyable false -channelBox true "ScaleGrp.sx";setAttr -keyable false -channelBox true "ScaleGrp.sy";
+setAttr -keyable false -channelBox true "ScaleGrp.sz";setAttr -keyable false -channelBox true "ScaleGrp.v";
+    // add atribute//----------------------------------------------------------------
+addAttr -ln "____________________________" -at "enum"  -en "Brow" -dv 0 -keyable true $functionsFace;
+setAttr -lock true ($functionsFace + ".____________________________") ;
+addAttr -ln "Frowning" -at "float" -min 1 -max 10 -keyable true $functionsFace;
+addAttr -ln "Open_Eye" -at "float" -min 1 -max 10 -keyable true $functionsFace;
+addAttr -ln "Angry" -at "float" -min 1 -max 10 -keyable true $functionsFace;
+addAttr -ln "___________________________" -at "enum"  -en "Eye" -dv 0 -keyable true $functionsFace;
+setAttr -lock true ($functionsFace + ".___________________________") ;
+addAttr -ln "Color_Eye" -at "long" -min 1 -max 20 -keyable true $functionsFace;
+addAttr -ln "__________________________" -at "enum"  -en "Mouth" -dv 0 -keyable true $functionsFace;
+setAttr -lock true ($functionsFace + ".__________________________") ;
+addAttr -ln "Smile" -at "float" -min 1 -max 10 -keyable true $functionsFace;
+addAttr -ln "Sad" -at "float" -min 1 -max 10 -keyable true $functionsFace;
+addAttr -ln "Open_Mouth" -at "float" -min 1 -max 10 -keyable true $functionsFace;
+addAttr -ln "_________________________" -at "enum"  -en "Mouth Shape" -dv 0 -keyable true $functionsFace;
+setAttr -lock true ($functionsFace + "._________________________") ;
+addAttr -ln "Aaaaaa" -at "float" -min 1 -max 10 -keyable true $functionsFace;addAttr -ln "Oooooo" -at "float" -min 1 -max 10 -keyable true $functionsFace;
+addAttr -ln "Iiiiii" -at "float" -min 1 -max 10 -keyable true $functionsFace;addAttr -ln "Eeeeee" -at "float" -min 1 -max 10 -keyable true $functionsFace;
+addAttr -ln "Mmmmmm" -at "float" -min 1 -max 10 -keyable true $functionsFace;addAttr -ln "Zzzzzz" -at "float" -min 1 -max 10 -keyable true $functionsFace;
+addAttr -ln "Blink" -at "float" -min 1 -max 10 -keyable true $eyeRCur;addAttr -ln "Pupil" -at "float" -min 1 -max 10 -keyable true $eyeRCur;
+addAttr -ln "Iris" -at "float" -min 1 -max 10 -keyable true $eyeRCur;addAttr -ln "Blink" -at "float" -min 1 -max 10 -keyable true $eyeLCur;
+addAttr -ln "Pupil" -at "float" -min 1 -max 10 -keyable true $eyeLCur;addAttr -ln "Iris" -at "float" -min 1 -max 10 -keyable true $eyeLCur;
+select -cl;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

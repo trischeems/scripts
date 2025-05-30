@@ -1,0 +1,44 @@
+///////// Tools Tri3D //////////////////
+///////// Version 1 //////////////////
+//
+//--- Tools Tri3D Written in Mel, the tool has many features to help you work faster ---//
+//------//
+//email : info.tri3d@gmail.com
+// Copyright (c) 2024 Tri 3D Rigger.
+//Last Modified 01/06/2024
+
+global string $gShelfTopLevel;
+string $currentShelf = `tabLayout -query -selectTab $gShelfTopLevel`;
+setParent $currentShelf;
+string $trInstallToolsTri3D=`trInstallToolsTri3D`;
+if (`gmatch $trInstallToolsTri3D "*\*"`)
+	$trInstallToolsTri3D=`substituteAllString $trInstallToolsTri3D "\\" "/"`;
+string $scriptName="Tri3DSettupFaceADV5";
+string $sourceFile=$trInstallToolsTri3D+$scriptName+".mel";
+string $command="source \"" + $sourceFile + "\";" + $scriptName + ";" + "\n" +"\n" + "///////// Tools Tri3D //////////////////"+"\n"+"///////// Version 1 //////////////////"+"\n"+"//---Tools Tri3D Written in Mel, the tool has many features to help you work faster ---//" +"\n"+"//---email : info.tri3d@gmail.com"+"\n"+"//---Copyright (c) 2024 Tri 3D Rigger."+"\n"+"//---Last Modified 01/06/2024";
+string $icon=$trInstallToolsTri3D+"Functions/Logo/LogoTri3D.jpg";
+shelfButton
+	-command $command
+	-annotation $scriptName
+	-label $scriptName
+	-image $icon
+	-image1 $icon
+	-sourceType "mel"
+;
+global proc trInstallToolsLocator (){
+}
+global proc string trInstallToolsTri3D ()
+{
+string $whatIs=`whatIs trInstallToolsLocator`;
+string $fullPath=`substring $whatIs 25 999`;
+string $buffer[];
+string $slash="/";
+if (`gmatch $whatIs "*\\\\*"`)
+	$slash="\\";
+int $numTok=`tokenize $fullPath $slash $buffer`;
+int $numLetters=size($fullPath);
+int $numLettersLastFolder=size($buffer[$numTok-1]);
+string $scriptLocation=`substring $fullPath 1 ($numLetters-$numLettersLastFolder)`;
+return $scriptLocation;
+}
+

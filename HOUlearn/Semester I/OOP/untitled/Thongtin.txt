@@ -1,0 +1,4 @@
+Ten hoc sinh : pham tri
+Ma hoc sinh : 10101
+Diem trung binh : 8.0
+Hoc sinh duoc hoc bong.

@@ -1,0 +1,684 @@
+//===========================================================
+//  Script Name: ak Auto stretch IK Rig Tools 
+//  Author: Kuan Yu
+//  Last Updated: Last Updated: Fri.Aug.5.2016
+//  version: 1.0.0
+//  Contact: 
+//           roy791202@gmail.com
+//
+//  Description:
+//                 Auto stretch IK Rig Tools 
+//============================================================
+//============= create controller =============
+global proc string akBoxController(float $size,string $name)
+{
+ string $ctl = `curve -d 1 -p (-$size) ($size) ($size) 
+                           -p ($size) ($size) ($size) 
+                           -p ($size) (-$size) ($size)
+                           -p (-$size) (-$size) ($size) 
+                           -p (-$size) ($size) ($size) 
+                           -p (-$size) ($size) (-$size)
+                           -p (-$size) (-$size) (-$size) 
+                           -p (-$size) (-$size) ($size) 
+                           -p ($size) (-$size) ($size) 
+                           -p ($size) (-$size) (-$size) 
+                           -p (-$size) (-$size) (-$size) 
+                           -p (-$size) ($size) (-$size) 
+                           -p ($size) ($size) (-$size) 
+                           -p ($size) (-$size) (-$size) 
+                           -p ($size) ($size) (-$size) 
+                           -p ($size) ($size) ($size)  
+                           -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 
+                           -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 
+                           -k 12 -k 13 -k 14 -k 15 -name $name`;
+                     
+                          return $ctl;                         
+}
+//============= create square controller =====================
+global proc string akSquareController(float $size, string $name)
+{
+  string $ctl = `curve -d 1 -p ($size) 0 (-$size) 
+                            -p ($size) 0 ($size) 
+                            -p (-$size) 0 ($size) 
+                            -p (-$size) 0 (-$size) 
+                            -p ($size) 0 (-$size) 
+                            -k 0 -k 1 -k 2 -k 3 -k 4 -name $name`;
+                            
+                         return $ctl;    
+}
+//============= create circle controller =====================
+global proc string circleController(float $radius,string $dir,string $name)
+{
+ $dir = `toupper $dir`; 
+ string $ctl[] = `circle -c 0 0 0 -nr 0 1 0 -sw 360 -r $radius -d 3 -ut 0 -tol 0.01 -s 8 -ch 1 -n $name`;
+       
+              if($dir == "X") rotate -r -os 0 0 90 $ctl[0];
+              if($dir == "Y") rotate -r -os 0 0 0 $ctl[0];
+              if($dir == "Z") rotate -r -os 90 0 0 $ctl[0];
+            
+             makeIdentity -apply true -t 0 -r 1 -s 0 $ctl[0];
+ 
+                         return $ctl[0];   
+}
+//===============================================
+global proc int akIKFKJointCheck(string $source,string $targetGrp[])
+{
+ int $x = 0;
+       for($each in $targetGrp){
+
+                                if ($each == $source)$x = 1; 
+                                 
+                                }     
+                           
+                           return $x; 
+
+}
+//===============================================
+global proc string[] akStartToEndJoint(string $source,string $targetGrp[])
+{
+ string $jointGrp[];
+    int $x = -1;
+       
+      for($each in $targetGrp){
+         
+         $x = $x + 1;
+         
+         $jointGrp[$x] = $each;
+         
+         if ($each == $source){
+
+            return $jointGrp;
+            
+         }
+      }     
+
+}
+//======= This procedure will prevent the user putting start Joint into the end joint ======
+global proc string[] akStretchIKJointCheck(string $startJoint,string $endJoint)
+{
+ select -hierarchy $startJoint;
+ string $jointGrpA[] = `ls -sl -type joint`;
+ select -hierarchy $endJoint;
+ string $jointGrpB[] = `ls -sl -type joint`;
+   int $a = akIKFKJointCheck($endJoint,$jointGrpA); 
+   int $b = akIKFKJointCheck($startJoint,$jointGrpB);
+    
+     if($a == 1){ 
+                 
+                 string $jointGrp[] = akStartToEndJoint($endJoint,$jointGrpA);
+                             return $jointGrp;
+                }
+     if($b == 1){ 
+                 string $jointGrp[] = akStartToEndJoint($startJoint,$jointGrpB);
+                             return $jointGrp;
+                } 
+     
+     if( $a == 0 || $b  == 0){ 
+                             warning ("The Start Joint: " + $startJoint + "  dosen`t connect to End Joint:  " + $endJoint);
+                             
+                            }
+
+}
+//================================================================
+global proc string akStretchIK(string $targetGrp[],string $name,string $dir,string $solver,string $method)
+{
+ 
+ string $node[];
+ string $MdNode[];
+ string $color,$ikHand;
+ //== list joint == 
+ string $jointGrp[] = akStretchIKJointCheck($targetGrp[0],$targetGrp[1]);
+
+ //==  controler ==
+ 
+ string $ctl = $targetGrp[2];
+ 
+ //==  global controler ==
+ 
+ string $globalCtl = $targetGrp[3]; 
+
+ //==  number of joints ==
+    int $k = size($jointGrp)-1;
+    int $z; 
+    int $x = -1;
+    int $w = -1;
+  float $dis;
+  float $y = 0 ; 
+ //============================= 
+  $dir = `toupper $dir`; 
+  $solver = `toupper $solver`; 
+  if($dir == "X") $color = "R"; 
+  if($dir == "Y") $color = "G";
+  if($dir == "Z") $color = "B";
+ //==  add Attr to ctl ==  
+  if (attributeExists ("auto_stretch",$ctl) == 0){
+                                                 addAttr -k true -sn "auto_stretch" -ln "auto_stretch" -dv 1 -min 0 -max 1 -at "float" $ctl;
+                                                 }
+  if (attributeExists ("arc",$ctl) == 0){
+                                          addAttr -k true -sn "arc" -ln "arc" -dv 1 -at "float" $ctl;
+                                        }
+ //==  ik  solver == 
+
+               if ($solver == "SC"){
+
+             string $ik[] = `ikHandle -sol ikSCsolver -startJoint $jointGrp[0] -endEffector $jointGrp[$k] -name ( $name + "_ik")`; 
+                             parent $ik[0] $ctl;        
+                             $ikHand = $ik[0];
+                             orientConstraint -weight 1 $ctl $jointGrp[$k];
+                          } 
+
+               if ($solver == "RP"){
+
+             string $ik[] = `ikHandle -sol ikRPsolver -startJoint $jointGrp[0] -endEffector $jointGrp[$k] -name ( $name + "_ik")`; 
+                             setAttr ($ik[0] + ".poleVectorX") 0;
+                             setAttr ($ik[0] + ".poleVectorY") 0;
+                             setAttr ($ik[0] + ".poleVectorZ") 0;
+                               
+                               if (attributeExists ("twist",$ctl) == 0){
+                                          addAttr -k true -sn "twist" -ln "twist" -dv 0 -at "float" $ctl; 
+                                        }
+                             
+                             connectAttr ($ctl +".twist") ($ik[0]+".twist"); 
+                             parent $ik[0] $ctl;       
+                             $ikHand = $ik[0];
+                             orientConstraint -weight 1 $ctl $jointGrp[$k];
+                          } 
+
+               if ($solver == "SP"){
+                        
+                             ikSpringSolver;
+             string $ik[] = `ikHandle -sol ikSpringSolver -startJoint $jointGrp[0] -endEffector $jointGrp[$k] -name ( $name + "_ik")`; 
+                             addAttr -k true -sn "twist" -ln "twist" -dv 0 -at "float" $ctl; 
+                             connectAttr ($ctl +".twist") ($ik[0]+".twist"); 
+                             ikSpringSolverRestPose $ik[0];
+                             parent $ik[0] $ctl;    
+                             $ikHand = $ik[0];
+                          } 
+
+ //== create Node ==
+
+        $node[0] = `shadingNode -asUtility multiplyDivide -name ($name +"_global_scale")`;
+                    setAttr ".op" 1 $node[0];
+	    $node[1] = `shadingNode -asUtility multiplyDivide -name ($name +"_scale")`;
+	                setAttr ".op" 2 $node[1];
+	    $node[2] = `shadingNode -asUtility multiplyDivide -name ($name +"_arc_scale")`;
+	                setAttr ".op" 1 $node[2];
+        $node[3] = `shadingNode -asUtility condition -name ($name +"_lengthcondition")`;
+	                setAttr ".op" 2 $node[3];
+        $node[4] = `shadingNode -asUtility condition -name ($name +"_autocondition")`;
+	                setAttr ".op" 3 $node[4];
+                    setAttr ".st" 1 $node[4]; 
+        $node[5] = `shadingNode -asUtility condition -name ($name +"_squashcondition")`;
+	                setAttr ".op" 3 $node[5];
+                    setAttr ".st" 1 $node[5]; 
+
+ //== create Node ==
+        $node[6] = `createNode transform -name ($name+"_dist_grp") -parent $globalCtl`; 
+        $node[7] = `createNode transform -name ($name+"_dist_loc1") -parent $node[6]`;
+        $node[8] = `createNode locator -name ($name+"_dist_locShape1") -parent $node[7]`;
+        $node[9] = `createNode transform -name ($name+"_dist_loc2") -parent $node[6]`;
+        $node[10] = `createNode locator -name ($name+"_dist_locShape2") -parent $node[9]`; 
+        $node[11] = `createNode transform -name ($name+"_dist1") -parent $node[6]`;
+        $node[12] = `createNode distanceDimShape -name ($name+"_distShape1") -parent $node[11]`; 
+
+ //== Constraint ==
+         pointConstraint -weight 1 $jointGrp[0] $node[7] ;
+         pointConstraint -weight 1 $ctl $node[9];
+ //== connectAttr ==
+         connectAttr ($node[8]+".worldPosition") ($node[12]+".startPoint");
+         connectAttr ($node[10]+".worldPosition") ($node[12]+".endPoint");
+         connectAttr ($globalCtl + ".scale"+ $dir) ($node[0]+".input2" + $dir);	
+         connectAttr ($node[0]+".output" + $dir) ($node[1]+".input2" + $dir);
+         connectAttr ($node[12]+".distance") ($node[1]+".input1" + $dir);
+         connectAttr ($ctl +".auto_stretch") ($node[4]+".firstTerm"); 
+         connectAttr ($ctl +".arc") ($node[2]+".input2" + $dir); 
+         connectAttr ($node[1]+".output" + $dir) ($node[2]+".input1"+ $dir);
+         connectAttr ($node[0]+".output" + $dir) ($node[3]+".secondTerm");
+         connectAttr ($node[12]+".distance") ($node[3]+".firstTerm");
+         connectAttr ($node[2]+".output" + $dir) ($node[3]+".colorIfTrue" + $color);
+         connectAttr ($node[3]+".outColor" + $color) ($node[4]+".colorIfTrue" + $color);
+         connectAttr ($node[4]+".outColor" + $color) ($node[5]+".colorIfTrue" + $color);
+         connectAttr ($node[4]+".outColor" + $color) ($node[5]+".firstTerm");
+
+
+//== auto stretch arm leg setting ==
+
+                                  for($each in $jointGrp){
+                                                         
+                                                           $x = $x + 1;
+                                                          
+                                                           $dis = `getAttr ($each + ".translate" + $dir)`; 
+                                                          
+                                                           if($x > 0)$y = ($y + `abs($dis)`);
+                                                           //==================
+                                                           if ($method == "scale"){
+                                                                                  if($x < $k){
+                                                                                              connectAttr ($node[5]+".outColor" + $color) ($each +".scale"+ $dir);                   
+
+                                                                                             }
+                                                                     
+                                                                                  } 
+                                                            //==================                                  
+                                                       if ($method == "translate"){
+                                                  
+                                                                                   if($x >= 1){        
+                                                                                  
+                                                                                               $MdNode[$x] = `shadingNode -asUtility multiplyDivide -name ($each +"_translate")`;
+                                                                                                              setAttr ".op" 1 $node[0];
+                                                                                                              setAttr ($MdNode[$x] + ".input1" + $dir) $dis; 
+                                                                                                              connectAttr ($node[5]+".outColor" + $color) ($MdNode[$x] +".input2" + $dir);  
+                                                                                                              connectAttr ($MdNode[$x] +".output" + $dir) ($each + ".translate" + $dir);                   
+
+                                                                                               }
+                                                                          
+                                                                                  }
+                                                                                  
+                                                         } 
+
+                                                           setAttr ( $node[0] + ".input1" + $dir) $y;                     
+
+
+                                                                      return $ikHand;
+         
+
+}
+//================================================================
+global proc string akAutoBuildFK(string $jointGrp[],string $name,string $dir)
+{
+string $ctlName = ($name + "_fk_ctl");string $ctl[];string $grp[];string $cons[];  
+string $topGrp = `createNode transform -name ($name+"_fk_ctl_grp")`;
+   int $x = 0;
+   int $y = -1; 
+  
+  for($each in $jointGrp){
+                          
+                          $x = $x + 1;
+                          $y = $y + 1; 
+                          
+                          $grp[$y] = `createNode transform -name ($ctlName + $x + "_grp") -parent $topGrp`;
+                          $cons[$y] = `createNode transform -name ($ctlName + $x + "_cons") -parent $grp[$y]`;
+                          $ctl[$y] = circleController(1,$dir,$ctlName + $x);
+                                     parent $ctl[$y] $cons[$y];
+                             delete `parentConstraint -weight 1 $each $grp[$y]`;
+                                     parentConstraint -maintainOffset -weight 1 $ctl[$y] $each;
+                                     
+                          if($y > 0)parent $grp[$y] $ctl[$y - 1];            
+
+                         } 
+                       
+                                return $topGrp;     
+   
+}
+//========================================================
+global proc string[] akIkFkConstrain(string $jointGrp[],string $prefix)
+{
+ string $newJointGrp[];   
+ string $TempJoint[],$TempJointGrp[];     
+    int $x = -1; 
+        
+        for($each in $jointGrp){
+                                
+                                $x = $x + 1;
+                                //==========
+                                $TempJointGrp[$x] = `createNode transform -name ($prefix + $each + "_grp")`;
+                                $TempJoint[$x] = `createNode joint -name ($prefix + $each)`;
+                                parent $TempJoint[$x] $TempJointGrp[$x]; 
+                                //==========
+                                delete `parentConstraint -weight 1 $each $TempJointGrp[$x]`;
+                                parent -w $TempJoint[$x];
+                                delete $TempJointGrp[$x];
+                                parentConstraint -maintainOffset -weight 1 $TempJoint[$x] $each;
+                                $newJointGrp[$x] = $TempJoint[$x];
+                                //========== 
+                                if($x > 0){
+                                            parent $TempJoint[$x] $newJointGrp[$x -1];    
+                                          }
+          
+                                
+                               }
+                            
+                              return $newJointGrp;      
+
+}
+//========================================================
+global proc string akConnectIkFk(string $name,string $jointGrp[],string $controller,string $dir)
+{
+ string $node = `shadingNode -asUtility reverse -name ($name + "_IKFK_reverse")`; 
+ string $cons; 
+ string $conAttr[];
+        $dir = `toupper $dir`; 
+ //============================================
+  if (attributeExists (($name + "_IKFK"),$controller) == 0){
+                         
+      addAttr -k true -sn ($name + "_IKFK") -ln ($name + "_IKFK") -dv 0 -min 0 -max 1 -at "float" $controller;
+                                        
+     }      
+ //============================================     
+   connectAttr ($controller +"." + $name + "_IKFK") ($node +".input" + $dir);  
+       
+       for($each in $jointGrp){
+
+                                //==========
+                                $cons = `parentConstraint -q -name $each`; 
+                                
+                                string $conAttr[] =`listAttr -userDefined $cons`;
+                                
+                                connectAttr ($node +".output" + $dir) ($cons + "." + $conAttr[0]); 
+                                connectAttr ($controller +"." + $name + "_IKFK") ($cons + "." + $conAttr[1]); 
+
+                               }
+                               
+                                  return $node;
+
+}
+//========================================================
+global proc akApplyToStretchIK()
+{
+ string $targetGrp[];
+ string $ikCtlGrp[];
+ string $dir,$solver,$method,$ik,$node,$fkCtlGrp;
+ string $name = `textFieldGrp -q -text nameTextField`;
+    int $x;
+ //=========    
+ if (`radioButtonGrp -q -select axisRadioButton` == 1){
+
+                  $dir = "X";
+ 
+                 }
+ 
+ if (`radioButtonGrp -q -select axisRadioButton` == 2){
+
+                  $dir = "Y";
+ 
+                 }
+ if (`radioButtonGrp -q -select axisRadioButton` == 3){
+
+                  $dir = "Z";
+ 
+                 }
+//===========================================   
+ if (`radioButtonGrp -q -select solverRadioButton` == 1){
+
+                  $solver = "SC";
+ 
+                 }
+ if (`radioButtonGrp -q -select solverRadioButton` == 2){
+
+                  $solver = "RP";
+ 
+                 }
+  if (`radioButtonGrp -q -select solverRadioButton` == 3){
+
+                  $solver = "SP";
+ 
+                 } 
+ //===========================================   
+ if (`radioButtonGrp -q -select methodRadioButton` == 1){
+
+                  $method = "translate";
+ 
+                 }
+ if (`radioButtonGrp -q -select methodRadioButton` == 2){
+
+                  $method = "scale";
+ 
+                 }                              
+ 
+ //===========================================
+  $targetGrp[0] = `textFieldButtonGrp -q -text startJointTextField`;
+  $targetGrp[1] = `textFieldButtonGrp -q -text endJointTextField`;
+  string $jointGrp[] = akStretchIKJointCheck($targetGrp[0],$targetGrp[1]);
+ //===========================================    
+     int $k = size($jointGrp)-1;
+     int $j = (size($jointGrp)/2);
+ //===========================================  
+ if (`textFieldButtonGrp -q -exists GlobalTextField` == 1){
+
+                   $targetGrp[3] = `textFieldButtonGrp -q -text GlobalTextField`;  
+ 
+                 }
+                   
+            else {
+                   if (`objExists ($name + "_global_ctl")` == 1){                                               
+                                                                 
+                                                                  warning ("This object" + $name + "_global_ctl" + "is already Exist\n" + "please use this" + $name + "_global_ctl" + "to be your global scale");
+                                                                
+                                                                }  
+              
+                   if (`objExists ($name + "_global_ctl")` == 0){                                                
+                                                                            
+                                                                 $targetGrp[3] = akSquareController(0.75,$name + "_global_ctl");
+                                                                             
+                                                                 }
+
+               
+                 } 
+
+            
+ //=========================================== 
+ if (`textFieldButtonGrp -q -exists controllerTextField` == 1){
+
+                   $targetGrp[2] = `textFieldButtonGrp -q -text controllerTextField`; 
+                   
+ 
+                 }
+            else {
+                   $ikCtlGrp[0] = `createNode transform -name ($name+"_ik_ctl_grp")`;
+                   $ikCtlGrp[1] = `createNode transform -name ($name+"_ik_ctl_cons") -parent $ikCtlGrp[0]`;
+                   $targetGrp[2] = akBoxController(0.75,$name + "_ik_ctl");
+                                   parent $targetGrp[2] $ikCtlGrp[1];
+                   delete `parentConstraint -weight 1 -skipRotate x $jointGrp[$k] $ikCtlGrp[0]`;
+                                   parent $ikCtlGrp[0] $targetGrp[3]; 
+                 
+                 }                             
+
+ //===========================================
+ if (`checkBoxGrp -q -value1 checkBoxGrp1` == 1){
+ 
+                  //======================
+                  string $ikJointGrp[]= akIkFkConstrain($jointGrp,"ik_");
+                  string $fkJointGrp[]= akIkFkConstrain($jointGrp,"fk_");
+                     int $z = size($ikJointGrp)-1; 
+                         parent $ikJointGrp[0] $targetGrp[3];
+                         parent $fkJointGrp[0] $targetGrp[3];
+                         parent $jointGrp[0] $targetGrp[3];
+                         //===============
+                         $fkCtlGrp = akAutoBuildFK($fkJointGrp,$name,$dir);
+                         parent $fkCtlGrp $targetGrp[3];  
+                         //===============
+                         $targetGrp[0] = $ikJointGrp[0];
+                         $targetGrp[1] = $ikJointGrp[$z]; 
+                         //======================       
+                         $ik = akStretchIK($targetGrp,$name,$dir,$solver,$method);
+                         //======================
+                         $node = akConnectIkFk($name,$jointGrp,$targetGrp[3],$dir); 
+                         //======================
+                          if (`objExists $ikCtlGrp[0]` == 1){  
+
+                                                             connectAttr ($node +".output" + $dir) ($ikCtlGrp[0] + ".visibility"); 
+                         
+                                                             }
+                                                                        
+                         connectAttr ($targetGrp[3] + "." + $name + "_IKFK") ($fkCtlGrp + ".visibility"); 
+ 
+                
+                 }         
+  if (`checkBoxGrp -q -value1 checkBoxGrp1` == 0){
+      
+                 string $jointGrp[] = akStretchIKJointCheck($targetGrp[0],$targetGrp[1]);
+                         $ik = akStretchIK($targetGrp,$name,$dir,$solver,$method);
+                
+                 }
+    //===========================================
+ if (`checkBoxGrp -q -value1 checkBoxGrp2` == 1){
+     
+                  $targetGrp[4] = `textFieldButtonGrp -q -text PoleVectorTextField`; 
+                                   poleVectorConstraint -weight 1 $targetGrp[4] $ik;
+                                   connectAttr ($node +".output" + $dir)($targetGrp[4] + ".visibility");
+                                   parent $targetGrp[4] $targetGrp[3];  
+                 }  
+                 
+ if (`checkBoxGrp -q -value2 checkBoxGrp2` == 1){
+ 
+                   $ikCtlGrp[2] = `createNode transform -name ($name+"_pole_loc_grp")`;
+                   $ikCtlGrp[3] = `createNode transform -name ($name+"_pole_loc_cons") -parent $ikCtlGrp[2]`;
+                   string $loc[] = `spaceLocator -n ($name + "_pole_loc" )`; 
+                   $targetGrp[4] = $loc[0];
+                                    parent $targetGrp[4] $ikCtlGrp[3];
+                                    delete `pointConstraint -weight 1 $jointGrp[$j] $ikCtlGrp[2]`;               
+                                    poleVectorConstraint -weight 1 $targetGrp[4] $ik ;
+                                    connectAttr ($node +".output" + $dir)($targetGrp[4] + ".visibility");
+                                    parent $ikCtlGrp[2] $targetGrp[3];   
+                
+                 }                 
+
+
+}
+//==================================================
+global proc akAddTextToStretchIKUI(int $x)
+{
+ string $textGrp[] = `ls -sl`;
+ 
+ if ($x == 1){
+
+  textFieldButtonGrp -e -text $textGrp[0] -parent akIkRowLayout0 startJointTextField; 
+ 
+             }
+
+ if ($x == 2){
+
+  textFieldButtonGrp -e -text $textGrp[0] -parent akIkRowLayout0 endJointTextField; 
+ 
+             }
+             
+  if ($x == 3){
+
+  textFieldButtonGrp -e -text $textGrp[0] -parent akIkRowLayout1 controllerTextField; 
+ 
+             }
+  if ($x == 4){
+
+  textFieldButtonGrp -e -text $textGrp[0] -parent akIkRowLayout2 GlobalTextField ; 
+ 
+             }                           
+  if ($x == 5){
+
+  textFieldButtonGrp -e -text $textGrp[0] -parent akIkRowLayout3 PoleVectorTextField ; 
+ 
+             }    
+
+
+}
+//==================================================
+global proc akAddDeleteIKUI()
+{
+ int $a = `checkBoxGrp -q -value1 checkBoxGrp2`;
+ int $b = `checkBoxGrp -q -value2 checkBoxGrp2`;
+ int $c = `textFieldButtonGrp -q -exists PoleVectorTextField`; 
+ int $d = `checkBoxGrp -q -value2 checkBoxGrp1`;
+ int $e = `textFieldButtonGrp -q -exists controllerTextField`;
+ int $f = `checkBoxGrp -q -value3 checkBoxGrp1`;
+ int $g = `textFieldButtonGrp -q -exists GlobalTextField`;
+  //==================
+  if ($a == 1){
+                
+               if ($c == 0){ 
+               
+                           textFieldButtonGrp -label " Pole Vector : " -text "empty"  -buttonLabel "add" -buttonCommand "akAddTextToStretchIKUI(5);" 
+                                              -parent akIkRowLayout3  PoleVectorTextField;             
+                           separator -horizontal true -height 15 -style "in" -parent akIkRowLayout3 separator11; 
+                           }  
+               }
+               
+  if($a == 0 || $b == 1 ){
+                          if ($c == 1){ 
+                                      deleteUI PoleVectorTextField;
+                                      deleteUI separator11; 
+                                      }    
+              }
+  //==================                         
+  if ($d == 1 && $e == 1){
+                          deleteUI controllerTextField;
+                          deleteUI separator9; 
+                         }
+  if ($d == 0 && $e == 0){
+                          textFieldButtonGrp  -label " IK Controller : " -text "empty"  -buttonLabel "add" -buttonCommand "akAddTextToStretchIKUI(3);" 
+                                              -parent akIkRowLayout1  controllerTextField;             
+                          separator -horizontal true -height 15 -style "in" -parent akIkRowLayout1 separator9;
+                         }
+  //==================                         
+  if ($f == 1 && $g == 1){
+                          deleteUI GlobalTextField;
+                          deleteUI separator10; 
+                         }
+  if ($f == 0 && $g == 0){
+                          textFieldButtonGrp -label " Global Scale Object : " -text "empty"  -buttonLabel "add" -buttonCommand "akAddTextToStretchIKUI(4);" 
+                                             -parent akIkRowLayout2  GlobalTextField;             
+                          separator -horizontal true -height 15 -style "in" -parent akIkRowLayout2 separator10;
+                         }
+
+
+}
+//==================================================
+global proc akAutoStretchIkWindow()
+{
+
+if ((`window -ex akAutoStretchIkWindow`) == true) 
+		{
+			deleteUI akAutoStretchIkWindow;
+		}
+
+   window -t "Auto stretch IK Rig Tools V.1.0.0 " -width 150 akAutoStretchIkWindow;
+   //====================================
+   columnLayout -adjustableColumn true -h 1 -w 1 -columnAttach "both" 1 ikColumnLayout1;
+   frameLayout -marginWidth 1 -marginHeight 1 -enable true  -borderStyle "in" -labelVisible false -borderVisible true -parent ikColumnLayout1 akIkInFrame0; 
+   frameLayout -marginWidth 4 -marginHeight 4 -enable true  -borderStyle  "out" -labelVisible false -borderVisible true -parent akIkInFrame0 akIkInFrame1;
+   frameLayout -marginWidth 1 -marginHeight 1 -enable true  -borderStyle "out" -collapsable false -label " Auto stretch IK " -parent akIkInFrame1 akIkOutFrame0; 
+   columnLayout -adjustableColumn true -columnAttach "both" 1  -columnAlign "center" -parent akIkOutFrame0 akIKColumnLayout2;
+   //=========== radio Button =========================
+   rowColumnLayout -width 1 -numberOfRows 18 -rowHeight 1 32 -parent akIKColumnLayout2 akIkRowLayout0;  
+   textFieldGrp  -label " Name : " -text "" -editable true  -parent akIkRowLayout0  nameTextField;               
+   separator  -horizontal true -height 15 -style "in" -parent akIkRowLayout0 separator1;
+   radioButtonGrp -numberOfRadioButtons 2 -label  " Stretch Method: " -labelArray2 "Translate" "Scale" -cw 2 120 -select 1 -parent akIkRowLayout0 methodRadioButton; 
+   separator -horizontal true -height 15 -style "in" -parent akIkRowLayout0  separator2;
+   radioButtonGrp -numberOfRadioButtons 3 -label  " Stretch Axis: " -labelArray3 "X-Axis" "Y-Axis" "Z-Axis" -cw 2 120 -select 1 -parent akIkRowLayout0 axisRadioButton; 
+   separator -horizontal true -height 15 -style "in" -parent akIkRowLayout0  separator3;
+   radioButtonGrp -numberOfRadioButtons 3 -label  " IK Solver: " -enable3 off -labelArray3 "ikSCsolver" "ikRPsolver" "ikSpringSolver" 
+                  -onCommand1 "checkBoxGrp -e -enable off -value1 0 -value2 0 checkBoxGrp2;akAddDeleteIKUI();" 
+                  -onCommand2 "checkBoxGrp -e -enable on checkBoxGrp2;" 
+                  -cw 2 120 -select 1 -parent akIkRowLayout0 solverRadioButton;  
+   separator -horizontal true -height 15 -style "in" -parent akIkRowLayout0  separator4;
+   //========== checkBox ==========================
+   checkBoxGrp -label "Auto build:" -numberOfCheckBoxes 3 -labelArray3 "IK / FK Switch" "IK Controller" "Global Scale Controller" 
+               -changeCommand "akAddDeleteIKUI();" -parent akIkRowLayout0 checkBoxGrp1;
+   separator -horizontal true -height 15 -style "in" -parent akIkRowLayout0  separator5;
+   //====================================
+   checkBoxGrp  -enable off -manage true -label "Pole Vector Controller:" -numberOfCheckBoxes 2 -labelArray2 "Manual" "Auto build" 
+                -changeCommand1 "checkBoxGrp -e -value2 0 checkBoxGrp2;akAddDeleteIKUI();" 
+                -changeCommand2 "checkBoxGrp -e -value1 0 checkBoxGrp2;akAddDeleteIKUI();" 
+                -parent akIkRowLayout0 checkBoxGrp2;
+   separator -horizontal true -height 15 -style "in" -parent akIkRowLayout0 separator6;
+   //============== Text ======================
+   textFieldButtonGrp -label " Start joint : " -text "empty"  -buttonLabel "add" -buttonCommand "akAddTextToStretchIKUI(1);" -parent akIkRowLayout0  startJointTextField;             
+   separator -horizontal true -height 15 -style "in" -parent akIkRowLayout0 separator7;
+   textFieldButtonGrp -label " End joint : " -text "empty" -buttonLabel "add" -buttonCommand "akAddTextToStretchIKUI(2);" -parent akIkRowLayout0  endJointTextField;             
+   separator -horizontal true -height 15 -style "in" -parent akIkRowLayout0 separator8;
+   //=========================================
+   rowColumnLayout -width 1 -numberOfRows 4 -rowHeight 1 32 -parent akIKColumnLayout2 akIkRowLayout1;  
+   textFieldButtonGrp  -label " IK Controller : " -text "empty"  -buttonLabel "add" -buttonCommand "akAddTextToStretchIKUI(3);" -parent akIkRowLayout1  controllerTextField;             
+   separator -horizontal true -height 15 -style "in" -parent akIkRowLayout1 separator9;
+   //=========================================
+   rowColumnLayout -width 1 -numberOfRows 4 -rowHeight 1 32 -parent akIKColumnLayout2 akIkRowLayout2;  
+   textFieldButtonGrp -label " Global Scale Controller : " -text "empty"  -buttonLabel "add" -buttonCommand "akAddTextToStretchIKUI(4);" -parent akIkRowLayout2  GlobalTextField;             
+   separator -horizontal true -height 15 -style "in" -parent akIkRowLayout2 separator10;
+   //=========================================
+   rowColumnLayout -width 1 -numberOfRows 4 -rowHeight 1 32 -parent akIKColumnLayout2 akIkRowLayout3; 
+   //=========================================
+   rowColumnLayout -numberOfRows 1 -rowHeight 1 44  -parent akIKColumnLayout2 ikRowColumn1;
+   button -width 250 -h 30 -align "left" -label "      Apply      " -command "akApplyToStretchIK();" -parent ikRowColumn1;
+   button -width 250 -h 30 -align "right" -label "      Close      " -command "deleteUI stretchIkWindow;" -parent ikRowColumn1;
+
+  showWindow akAutoStretchIkWindow;
+
+}	
+//==================================================

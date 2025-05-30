@@ -1,0 +1,166 @@
+global proc string[] nameWindow()
+{
+    string $name[] = {"fixVega_tools", "Tri Rig Fix", "1.0"};
+    return $name;
+}
+global proc vegafixfile()
+{
+    int $sizeWD[] = {300, 600};
+    string $nameWD[] = nameWindow();
+    // string $cInstallToolsTri3D = `trInstallToolsTri3D`;
+    if (`window -exists ($nameWD[0])`) {
+        deleteUI ($nameWD[0]);
+    }
+    window -title ($nameWD[1] + " " + $nameWD[size($nameWD)-1]) -widthHeight $sizeWD[0] $sizeWD[1] -sizeable 0 -menuBar true  ($nameWD[0]);
+    string $cMainAllLayout = `tabLayout -h 360 main_layout_all`;
+
+    string $Modify = `scrollLayout -p $cMainAllLayout -w $sizeWD[0] Modify`;
+        string $fixRender = `columnLayout -p $Modify -width $sizeWD[0] fixRender`;
+        // Fix render
+            frameLayout -p $fixRender -l "Fix Render" -w $sizeWD[0] -cll true -cl false fit_auto_rig_layout;
+                button -l "Check" -w $sizeWD[0] -c "CheckBug";
+                progressBar -maxValue 100 -w $sizeWD[0] progressBarCheckRig;
+                scrollField -editable false -tx "" -w $sizeWD[0] -h 200 scrollDialog;
+                button -l "Fix" -w $sizeWD[0] -c "FixBugIK";
+
+    string $Animation = `scrollLayout -p $cMainAllLayout -w $sizeWD[0] Animation`;
+
+
+
+    showWindow ($nameWD[0]);
+}
+
+// check bug #########
+global string $dataReturn[];
+    if(size($dataReturn) > 0)
+    {
+        if($dataReturn[size($dataReturn) - 1] == 0)
+        {
+            $dataReturn = {};
+        }
+    }
+global proc CheckBug()
+{
+    global string $dataReturn[];
+    string $allObjs[] = `ls -type joint`;
+    string $data[];
+    string $dataCanFix[];
+    string $dataClean[];
+    string $print;
+    int $n = 0;
+
+
+    $curData = `scrollField -q -tx scrollDialog`;
+                    if(`scrollField 
+            -q -tx scrollDialog` 
+                                    != ""){
+        scrollField 
+                        -e -tx "" 
+                                    scrollDialog;refresh;}
+            progressBar 
+                        -edit 
+                -pr 0 progressBarCheckRig;
+        for($i=0;$i < 101;$i ++){
+                    progressBar -edit 
+                            -step 1 
+                                progressBarCheckRig;
+            refresh;}
+    for ($i = 0;$i<size($allObjs);$i++) 
+    {
+        $o = $allObjs[$i];
+        if ($o == "IKXElbow_L") 
+        {
+            scrollField -e -tx "Su dung file anim de fix !!" scrollDialog;
+            return;
+        }
+        if (`gmatch $o "*IKXElbow*"`) 
+        {
+            $newData1 = `substitute ":IKXElbow_L" $o ""`;
+            $newData2 = `substitute ":IKXElbow_R" $newData1 ""`;
+            $v = `getAttr ($o + ".rz")`;
+            $data[$i] = $newData2;
+        }
+    }
+    for ($item in $data) 
+    {
+        if (!stringArrayContains($item, $dataClean)) 
+        {
+            $dataClean[size($dataClean)] = $item;
+        }
+    }
+    for($v in $dataClean)
+    {
+        if($v != "")
+        {
+            $print += $v + "\n";
+            $dataReturn[$n] = $v;
+        }
+        $n ++;
+    }
+    $dataReturn[size($dataReturn)] = 0;
+    scrollField -e -tx $print scrollDialog;
+    if($print == "")
+    {
+        scrollField -e 
+                    -tx "Khong co nhan vat nao can sua !!!" 
+            scrollDialog;
+    }
+}
+global proc FixBugIK()
+{
+    string $ctrl[] = {"IKArm_R","IKArm_L"};
+    global string $dataReturn[];
+
+    if(size($dataReturn) == 0)
+    {
+        scrollField -e -tx "Chua check rig !!" scrollDialog;
+        return;
+    }
+
+    int $crt = `currentTime -q`;
+    int $crtn = $crt + 1;
+    for($i=1;$i<size($dataReturn) - 1;$i++)
+    {
+        string $o = $dataReturn[$i];
+        for($j in $ctrl)
+        {
+            $df = `getAttr ($o + ":" + $j + ".stretchy")`;
+            if($df == 10)
+            {
+                setAttr ($o + ":" + $j + ".stretchy") ($df - 0.1);refresh;
+                    setKeyframe -breakdown 0 
+                        -preserveCurveShape 0 
+                                            -hierarchy none  
+                    -at "stretchy" 
+                                        ($o + ":" + $j);
+                                    currentTime 
+                            $crtn;
+                setAttr ($o + ":" + $j + ".stretchy") 
+                            $df;refresh;
+                        setKeyframe -breakdown 0 
+                    -preserveCurveShape 0 
+                                    -hierarchy none  
+                        -at "stretchy" ($o + ":" + $j);
+            }
+            else
+            {
+                setAttr ($o + ":" + $j + ".stretchy") ($df + 0.1);refresh;
+                    setKeyframe -breakdown 0 
+                        -preserveCurveShape 0 
+                                            -hierarchy none  
+                    -at "stretchy" 
+                                        ($o + ":" + $j);
+                                    currentTime 
+                            $crtn;
+                setAttr ($o + ":" + $j + ".stretchy") 
+                            $df;refresh;
+                        setKeyframe -breakdown 0 
+                    -preserveCurveShape 0 
+                                    -hierarchy none  
+                        -at "stretchy" ($o + ":" + $j);
+            }
+            currentTime $crt;
+        }
+    }
+    select -cl;
+}

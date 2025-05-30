@@ -1,0 +1,10 @@
+C:\Users\tri3d\Documents\maya\2020\scripts\HOUlearn\Csharp\learn\AppTinhTienDien\bin\Debug\AppTinhTienDien.exe.config
+C:\Users\tri3d\Documents\maya\2020\scripts\HOUlearn\Csharp\learn\AppTinhTienDien\bin\Debug\AppTinhTienDien.exe
+C:\Users\tri3d\Documents\maya\2020\scripts\HOUlearn\Csharp\learn\AppTinhTienDien\bin\Debug\AppTinhTienDien.pdb
+C:\Users\tri3d\Documents\maya\2020\scripts\HOUlearn\Csharp\learn\AppTinhTienDien\obj\Debug\AppTinhTienDien.csproj.AssemblyReference.cache
+C:\Users\tri3d\Documents\maya\2020\scripts\HOUlearn\Csharp\learn\AppTinhTienDien\obj\Debug\AppTinhTienDien.Form1.resources
+C:\Users\tri3d\Documents\maya\2020\scripts\HOUlearn\Csharp\learn\AppTinhTienDien\obj\Debug\AppTinhTienDien.Properties.Resources.resources
+C:\Users\tri3d\Documents\maya\2020\scripts\HOUlearn\Csharp\learn\AppTinhTienDien\obj\Debug\AppTinhTienDien.csproj.GenerateResource.cache
+C:\Users\tri3d\Documents\maya\2020\scripts\HOUlearn\Csharp\learn\AppTinhTienDien\obj\Debug\AppTinhTienDien.csproj.CoreCompileInputs.cache
+C:\Users\tri3d\Documents\maya\2020\scripts\HOUlearn\Csharp\learn\AppTinhTienDien\obj\Debug\AppTinhTienDien.exe
+C:\Users\tri3d\Documents\maya\2020\scripts\HOUlearn\Csharp\learn\AppTinhTienDien\obj\Debug\AppTinhTienDien.pdb

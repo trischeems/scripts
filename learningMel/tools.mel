@@ -1,0 +1,174 @@
+global proc toolsUI(){
+    string $UiMain = "Ui_Tools";
+    string $MainLayout = "Main_Layout";
+    float $mainWidth = 250;
+        if (`window -exists $UiMain`){
+            deleteUI $UiMain;
+        }
+    // Ui tools #####
+        window -title "Tools" -w $mainWidth -h 700 -sizeable false $UiMain;
+        tabLayout $MainLayout;
+        // Modify Tab ######
+            string $modifyTab = `columnLayout -p $MainLayout Modify`;
+            // frame layout rename 
+                frameLayout -p $modifyTab -l "Rename Object" -w $mainWidth -cll true -cl true rename_FL;
+                    columnLayout -p "rename_FL" rename_CL;
+                    string $renameTF  = `textField -editable false -w $mainWidth -h 30 rename_TF`;
+                    button -l "Print name" -w $mainWidth -h 30 -c "renameOBJ";
+            // frame layout change color curve 
+                frameLayout -p $modifyTab -l "Change Color" -w $mainWidth -cll true -cl true changeColor_FL;
+                    rowColumnLayout -nc 5 changeColor_RL;
+                    canvas -rgb 1 1 1 -w 50 -h 30 ;
+                    canvas -rgb 0 1 0 -w 50 -h 30 ;
+                    canvas -rgb 0 0 1 -w 50 -h 30;
+                    canvas -rgb 1 0 0 -w 50 -h 30 -pc "redCur";
+                    canvas -rgb 1 1 0 -w 50 -h 30 -pc "yellowCur";
+                    canvas -rgb 0 1 1 -w 50 -h 30;
+                    canvas -rgb 1 0 0.55 -w 50 -h 30;
+                    canvas -rgb 1 0.225 0 -w 50 -h 30;
+                    canvas -rgb 1 0.267 0.693 -w 50 -h 30;
+                    canvas -rgb 1 1 1 -w 50 -h 30;
+            // frame layout custome curve
+                frameLayout -p $modifyTab -l "Custome curve" -w $mainWidth -cll true -cl true customeCurve_FL;
+                    rowColumnLayout -nc 5 customeCurve_RL;
+                    symbolButton -i "cubeCurve.png" -w 50 -h 50 -c "cubeCur";
+                    symbolButton -i "polySphere.svg" -w 50 -h 50;
+                    symbolButton -i "polyCone.svg" -w 50 -h 50;
+                    symbolButton -i "triangle.png" -w 50 -h 50;
+                    symbolButton -i "plus.png" -w 50 -h 50;
+                    symbolButton -i "polyCube.png" -w 50 -h 50;
+                    symbolButton -i "polyCube.png" -w 50 -h 50;
+                    symbolButton -i "polyCube.png" -w 50 -h 50;
+                    symbolButton -i "polyCube.png" -w 50 -h 50;
+                    symbolButton -i "polyCube.png" -w 50 -h 50;
+            // frame layout create curve code
+                frameLayout -p customeCurve_FL -cll true -cl true -l "Create Curve Code" createCurveCode_FL;
+                    columnLayout -w $mainWidth createCurveCode_CL;
+                    string $tfCreatCurveCodeA =`textField -w $mainWidth -tx 2 -editable false tx_roundNum_ctt`; 
+                    string $tfCreatCurveCodeB =`scrollField -w $mainWidth -h 100 -wordWrap true tx_codeCTL_ctt`; 
+                    button -l "Create Code" -w $mainWidth -c "creatCurveCode";
+            // frame layout radio button
+                frameLayout -w 250 -p $modifyTab -cll true -cl false -l "Create Curve Code" radioButtonTest;
+                    rowColumnLayout -w 300 -nc 2 radioButtonRL;
+                    radioCollection allRadioButton;
+                        string $rbCube = `radioButton -l "Cube" -select -w 100 -onCommand "button -edit -enable true buttonCube;button -edit -enable false buttonSphere;" cubeRadio`;
+                        string $rbSphere = `radioButton -l "sphere" -w 100 -onCommand "button -edit -enable false buttonCube;button -edit -enable true buttonSphere;" sphereRadio`;
+                    string $buttonCube = `button -l "cube" buttonCube`;
+                    string $buttonsphere = `button -enable false -l "sphere" buttonSphere`;
+                    button -l "Create poly" -c "createCubeSphere;";
+        showWindow $UiMain;
+}
+////// ###### command
+global proc createCubeSphere(){
+    global string $rbCube;
+    global string $rbSphere;
+
+    string $rbCubeQr = `radioButton -query -select cubeRadio`;
+    string $rbSphereQr = `radioButton -query -select sphereRadio`;
+
+    if($rbCubeQr){
+        polyCube;
+    }
+    if($rbSphereQr){
+        polySphere;
+    }
+}
+
+
+
+
+
+global proc renameOBJ(){
+    global string $renameTF;
+    string $afterName = `textField -query -tx rename_TF`;
+    string $select[] = `ls -sl`;
+    // rename ($select[0]) $afterName;
+    textField -edit -tx  ($select[0]) rename_TF;
+}
+
+// ######## custome curve
+    // create code curve 
+    global proc creatCurveCode (){
+        global string $tfCreatCurveCodeA;
+        global string $tfCreatCurveCodeB;
+        string $sel[],$shps[],$curve,$locProxy[],$LocAr[],$round;
+        string $strPos,$cuvCode[],$code;
+        float $cuvPos[];
+        
+        $sel = `ls -sl`;
+        $shps = `listRelatives -s $sel[0]`;
+        $curve = $shps[0];
+
+        $round = `textField -q -tx tx_roundNum_ctt`;
+        
+        int $numSpans = `getAttr ( $curve + ".spans" )`;
+        int $degree   = `getAttr ( $curve + ".degree" )`;
+        int $form     = `getAttr ( $curve + ".form" )`;
+        int $numCVs   = $numSpans + $degree;
+
+        for ($i=0;$i<$numCVs;$i++){
+            $cuvPos = `pointPosition -w ($sel[0] + ".cv[" + $i + "]")`;
+            $cuvPos[0] = python( "round(" + $cuvPos[0] + ","+ $round + ")");
+            $cuvPos[1] = python( "round(" + $cuvPos[1] + ","+ $round + ")");
+            $cuvPos[2] = python( "round(" + $cuvPos[2] + ","+ $round + ")");
+            $strPos = floatArrayToString( $cuvPos, " ");
+            $strPos = ("-p " + $strPos + "");
+            $cuvCode[$i] = $strPos; 
+        }
+        stringArrayInsertAtIndex(0, $cuvCode, ("curve -d " + $degree));
+        $code = stringArrayToString($cuvCode, " ");
+        $code = $code + ";";
+        scrollField -e -tx $code tx_codeCTL_ctt;
+    }
+    // #### change color
+        global proc yellowCur (){
+            string $select[] =`ls -sl`;
+            string $shapeC[];
+
+            for ($obj in $select){
+                string $shapeC[] = `listRelatives -shapes $obj`;
+                for ($shape in $shapeC){
+                    setAttr ($shape + ".overrideEnabled") 1;
+                    setAttr ($shape + ".overrideColor") 17;
+                }
+            }
+        }
+        global proc redCur (){
+            string $select[] =`ls -sl`;
+            string $shapeC[];
+
+            for ($obj in $select){
+                string $shapeC[] = `listRelatives -shapes $obj`;
+                for ($shape in $shapeC){
+                    setAttr ($shape + ".overrideEnabled") 1;
+                    setAttr ($shape + ".overrideColor") 13;
+                }
+            }
+        }
+    // #### create curve
+        // cube cur
+            global proc cubeCur (){
+                string $select[] = `ls -sl`;
+                if(size($select) == 0){
+                    warning "Vui long chon obj";
+                }
+                if(size($select) > 0){
+                    if(($select[0]) != "pCube1"){
+                        curve -n ($select[0] + "_ctrl") -d 1 -p 0.5 0.5 -0.5 -p -0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p -0.5 0.5 -0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 -p 0.5 -0.5 0.5 -p 0.5 -0.5 -0.5;
+                        matchTransform -pos -rot ($select[0] + "_ctrl") ($select[0]);
+                        string $shapeC[] = `listRelatives -shapes ($select[0] + "_ctrl")`;
+                        for ($shape in $shapeC){
+                            setAttr ($shape + ".overrideEnabled") 1;
+                            setAttr ($shape + ".overrideColor") 13;
+                        }
+                    }
+                }
+            }
+
+    
+
+
+
+
+
+

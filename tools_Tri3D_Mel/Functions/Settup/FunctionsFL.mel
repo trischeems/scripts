@@ -1,0 +1,159 @@
+/// CUSTOME CONTRONLLER /////
+    // CONTROLLER #####
+global proc ctrlIn() {
+global string $cValueScaleTextField;
+string $selected_objects[] = `ls -selection`;
+float $scale_value = `textField -q -tx value_scale_text_field`;
+for ($obj in $selected_objects) {
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $nameCtrl = $obj + "_Ctrl";
+string $group = `group -em -n ($obj + "_Grp")`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;
+string $controller = `curve -n $nameCtrl -d 1 -p 0 1 0 -p 0 0.92 0.38 -p 0 0.71 0.71 -p 0 0.38 0.92 
+-p 0 0 1 -p 0 -0.38 0.92 -p 0 -0.71 0.71 -p 0 -0.92 0.38 -p 0 -1 0 
+-p 0 -0.92 -0.38 -p 0 -0.71 -0.71 -p 0 -0.38 -0.92 -p 0 0 -1 -p 0 0.38 -0.92 
+-p 0 0.71 -0.71 -p 0 0.92 -0.38 -p 0 1 0 -p 0.38 0.92 0 -p 0.71 0.71 0 -p 0.92 0.38 0 
+-p 1 0 0 -p 0.92 -0.38 0 -p 0.71 -0.71 0 -p 0.38 -0.92 0 -p 0 -1 0 -p -0.38 -0.92 0 
+-p -0.71 -0.71 0 -p -0.92 -0.38 0 -p -1 0 0 -p -0.92 0.38 0 -p -0.71 0.71 0 -p -0.38 0.92 0 
+-p 0 1 0 -p 0 0.92 -0.38 -p 0 0.71 -0.71 -p 0 0.38 -0.92 -p 0 0 -1 -p -0.38 0 -0.92 
+-p -0.71 0 -0.71 -p -0.92 0 -0.38 -p -1 0 0 -p -0.92 0 0.38 -p -0.71 0 0.71 -p -0.38 0 0.92 
+-p 0 0 1 -p 0.38 0 0.92 -p 0.71 0 0.71 -p 0.92 0 0.38 -p 1 0 0 -p 0.92 0 -0.38 -p 0.71 0 -0.71 
+-p 0.38 0 -0.92 -p 0 0 -1 `;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $controller;
+parent $controller $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value) (1 * $scale_value) (1 * $scale_value);
+parent $obj $controller;}}    
+global proc ctrljnt() {
+global string $cValueScaleTextField;
+string $selected_objects[] = `ls -selection`;
+float $scale_value = `textField -q -tx value_scale_text_field`;
+for ($obj in $selected_objects) {
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $group = `group -em -n ($obj + "_Grp")`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;
+string $controller[] = `circle -nr 0 1 0 -r 2 -n ($obj + "_Ctrl")`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $controller[0];
+parent $controller[0] $group;
+setAttr ($group + ".scale") -type double3 (1 * $scale_value) (1 * $scale_value) (1 * $scale_value);
+string $joint = `joint -n ($obj + "_jnt")`;}} 
+global proc ctrlSjnt() {
+global string $cValueScaleTextField;
+string $selected_objects[] = `ls -selection`;
+float $scale_value = `textField -q -tx value_scale_text_field`;
+for ($obj in $selected_objects) {
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $group = `group -em -n ($obj + "_Grp")`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $group;
+string $controller[] = `circle -nr 0 1 0 -r 3 -n ($obj + "_Ctrl")`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $controller[0];
+string $controllerSecond[] = `circle -nr 0 1 0 -r 2 -n ($obj + "_Ctrl")`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $controllerSecond[0];
+parent $controller[0] $group;
+parent $controllerSecond[0] $controller[0];
+setAttr ($group + ".scale") -type double3 (1 * $scale_value) (1 * $scale_value) (1 * $scale_value);
+string $joint = `joint -n ($obj + "_jnt")`;}} 
+global proc addJntToCurve(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $joint = `joint -n ($obj + "_jnt")`;}}
+global proc addJntToWS(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+string $joint = `joint -n ($obj + "_jnt")`;
+parent -w $joint;}}
+global proc addJntBindToWS(){
+string $selected[] = `ls -sl`;
+for ($obj in $selected){
+float $pivot_position[] = `xform -ws -q -rotatePivot $obj`;
+string $joint = `joint -n ($obj + "_jnt")`;
+xform -ws -t ($pivot_position[0]) ($pivot_position[1]) ($pivot_position[2]) $joint;
+skinCluster $joint $obj;
+parent -w $joint;}}
+global string $cSaveTextMo; 
+global proc button1_select_obj() {
+    global string $cSaveTextMove;
+    string $selectedMesh[] = `ls -selection -type "transform"`;
+    if (size($selectedMesh) > 0) {
+        string $cSaveTextMo = `textField -edit -text $selectedMesh[0] save_name_obj_text_field`;
+    } else {
+        string $cSaveTextMo = `textField -edit -text "" save_name_obj_text_field`;
+    }
+}
+
+global proc button2_move_obj() {
+    global string $cSaveTextMo;
+    global string $cButtonMove;
+    string $targetVertex[] = `ls -selection -flatten`;
+    if (size($targetVertex) == 0) {
+        warning "Select vertex.";
+        return;
+    }
+    if (size($cSaveTextMo) == 0) {
+        warning "Select mesh.";
+        return;
+    }    
+    string $duplicateMesh = `duplicate $cSaveTextMo`;
+    float $position[] = `pointPosition -w $targetVertex`;
+    move -a $position[0] $position[1] $position[2] $duplicateMesh;
+    string $cWarning = `textField -edit -text "Move !" warning_action_move_obj`;
+}
+
+// change Color curve //
+global proc reFillColorCurve (){string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){setAttr ($obj + ".overrideEnabled") 0;}}
+global proc redColorCurve (){string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 13;}}
+global proc yellowColorCurve (){string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 17;}}
+global proc orangeColorCurve (){string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 21;}}
+global proc pinkColorCurve (){string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 20;}}
+global proc greenColorCurve (){string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 14;}}
+global proc whiteColorCurve (){string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 16;}}
+global proc purpleColorCurve (){string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 9;}}
+global proc blueColorCurve (){string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 18;}}
+global proc blueBlackColorCurve(){string $cSelected[] = `ls -sl `;
+for($obj in $cSelected){setAttr ($obj + ".overrideEnabled") 1;
+setAttr ($obj + ".overrideColor") 6;}}
+
+// constraint Checkbox //
+global proc constraintCheckbox() {int $translateCheckbox = `checkBox -query -value Translate_checkBox`;
+int $rotateCheckbox = `checkBox -query -value Rotate_checkBox`;int $scaleCheckbox = `checkBox -query -value Scale_checkBox`;
+if ($translateCheckbox) {constraintTranslate();}if ($rotateCheckbox) {constraintRotate();}if ($scaleCheckbox) {constraintScale();}}
+global proc constraintTranslate() {parentConstraint -mo -skipRotate x -skipRotate y -skipRotate z -weight 1;}
+global proc constraintRotate() {parentConstraint -mo -skipTranslate x -skipTranslate y -skipTranslate z -weight 1;}
+global proc constraintScale() {scaleConstraint -offset 1 1 1 -weight 1;}
+global proc connectiontCheckbox() {int $translateCheckbox = `checkBox -query -value Translate_checkBox`;
+int $rotateCheckbox = `checkBox -query -value Rotate_checkBox`;int $scaleCheckbox = `checkBox -query -value Scale_checkBox`;
+if ($translateCheckbox) {connectTranslate();}if ($rotateCheckbox) {connectRotate();}if ($scaleCheckbox) {connectScale();}}
+global proc connectTranslate() {string $selected[] = `ls -sl`;connectAttr -f ($selected[0] + ".translate") ($selected[1] + ".translate");}
+global proc connectRotate() {string $selected[] = `ls -sl`;connectAttr -f ($selected[0] + ".rotate") ($selected[1] + ".rotate");}
+global proc connectScale() {string $selected[] = `ls -sl`;connectAttr -f ($selected[0] + ".scale") ($selected[1] + ".scale");}
+// set driven key //
+global proc SetDrivenKey (){global string $driverField;global string $drivenField;global string $driverNameField; // setdrivenKey //
+global string $drivenNameField;global string $minAttrField;global string $maxAttrField;
+string $driver_obj = `textField -q -tx driver_field`;string $driven_obj = `textField -q -tx driven_field`;
+string $driverName = `textField -q -tx driver_name_attr`;string $drivenName = `textField -q -tx driven_name_attr`;
+float $minAttr = `textField -q -text min_value_attribute`;float $maxAttr = `textField -q -text max_value_attribute`;
+string $driver_attr = $driver_obj + "." + $driverName;string $driven_attr = $driven_obj + "." + $drivenName;
+setDrivenKeyframe -currentDriver $driver_attr -driverValue $minAttr -value $minAttr $driven_attr;
+setDrivenKeyframe -currentDriver $driver_attr -driverValue $maxAttr -value $maxAttr $driven_attr;
+selectKey -cl;selectKey -add $driven_attr;keyTangent -inTangentType "spline" -outTangentType "spline";
+setInfinity -pri "cycleRelative";setInfinity -poi "cycleRelative";}
+
+
+
+// cmds.addAttr(ctrl, ln=attr, proxy="%s.%s"%(baseCtrl, attr), at="float", min=0, max=1, keyable=1)

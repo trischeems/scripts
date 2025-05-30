@@ -1,0 +1,206 @@
+// ###### latice rig #######//
+global proc selectObjLaticeRig (){
+	global string $tfSelectMeshLatice;
+	string $select[]=`ls -sl`;
+	string $tfSelectMeshLaticeStr = `textField -edit -tx $select tf_selectMesh_laticeRig`;
+	}
+	global proc createLocLaticeDistanceRig (){
+		global string $bMeshLatice;
+		global string $bVertexLatice;
+		string $bMeshLaticeStr = `radioButton -q -select rb_mesh_laticeRig`;
+		string $bVertexLaticeStr = `radioButton -q -select rb_vertex_laticeRig`;
+		if ($bMeshLaticeStr){createLocatorForMeshLaticeRig();}
+		if ($bVertexLaticeStr){createLocatorForVertexLaticeRig();}}
+
+	global proc createLocatorForVertexLaticeRig (){
+		string $sSelectVertext[] = `ls -sl -flatten`;
+		if (size($sSelectVertext) == 0){ warning "Selected Vertex not yet !!!";}
+		else{
+			spaceLocator -n "LocDistanceLatice" -p 0 0 0 ;
+			// select locator1;
+			// rename "locator1" "LocDistance";
+			float $pPositionVertex[] = `pointPosition -w $sSelectVertext`;
+			move  -a $pPositionVertex[0] $pPositionVertex[1] $pPositionVertex[2] "LocDistanceLatice";}}
+
+		global proc createLocatorForMeshLaticeRig(){
+			spaceLocator -n "LocUpDistanceLatice" -p 0 0 0 ;
+			spaceLocator -n "LocDownDistanceLatice" -p 0 0 0 ;
+			global string $tfSelectMeshLatice;
+			string $tfSelectMeshLaticeStr = `textField -q -tx tf_selectMesh_laticeRig`;
+			select $tfSelectMeshLaticeStr;
+			CreateLattice;
+			rename "ffd1Lattice" "DistanceLattice";
+			parent "LocUpDistanceLatice" "DistanceLattice";
+			parent "LocDownDistanceLatice" "DistanceLattice";
+
+			setAttr "LocDownDistanceLatice.translateZ" 0;
+			setAttr "LocDownDistanceLatice.translateX" 0;
+			setAttr "LocUpDistanceLatice.translateX" 0;
+			setAttr "LocDownDistanceLatice.translateY" 0;
+			setAttr "LocUpDistanceLatice.translateY" 0;
+			setAttr "LocUpDistanceLatice.translateZ" 0;
+
+			parent -w "LocUpDistanceLatice" ;
+			parent  -w "LocDownDistanceLatice";
+			
+			delete "DistanceLattice";
+			setAttr "LocUpDistanceLatice.overrideEnabled" 1;
+			setAttr "LocUpDistanceLatice.overrideColor" 14;
+			setAttr "LocDownDistanceLatice.overrideEnabled" 1;
+			setAttr "LocDownDistanceLatice.overrideColor" 13;
+		// float $translateYUpDistance = `getAttr ("LocUpDistanceLatice.translateY")`;
+		// 	setAttr "LocDownDistanceLatice.translateY" 0;
+		// 	setAttr "LocUpDistanceLatice.translateY" ($translateYUpDistance*2);
+			select "LocUpDistanceLatice";}
+		global proc buildLaticeST (){
+			global string $tfSdivisionsLaticeRig;
+			global string $tfTdivisionsLaticeRig;
+			global string $tfUdivisionsLaticeRig;
+			global string $tfSelectMeshLatice;
+			
+			string $tfSelectMeshLaticeStr = `textField -q -tx tf_selectMesh_laticeRig`;
+			float $tfSdivisionsLaticeRigStr = `textField -q -tx tf_S_Divisons_latice_Rig`;
+			float $tfTdivisionsLaticeRigStr = `textField -q -tx tf_T_Divisons_latice_Rig`;
+			float $tfUdivisionsLaticeRigStr = `textField -q -tx tf_U_Divisons_latice_Rig`;
+			string $nameLatice = $tfSelectMeshLaticeStr + "_Latice";
+			string $nameLaticeBase = $tfSelectMeshLaticeStr + "_LaticeBase";
+			string $nameSquash = $tfSelectMeshLaticeStr + "_Squash";
+			string $nameBendFront = $tfSelectMeshLaticeStr + "_BendFront";
+			string $nameBendRight = $tfSelectMeshLaticeStr + "_BendRight";
+
+			select $tfSelectMeshLaticeStr;
+			CreateLattice;
+				setAttr "ffd1LatticeShape.uDivisions" $tfSdivisionsLaticeRigStr;
+				setAttr "ffd1LatticeShape.sDivisions" $tfTdivisionsLaticeRigStr;
+				setAttr "ffd1LatticeShape.tDivisions" $tfUdivisionsLaticeRigStr;
+				rename "ffd1Lattice" $nameLatice;
+				rename "ffd1Base" $nameLaticeBase;
+			Bend;
+				setAttr "bend1.lowBound" 0;
+				setAttr "bend1.highBound" 2.2;
+				select $nameLatice;
+			Bend;
+				setAttr "bend2.lowBound" 0;
+				setAttr "bend2.highBound" 2.2;
+				setAttr "bend2Handle.rotateY" 90;
+				setAttr "bend2Handle.translateY" 0;
+				setAttr "bend1Handle.translateY" 0;
+				select $nameLatice;
+			Squash;
+				setAttr "squash1.lowBound" 0;
+				setAttr "squash1.highBound" 2;
+				setAttr "squash1Handle.translateY" 0;
+			rename "bend1Handle" $nameBendRight;
+			rename "bend2Handle" $nameBendFront;
+			rename "squash1Handle" $nameSquash;
+
+
+			string $nameCtrl = $tfSelectMeshLaticeStr + "_SquashStretch";
+			string $nameGroupMain = $tfSelectMeshLaticeStr + "_Grp";
+			string $nameCtrlMain = $tfSelectMeshLaticeStr + "_Main";
+			string $nameCtrlCore = $tfSelectMeshLaticeStr + "_Ctrl";
+			string $nameGroupLatice = "";
+
+			string $grGroupDeform = `group -n ($tfSelectMeshLaticeStr + "_Deform_Latice_grp") -empty`;
+			string $circleDCtrl = `curve -n $nameCtrl -d 1 -p 0 1 0 -p 0 0.92 0.38 -p 0 0.71 0.71 -p 0 0.38 0.92 
+			-p 0 0 1 -p 0 -0.38 0.92 -p 0 -0.71 0.71 -p 0 -0.92 0.38 -p 0 -1 0 
+			-p 0 -0.92 -0.38 -p 0 -0.71 -0.71 -p 0 -0.38 -0.92 -p 0 0 -1 -p 0 0.38 -0.92 
+			-p 0 0.71 -0.71 -p 0 0.92 -0.38 -p 0 1 0 -p 0.38 0.92 0 -p 0.71 0.71 0 -p 0.92 0.38 0 
+			-p 1 0 0 -p 0.92 -0.38 0 -p 0.71 -0.71 0 -p 0.38 -0.92 0 -p 0 -1 0 -p -0.38 -0.92 0 
+			-p -0.71 -0.71 0 -p -0.92 -0.38 0 -p -1 0 0 -p -0.92 0.38 0 -p -0.71 0.71 0 -p -0.38 0.92 0 
+			-p 0 1 0 -p 0 0.92 -0.38 -p 0 0.71 -0.71 -p 0 0.38 -0.92 -p 0 0 -1 -p -0.38 0 -0.92 
+			-p -0.71 0 -0.71 -p -0.92 0 -0.38 -p -1 0 0 -p -0.92 0 0.38 -p -0.71 0 0.71 -p -0.38 0 0.92 
+			-p 0 0 1 -p 0.38 0 0.92 -p 0.71 0 0.71 -p 0.92 0 0.38 -p 1 0 0 -p 0.92 0 -0.38 -p 0.71 0 -0.71 
+			-p 0.38 0 -0.92 -p 0 0 -1 `;
+			setAttr ($nameCtrl +".overrideEnabled") 1;
+			setAttr ($nameCtrl +".overrideColor") 13;
+			scale 2 2 2 $circleDCtrl;
+			makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 $circleDCtrl;
+			parent $circleDCtrl $grGroupDeform;
+			
+			group -em -n $nameGroupMain;
+			circle -nr 0 1 0 -r 3 -n $nameCtrlMain;
+			circle -nr 0 1 0 -r 2 -n $nameCtrlCore;
+			parent $nameCtrlCore $nameCtrlMain;
+			parent $nameCtrlMain $nameGroupMain;
+			scale 4 4 4 $nameGroupMain;
+			makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 $nameGroupMain;
+
+			setAttr ($nameGroupMain +".overrideEnabled") 1;
+			setAttr ($nameGroupMain +".overrideColor") 17;
+
+			parent $grGroupDeform "LocUpDistanceLatice";
+			parent $nameGroupMain "LocDownDistanceLatice";
+
+			setAttr ($grGroupDeform + ".translateZ") 0;
+			setAttr ($grGroupDeform + ".translateX") 0;
+			setAttr ($nameGroupMain + ".translateX") 0;
+			setAttr ($grGroupDeform + ".translateY") 0;
+			setAttr ($nameGroupMain + ".translateY") 0;
+			setAttr ($nameGroupMain + ".translateZ") 0;
+
+			parent -w $nameGroupMain;
+			parent -w $grGroupDeform;
+
+			string $grGroupLaticeHide = `group -n ($tfSelectMeshLaticeStr + "_LaticeHide_grp") -empty`;
+			string $grGroupDeformHide = `group -n ($tfSelectMeshLaticeStr + "_DeformHide_grp") -empty`;
+
+			// parent $grGroupDeform "LocUpDistanceLatice";
+			parent $grGroupLaticeHide "LocDownDistanceLatice";
+			parent $grGroupDeformHide "LocDownDistanceLatice";
+			
+			setAttr ($grGroupDeformHide + ".translateZ") 0;
+			setAttr ($grGroupDeformHide + ".translateX") 0;
+			setAttr ($grGroupLaticeHide + ".translateX") 0;
+			setAttr ($grGroupDeformHide + ".translateY") 0;
+			setAttr ($grGroupLaticeHide + ".translateY") 0;
+			setAttr ($grGroupLaticeHide + ".translateZ") 0;
+
+			parent -w $grGroupDeformHide;
+			parent -w $grGroupLaticeHide;
+			setAttr ($grGroupDeformHide + ".translateY") 0;
+
+			parent $nameBendFront $grGroupDeformHide;
+			parent $nameBendRight $grGroupDeformHide;
+			parent $nameSquash $grGroupDeformHide;
+
+			parent $grGroupDeformHide $nameCtrlCore;
+
+			delete "LocUpDistanceLatice";
+			delete "LocDownDistanceLatice";
+
+			parent $nameLatice $grGroupLaticeHide;
+			parent $nameLaticeBase $nameGroupMain;
+
+			setAttr ($grGroupDeformHide + ".translateY") 1;
+
+			parent $grGroupDeform $nameCtrlCore;
+			parent $grGroupLaticeHide $nameCtrlCore;
+
+			// add attribute and set attr //
+			setAttr -keyable false -channelBox true ($nameCtrl + ".v");
+			setAttr ($grGroupDeformHide + ".visibility") 0;
+			setAttr ($nameLaticeBase + ".visibility") 0;
+			setAttr ($grGroupLaticeHide + ".visibility") 0;
+
+			//set driven key //
+			string $driver_SquashStretchX = $nameCtrl + ".translateX";
+			string $driver_SquashStretchZ = $nameCtrl + ".translateZ";
+			string $driver_SquashStretchY = $nameCtrl + ".translateY";
+			string $driven_nameBendFront = $nameBendFront + ".curvature";
+			string $driven_nameBendRight = $nameBendRight + ".curvature";
+			string $driven_nameSquash = $nameSquash + ".factor";
+
+			setDrivenKeyframe -currentDriver $driver_SquashStretchX -driverValue 0 -value 0 $driven_nameBendRight;
+			setDrivenKeyframe -currentDriver $driver_SquashStretchX -driverValue 72 -value 180 $driven_nameBendRight;
+			setDrivenKeyframe -currentDriver $driver_SquashStretchZ -driverValue 0 -value 0 $driven_nameBendFront;
+			setDrivenKeyframe -currentDriver $driver_SquashStretchZ -driverValue 72 -value -180 $driven_nameBendFront;
+			setDrivenKeyframe -currentDriver $driver_SquashStretchY -driverValue 0 -value 0 $driven_nameSquash;
+			setDrivenKeyframe -currentDriver $driver_SquashStretchY -driverValue 200 -value 10 $driven_nameSquash;
+
+			// key //
+			selectKey -cl;
+			selectKey -add $driven_nameBendFront $driven_nameBendRight $driven_nameSquash;
+			keyTangent -inTangentType "spline" -outTangentType "spline";
+			setInfinity -pri "cycleRelative";setInfinity -poi "cycleRelative";
+		}

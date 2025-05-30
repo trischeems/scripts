@@ -1,0 +1,85 @@
+// -------------------------------------------------------------------
+//	選択したモデル（複数選択可、非表示は無視）と
+//	同じ階層、位置、回転値、スケール値を持つロケータを生成し、
+//　そのロケータにモデルをコンストレインするコマンド
+//
+//											オフィスクリエイト	nagao
+// -------------------------------------------------------------------
+//	＜インストール＞
+//		・このファイルをmayaの設定フォルダ↓にコピー
+//			C:\Users\ユーザ名\Documents\maya\scripts\
+//
+//		・mayaを起動し、シェルフやホットキーに↓コマンドを設定して実行
+//			CR_RecipeLocatorGen
+//
+//　2021/10/14：作成
+//
+//
+// -------------------------------------------------------------------
+
+global proc CR_RecipeLocatorGen()
+{
+
+	string $sel [] = ` ls -sl -o -v -typ transform `;
+//	string $sel[] = `ls -sl -o -v -dag -typ transform`;
+
+	if (size($sel) == 0)
+	{
+		print "モデルのトランスフォームノードを選択して下さい！\n";
+		return;
+	}
+
+	for( $I = 0; $I < size($sel);$I++ )
+	{
+		// グループノード（null）の文字列に親からのフルパスが付いているので削除
+		string $namefix[];
+		clear $namefix;
+		tokenize $sel[$I] "|" $namefix;
+		string $selname = $namefix[` size ( $namefix ) ` -1];
+
+		// 選択しているモデル名を表示
+		print "-------------------------------\n";
+		print ( $selname + "　を選択\n" );
+
+		// 選択しているモデルのSRTを取得
+		float $selRPQuery[] = `xform -q -ws -rp $sel[$I]`;
+		float $selRPQueryRot[] = `xform -q -ws -ro $sel[$I]`;
+		float $selRPQuerySca[] = `xform -q -r -s $sel[$I]`;
+		print ("移動("+$selRPQuery[0]+","+$selRPQuery[1]+","+$selRPQuery[2]+")\n");
+		print ("回転("+$selRPQueryRot[0]+","+$selRPQueryRot[1]+","+$selRPQueryRot[2]+")\n");
+		print ("スケール("+$selRPQuerySca[0]+","+$selRPQuerySca[1]+","+$selRPQuerySca[2]+")\n");
+
+		// 追加するロケータと同名のものがあったら停止
+		if (size( `ls ("pos_" + $selname)` ) != 0)
+		{
+			print "同名のロケータが存在するので停止します！\n";
+			return;
+		}
+
+		// ロケータ作成
+		string $locator[] = ` spaceLocator -n ( "pos_" + $selname ) `;
+		print ( $locator[0] + "　を作成\n" );
+
+		// 親がいるかチェック
+		if (size(`listRelatives -p -typ transform -f $sel[$I]`) == 0)
+		{
+			print "親がいないのでルートに作成します！\n";
+		}
+		else
+		{
+			// ロケータをモデルと同じ階層に移動
+			parent $locator[0] `listRelatives -p -typ transform -f $sel[$I]`;
+		}
+
+		// 生成したロケータのSRTに取得したSRTを入れる
+		move -ws $selRPQuery[0] $selRPQuery[1] $selRPQuery[2];
+		rotate -ws $selRPQueryRot[0] $selRPQueryRot[1] $selRPQueryRot[2];
+		scale $selRPQuerySca[0] $selRPQuerySca[1] $selRPQuerySca[2];
+
+		// ロケータ→モデルを選択してコンストレイン
+		select -r $locator[0];
+		select -add $sel[$I];
+		parentConstraint;
+		scaleConstraint;
+	}
+}

@@ -1,0 +1,542 @@
+/// ####################### window ############################ ///
+global proc ToolsFacialTri3D (){
+    string $versionTri3DTools = 1;
+    string $cInstallToolsTri3D = `trInstallToolsTri3D`;string $cCreateTools = "alasTools";string $cTools_tt_name = "Vega Facial" ;
+    if (`window -exists $cCreateTools`) {deleteUI $cCreateTools;}window -title $cTools_tt_name -sizeable true -widthHeight 270 600  -menuBar true  $cCreateTools;
+    $ml = `scrollLayout -w 450 -h 600 mainLayoutwd`;
+
+        rowColumnLayout -p $ml -w 450 -adj true -nc 3 rlAutoVis;
+            optionMenu -w 350 -l "" refMenu;
+            string $refFile[] = `file -q -r`;
+                for($ref in $refFile){
+                    string $fn = `basename $ref ".ma"`;
+                    $fn = `basename $fn ".mb"`;
+                    menuItem -l $fn;
+                }
+        text -l "" -w 10;
+                    button -l "Reload" -w 90 -c "reloadUI;";
+                                                    rowColumnLayout -p $ml 
+                            -w 450 -adj true 
+                                                                    -nc 3 rlfAutoVis;
+            textField -w 250 -tx "Select" 
+                                                    -editable false tfNameController;
+                                        text -l "" -w 10;
+                    button -l "Select" 
+                                        -w 90 -c "selectRig;";
+                                rowColumnLayout -p $ml 
+                                                        -adj true -nc 3 
+                -w 450 cllabutton;
+            button -l "Set Key" -w 90 -c "setKeyCtrlFace;";
+                                            text -l "" -w 10;
+            button -l "Return" -w 90 -c "resetCtrlFace;";  
+        rowColumnLayout -p $ml -nc 3 cllabuttonBuildChangeColor;
+                            $nrow = 1;
+                    for($i=0;$i<20;$i++){
+            symbolButton -i ($cInstallToolsTri3D 
+                                                + "/Functions/FacialBabyBoo2D/IconFace" 
+                            + $nrow + ".jpg") -w 150 -h 150 -c ("iconFChangeColor" 
+                                                                + $nrow) ("symbolIcons"+$nrow);
+            $nrow = $nrow + 1;
+        }
+    showWindow $cCreateTools;
+}
+global proc string[] ctrlVar()
+{
+    string $ctrll[] = {         "upperOuterLid_L"                 ,"upperInnerLid_L" 
+                                                                                                            ,"lowerLidOuter_L" ,"lowerLid_L" 
+                                    ,"upperLidOuter_L" 
+                                                                        ,"lowerInnerLidOuter_L" 
+                                                                                                                ,"lowerOuterLid_L" ,"lowerInnerLid_L" 
+                                ,"upperOuterLidOuter_L" 
+                                                                ,"upperInnerLidOuter_L" ,"EyeRegion_L" 
+                                                                                                ,"NoseCorner_R" ,"Cheek_R" 
+    ,"SmilePull_R" ,"CheekRaiser_R" ,"outerLidOuter_L" ,"innerLidOuter_L" 
+                                                                                        ,"upperLid_L" ,"outerLid_L" 
+        ,"innerLid_L" ,"EyeBrowInner_R" ,"EyeBrowRegion_R" ,"lowerOuterLidOuter_R" ,"lowerInnerLidOuter_R" ,"lowerOuterLid_R" ,"FrownBulge_R" ,"SmileBulge_R" ,"EyeBrowMid1_R" ,"EyeBrowOuter_R" ,"lowerLidOuter_R" ,"lowerLid_R" ,"upperLidOuter_R" ,"outerLidOuter_R" ,"lowerInnerLid_R" ,"upperOuterLidOuter_R","upperInnerLidOuter_R" ,"upperOuterLid_R" ,"upperInnerLid_R" ,"AimEye_L" ,"AimEye_R" ,"AimEye_M" ,"innerLidOuter_R" ,"upperLid_R" ,"outerLid_R" ,"innerLid_R" ,"EyeRegion_R" ,"Pupil_L" ,"Iris_L" ,"Eye_L" ,"Pupil_R" ,"Iris_R" ,"Eye_R" ,"ctrlMouthCorner_L" ,"ctrlEye_L" ,"ctrlEye_R" ,"ctrlBrow_L" ,"ctrlBrow_R" ,"ctrlMouthCorner_R" ,"ctrlMouth_M" ,"ctrlNose_L" ,"ctrlNose_R" ,"ctrlCheek_L" ,"ctrlCheek_R" ,"lowerTeeth_M" ,"upperTeeth_M" ,"Jaw_M" ,"lowerLipC_L" ,"Tongue3_M" ,"Tongue2_M" ,"Tongue1_M" ,"Tongue0_M" ,"Nose_M" ,"NoseRegion_M" ,"upperLipB_L" ,"upperLipA_L" ,"lowerLipC_R" ,"lowerLipB_L" ,"lowerLipA_L" ,"upperLipC_L" ,"upperLipB_R" ,"upperLipA_R" ,"lowerLipB_R" ,"lowerLipA_R" ,"upperLipC_R" ,"upperLip_M","LipRegion_M" ,"EyeBrowCenter_M" ,"NoseCorner_L" ,"Lip_L" ,"Lip_R" ,"lowerLip_M" ,"EyeBrowMid1_L" ,"EyeBrowOuter_L" ,"EyeBrowInner_L" ,"EyeBrowRegion_L" ,"lowerOuterLidOuter_L","Cheek_L" ,"SmilePull_L" ,"CheekRaiser_L" ,"FrownBulge_L" ,"SmileBulge_L"};
+    return $ctrll;
+}
+global proc reloadUI(){
+}
+global proc trInstallToolsLocator (){}
+global proc string trInstallToolsTri3D (){
+    string $whatIs=`whatIs trInstallToolsLocator`;string $fullPath=`substring $whatIs 25 999`;string $buffer[];
+    string $slash="/";if (`gmatch $whatIs "*\\\\*"`)$slash="\\";int $numTok=`tokenize $fullPath $slash $buffer`;
+    int $numLetters=size($fullPath);int $numLettersLastFolder=size($buffer[$numTok-1]);
+    string $scriptLocation=`substring $fullPath 1 ($numLetters-$numLettersLastFolder)`;return $scriptLocation;
+}
+global proc string[] ctrlVarV()
+{
+    string $ctrlVv[] = {"upperOuterLid_L","upperInnerLid_L","lowerLidOuter_L","lowerLid_L","upperLidOuter_L","lowerInnerLidOuter_L","lowerOuterLid_L","lowerInnerLid_L","upperOuterLidOuter_L","upperInnerLidOuter_L","EyeRegion_L","NoseCorner_R","Cheek_R","CheekRaiser_R","outerLidOuter_L","innerLidOuter_L","upperLid_L","outerLid_L","innerLid_L","EyeBrowInner_R","EyeBrowRegion_R","lowerOuterLidOuter_R","lowerInnerLidOuter_R","lowerOuterLid_R","FrownBulge_R","SmileBulge_R","EyeBrowMid1_R","EyeBrowOuter_R","lowerLidOuter_R","lowerLid_R","upperLidOuter_R","outerLidOuter_R","lowerInnerLid_R","upperOuterLidOuter_R","upperInnerLidOuter_R","upperOuterLid_R","upperInnerLid_R","AimEye_L","AimEye_R","AimEye_M","innerLidOuter_R","upperLid_R","outerLid_R","innerLid_R"
+        ,"EyeRegion_R","Pupil_L","Iris_L","Eye_L","Pupil_R","Iris_R","Eye_R","lowerTeeth_M","upperTeeth_M","Jaw_M","lowerLipC_L","Tongue3_M","Tongue2_M","Tongue1_M","Tongue0_M","Nose_M","NoseRegion_M","upperLipB_L","upperLipA_L","lowerLipC_R","lowerLipB_L","lowerLipA_L","upperLipC_L","upperLipB_R","upperLipA_R","lowerLipB_R","lowerLipA_R","upperLipC_R","upperLip_M","LipRegion_M","EyeBrowCenter_M","NoseCorner_L","Lip_L","Lip_R","lowerLip_M","EyeBrowMid1_L","EyeBrowOuter_L","EyeBrowInner_L","EyeBrowRegion_L","lowerOuterLidOuter_L","Cheek_L","CheekRaiser_L","FrownBulge_L","SmileBulge_L"};
+    return $ctrlVv;
+}
+
+global proc selectRig(){
+    string $cInstallToolsTri3D = `trInstallToolsTri3D`;
+    string $select[]=`ls -sl`;
+    if(size($select) == 1){
+        string $nameRig = `substitute ":ctrlMouth_M_Ctrl" $select[0] ""`;
+        textField -edit -tx $nameRig tfNameController;
+        // for($i=0;$i<12;$i++){
+        //     // # # nana
+        //     if(`gmatch ($select[0]) "*nana*"`){
+        //         symbolButton -e -i ($cInstallToolsTri3D + "/Functions/FacialBabyBoo2D/IconFace" + $nrow + ".jpg") -w 150 -h 150 ("symbolIcons"+$nrow);
+        //     }
+        //     // # # baby boo
+        //     if(`gmatch ($select[0]) "*BabyBoo*"`){
+        //         symbolButton -e -i ($cInstallToolsTri3D + "/Functions/FacialBabyBoo2D/IconFace" + $nrow + ".jpg") -w 150 -h 150 ("symbolIcons"+$nrow);
+        //     }            
+        //     $nrow = $nrow + 1;
+        // }
+        if(`gmatch ($select[0]) "*Bokid*"`)
+        {
+            for($i=1;$i<20;$i++)
+            {
+                symbolButton -e -i ($cInstallToolsTri3D + "/Functions/FacialBabyBoo2D/IconFaceBo" + $i + ".jpg") -w 150 -h 150 ("symbolIcons"+$i);
+            }
+        }
+    }
+    else{
+        confirmDialog -m "Please select Ctrl Mouth M Ctrl !!!";
+    }
+}
+global proc string[] mouthCtrlv()
+{
+    string $mouthCtrlV[] = {".lipSide",".upperPress",".lowerPress",".upperSqueeze",".lowerSqueeze",".upperRoll"
+        ,".lowerRoll",".upperPucker",".lowerPucker",".jawForward",".jawSide"};
+    return $mouthCtrlV;
+}
+
+global proc string[] removeE(string $array[],string $element[]){
+    string $rs[];
+    for($i in $array)
+    {
+        if(!stringArrayContains($i,$element))
+        {
+            $rs[size($rs)] = $i;
+        }
+    }
+    return $rs;
+}
+
+global proc int stringArrayContains(string $item, string $array[]){
+    for($element in $array)
+    {
+        if($item == $element)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+global proc string[] abstractVar()
+{
+    string $n = `textField -q -tx tfNameController`;
+    string $cl[] = ctrlVar();string $rv[]={};
+    for($i = 0; $i < size($cl);$i++)
+    {
+        if(!`objExists ($n + ":" + $cl[$i])`)
+        {
+            $rv[size($rv)] = $cl[$i];
+            continue;
+        }
+    }
+    return $rv;
+}
+
+global proc resetCtrlFace(){
+                string $nn = `textField -q -tx tfNameController`;
+    string $pos[] = {".tx"
+                            ,".ty"};
+                                            string $posV[] = {".tx",".ty"
+                                    ,".tz",".rx"
+                                                ,".ry",".rz"};                  string $mouthCtrl[] = mouthCtrlv();
+                     string $posS[] = {".sx"
+                                                            ,".sy",".sz"};
+        string $ctrl[] = ctrlVar();string $ctrlEye[] = {".squint"
+                                                                    ,".iris"
+                                                                                ,".pupil",".blink"};
+                        string $be[] = {".blink"
+                                                        ,".blinkCenter"
+                                                                        ,".lidOut"};
+                                        string $ccd[];
+            string $ctrlV[] = ctrlVarV();
+                                            string $oke[] = abstractVar();
+    string $bn[] = removeE($ctrl, $oke);
+            for($c in $bn){
+                        for($p in $pos){
+                setAttr ($nn + ":" + $c + $p) 0;
+                        }
+                }
+        string $bnct[] = removeE($ctrlV, $oke);
+            for($c in $bnct)
+                {
+                    for($p in $posV)
+            {
+                setAttr ($nn + ":" + $c + $p) 0;
+                            }
+                        for($p in $posS)
+                    {
+            setAttr ($nn + ":" + $c + $p) 1;
+                }                    
+            }                
+        string $ctrlE[] = {"ctrlEye_L","ctrlEye_R"};
+            for($i in $ctrlE)
+        {
+                string $kt[] = `listAttr -keyable ($nn + ":" + $i)`;
+            for($a in $kt)
+            {
+                setAttr($nn + ":" 
+                                    + $i + "." + $a) 0;
+                        }
+                                }
+            for($ccm in $mouthCtrl){
+                                setAttr ($nn + ":" 
+                                                    + "ctrlMouth_M" + $ccm) 0;
+                    } 
+        setAttr ($nn + ":" + "upperLid_L" + $be[0]) 0;
+        setAttr ($nn + ":" + "upperLid_L" + $be[1]) 2;
+        setAttr ($nn + ":" + "upperLid_L" + $be[2]) 0;
+        setAttr ($nn + ":" + "upperLid_R" + $be[0]) 0;
+        setAttr ($nn + ":" + "upperLid_R" + $be[1]) 2;
+        setAttr ($nn + ":" + "upperLid_R" + $be[2]) 0;
+
+            string $attr[] = `listAttr -keyable ($nn 
+                                                        + ":" 
+                                                                    + "ctrlMouth_M_Ctrl")`;
+                                        for($a in $attr){
+            setAttr ($nn + ":" 
+                                    + "ctrlMouth_M_Ctrl." 
+                                                        + $a) 0;continue;
+                                    }
+                            for($svf in $bnct)
+                    {
+            setKeyframe -breakdown 0 
+                                -preserveCurveShape 0 
+                -hierarchy none 
+                                -controlPoints 0 
+                                                    -shape 0 {($nn + ":"+ $svf)};
+                            }
+        setKeyframe         -breakdown 0 
+                                        -preserveCurveShape 0 
+                    -hierarchy none -controlPoints 0 
+                                            -shape 0 {($nn + ":"
+            + "ctrlMouth_M_Ctrl")};
+}
+global proc setAttrKey(string $at[])
+{
+    string $nn = `textField -q -tx tfNameController`;
+    for($i=0;$i<size($at);$i+=2)
+    {
+        string $a=$at[$i];float $v=$at[$i+1];
+                setAttr ($nn
+                    +":"+$a) $v;
+            setKeyframe ($nn
+                        +":"+$a);
+    }
+}
+// ### emotion ##########################################################
+global proc int checkRigVega()
+{
+    string $nn = `textField -q -tx tfNameController`;
+                        int $h = 0;
+        string $ns[] = `listAttr ($nn + ":ctrlMouth_M_Ctrl")`;
+    for($l in $ns)
+            {
+        if(`gmatch $l "*tri3dTool*"`)
+                        {
+            $h = 1;     break;
+                    }
+            }
+    return $h;
+}
+// ########   Discuss
+global proc iconFChangeColor1(){
+    resetCtrlFace();string $nn = `textField -q -tx tfNameController`;
+    if(checkRigVega() == 1)
+    {
+        // ## bon new
+            if(`gmatch $nn "*BonNew*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Discuss","10","upperTeeth_M.ty","0.447","lowerTeeth_M.ty","-0.439"};
+                setAttrKey($av);
+            }
+        // ## bokid
+            if(`gmatch $nn "*Bokid*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Suprise03","10","upperTeeth_M.ty","0.483","lowerTeeth_M.ty","-0.223"};
+                setAttrKey($av);
+            }
+    }
+}
+
+// ########   Sad
+global proc iconFChangeColor2(){
+    resetCtrlFace();
+    string $nn = `textField -q -tx tfNameController`;
+    if(checkRigVega() == 1)
+    {
+        // ## Bokid
+            if(`gmatch $nn "*Bokid*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Suprise02","10","upperTeeth_M.ty","0.483","lowerTeeth_M.ty","-0.513"};
+                setAttrKey($av);
+            }
+        // ## BonNew
+            if(`gmatch $nn "*BonNew*"`)
+            {
+                setAttr ($nn + ":ctrlMouth_M_Ctrl.Sad") 10;
+                setKeyframe ($nn + ":ctrlMouth_M_Ctrl.Sad");
+            }
+    }
+}
+
+// ########   Suprise
+global proc iconFChangeColor3(){
+    resetCtrlFace();
+    string $nn = `textField -q -tx tfNameController`;
+    if(checkRigVega() == 1)
+    {
+        // ## Bokid
+            if(`gmatch $nn "*Bokid*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Suprise04","10","upperTeeth_M.ty","0.483","lowerTeeth_M.ty","-0.195"};
+                setAttrKey($av);
+            }
+        // ## BonNew
+            if(`gmatch $nn "*BonNew*"`)
+            {
+                setAttr ($nn + ":ctrlMouth_M_Ctrl.Suprise") 10;
+                setKeyframe ($nn + ":ctrlMouth_M_Ctrl.Suprise");
+                ulTeethY(0.16, -0.55);    
+            }
+    }
+}
+
+// ########   Angry
+global proc iconFChangeColor4(){
+    string $s[] = {"_R", "_L"};
+    resetCtrlFace();
+    string $nn = `textField -q -tx tfNameController`;
+    if(checkRigVega() == 1)
+    {
+        // ## Bokid
+            if(`gmatch $nn "*Bokid*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Sad01","10","EyeBrowMid1_R.ty","-0.16","EyeBrowMid1_L.ty","-0.16"};
+                setAttrKey($av);
+            }
+    }
+}
+
+// ########   Scared
+global proc iconFChangeColor5(){
+    resetCtrlFace();
+    string $nn = `textField -q -tx tfNameController`;
+    if(checkRigVega() == 1)
+    {
+        // ## Bokid
+            if(`gmatch $nn "*Bokid*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Sad02","10","upperTeeth_M.ty","0.16","lowerTeeth_M.ty","-0.23"};
+                setAttrKey($av);
+            }
+    }
+}
+
+// ########   Happy
+global proc iconFChangeColor6(){
+    resetCtrlFace();
+    string $nn = `textField -q -tx tfNameController`;
+    if(checkRigVega() == 1)
+    {
+        // ## Bokid
+            if(`gmatch $nn "*Bokid*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Cry01","10","upperTeeth_M.ty","0.045","lowerTeeth_M.ty","0.359"};
+                setAttrKey($av);
+            }
+        // ## bon new
+            if(`gmatch $nn "*BonNew*"`)
+            {
+                setAttr ($nn + ":ctrlMouth_M_Ctrl.Happy") 10;
+                setKeyframe ($nn + ":ctrlMouth_M_Ctrl.Happy");   
+                ulTeethY(0.16, -0.4);
+            }            
+    }    
+}
+global proc iconFChangeColor7()
+{
+    resetCtrlFace();
+    string $nn = `textField -q -tx tfNameController`;
+    if(checkRigVega() == 1)
+    {
+        // ## Bokid
+            if(`gmatch $nn "*Bokid*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Cry02","10","upperTeeth_M.ty","0.045","lowerTeeth_M.ty","-0.536"};
+                setAttrKey($av);
+            }
+        // ## bon new
+            if(`gmatch $nn "*BonNew*"`)
+            {
+                setAttr ($nn + ":ctrlMouth_M_Ctrl.Happy") 10;
+                setKeyframe ($nn + ":ctrlMouth_M_Ctrl.Happy");   
+                ulTeethY(0.16, -0.4);
+            }            
+    }  
+}
+global proc iconFChangeColor8()
+{
+    resetCtrlFace();
+    string $nn = `textField -q -tx tfNameController`;
+    if(checkRigVega() == 1)
+    {
+        // ## Bokid
+            if(`gmatch $nn "*Bokid*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Cry03","10","upperTeeth_M.ty","0.39","lowerTeeth_M.ty","-0.914","Eye_L.tz","-0.165","Eye_R.tz","-0.165"};
+                setAttrKey($av);
+            }
+        // ## bon new
+            if(`gmatch $nn "*BonNew*"`)
+            {
+                setAttr ($nn + ":ctrlMouth_M_Ctrl.Happy") 10;
+                setKeyframe ($nn + ":ctrlMouth_M_Ctrl.Happy");   
+                ulTeethY(0.16, -0.4);
+            }            
+    }  
+}
+global proc iconFChangeColor9()
+{
+    resetCtrlFace();
+    string $nn = `textField -q -tx tfNameController`;
+    if(checkRigVega() == 1)
+    {
+        // ## Bokid
+            if(`gmatch $nn "*Bokid*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Cry04","10","upperTeeth_M.ty","0.613","lowerTeeth_M.ty","-0.726","Eye_L.tz","-0.165","Eye_R.tz","-0.165"};
+                setAttrKey($av);
+            }
+        // ## bon new
+            if(`gmatch $nn "*BonNew*"`)
+            {
+                setAttr ($nn + ":ctrlMouth_M_Ctrl.Happy") 10;
+                setKeyframe ($nn + ":ctrlMouth_M_Ctrl.Happy");   
+                ulTeethY(0.16, -0.4);
+            }
+    }
+}
+global proc iconFChangeColor10()
+{
+    resetCtrlFace();
+    string $nn = `textField -q -tx tfNameController`;
+    if(checkRigVega() == 1)
+    {
+        // ## Bokid
+            if(`gmatch $nn "*Bokid*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Smile01","10","upperTeeth_M.ty","0.542","upperTeeth_M.tz","0.318","lowerTeeth_M.ty","0.359","Eye_L.tz","-0.165","Eye_R.tz","-0.165"};
+                setAttrKey($av);
+            }
+        // ## bon new
+            if(`gmatch $nn "*BonNew*"`)
+            {
+                setAttr ($nn + ":ctrlMouth_M_Ctrl.Happy") 10;
+                setKeyframe ($nn + ":ctrlMouth_M_Ctrl.Happy");   
+                ulTeethY(0.16, -0.4);
+            }
+    }
+}
+global proc iconFChangeColor11()
+{
+    resetCtrlFace();
+    string $nn = `textField -q -tx tfNameController`;
+    if(checkRigVega() == 1)
+    {
+        // ## Bokid
+            if(`gmatch $nn "*Bokid*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Smile02","10","upperTeeth_M.ty","0.576","upperTeeth_M.tz","-0.191","lowerTeeth_M.ty","-0.314","lowerTeeth_M.tz","0.026","Eye_L.tz","-0.165","Eye_R.tz","-0.165"};
+                setAttrKey($av);
+            }
+        // ## bon new
+            if(`gmatch $nn "*BonNew*"`)
+            {
+                setAttr ($nn + ":ctrlMouth_M_Ctrl.Happy") 10;
+                setKeyframe ($nn + ":ctrlMouth_M_Ctrl.Happy");   
+                ulTeethY(0.16, -0.4);
+            }
+    }
+}
+global proc iconFChangeColor12()
+{
+    resetCtrlFace();
+    string $nn = `textField -q -tx tfNameController`;
+    if(checkRigVega() == 1)
+    {
+        // ## Bokid
+            if(`gmatch $nn "*Bokid*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Smile03","10","upperTeeth_M.ty","0.164","upperTeeth_M.tz","0","lowerTeeth_M.ty","0","lowerTeeth_M.tz","0","Eye_L.tz","-0.165","Eye_R.tz","-0.165"};
+                setAttrKey($av);
+            }
+        // ## bon new
+            if(`gmatch $nn "*BonNew*"`)
+            {
+                setAttr ($nn + ":ctrlMouth_M_Ctrl.Happy") 10;
+                setKeyframe ($nn + ":ctrlMouth_M_Ctrl.Happy");   
+                ulTeethY(0.16, -0.4);
+            }
+    }
+}
+global proc iconFChangeColor13()
+{
+    resetCtrlFace();
+    string $nn = `textField -q -tx tfNameController`;
+    if(checkRigVega() == 1)
+    {
+        // ## Bokid
+            if(`gmatch $nn "*Bokid*"`)
+            {
+                string $av[] = {"ctrlMouth_M_Ctrl.Smile04","10","upperTeeth_M.ty","0","upperTeeth_M.tz","0","lowerTeeth_M.ty","0","lowerTeeth_M.tz","0","Eye_L.tz","-0.165","Eye_R.tz","-0.165"};
+                setAttrKey($av);
+            }
+        // ## bon new
+            if(`gmatch $nn "*BonNew*"`)
+            {
+                setAttr ($nn + ":ctrlMouth_M_Ctrl.Happy") 10;
+                setKeyframe ($nn + ":ctrlMouth_M_Ctrl.Happy");   
+                ulTeethY(0.16, -0.4);
+            }
+    }
+}
+global proc iconFChangeColor14()
+{
+
+}
+global proc iconFChangeColor15()
+{
+    
+}
+global proc iconFChangeColor16()
+{
+    
+}
+global proc iconFChangeColor17()
+{
+
+}
+global proc iconFChangeColor18()
+{
+    
+}
+global proc iconFChangeColor19()
+{
+
+}
+global proc iconFChangeColor20()
+{
+    
+}

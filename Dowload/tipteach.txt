@@ -1,0 +1,41 @@
+thử đoán xem , xem là cánh tay này chúng ta sẽ làm như thế nào
+chúng ta sẽ tạo thẳng vào wrist hay là tác riêng ra
+
+body:
+chúng ta sẽ tách ra từng phần rig .
++ đầu tiên thì chúng ta sẽ làm sạc model trước, 
+combine và xóa lich sử sau đó reset transform
+về phần anatomy thì chúng ta cũng khôgn cần đi quá sâu vào vì cái chúng ta cần là kiến thức về xương thôi, xương sẽ gồm những xương nào
+và chúng hoạt động ra sao, chúng nằm ở những phần nào của cơ thể .
+Hoàng đã có kiến thức gì về rig chưa , đã biết gì về ik fk handle chưa?
+oke vậy thì bữa nay chúng ra sẽ rig phần thân và vào bài đầu tiên này chúng ta sẽ hiểu được cách rig và cách hoạt động của IK FK nhé.
++ sau đó chúng ta tạo ra xương. nếu như chúng ta rig nhân vật để làm hoạt hình
+thì chúng ta sẽ cần rất nhiều xương, nhưng ở đây chúng ta animation cho game
+nên chúng ta chỉ cần một số xương chính thôi, bao gồm root, spine và chest.
+create joint, snap to grid để cho xương được tạo ra sẽ bám vào các phần khung được chia trên viewport
++ sau đó chúng ta freeze xương và orient joint nó để các xương có trục tọa độ giống nhau
++ chúng ta sẽ cần dup ra thêm 2 trục xương nữa, mục đích là chúng ta sẽ có cả IK FK đúng không, chúng ta sẽ có cả IK FK và một trục xương
+để IK FK tác động lên. vì chúng ta chỉ dùng trục xương này để bindskin thôi, chúng ta không thể bindskin cả xương IK FK cùng nhau được vì 
+méh chrio nhận một bên thôi.
++ sau đó chúng ta sẽ tạo ra một cái curve để điều khiển IK spline handle trước
++ sau đó sẽ tạo IK spline handle cho xương, nhớ là IK spline handle nhé 
+oke thực ra chúng ta cũng không cần phải tạo curve trước để làm gì cả, chúng ta có thể reset
+và dùng trực tiếp thì  nó sẽ tự tạo curve ra cho chúng ta luôn, nhưng cái curve này của maya tạo ra
+nó không được tròn trịa lắm, chúng ta muốn cơ thể cong tròn trịa thì sẽ tự tạo riêng IK curve .
++ tiếp theo thì chúng ta sẽ tạo ra 3 cái xương để điều khiển curve, cái này anh sẽ cho to nó nên bằng radiusnha, đừng scale đó.
+hoàng biết tại sao chúng ta cần tạo ra 2 cái xương này không.
+cái mục đích chúng ta tạo ra 3 cái xương này là vì 
+chỉ xương mới bindskin được curve mà thôi, mà cái chúng ta cần chính là điều khiển cái curve chúng ta tạo ra, 
+mình sẽ vẽ ra trên photoshop cho dễ hiểu nhé
+vì curve này sẽ điều khiển IK hanlde mà xương sẽ đi theo IK handle
+sau đó thì chúng ta sẽ dùng bảng node eđitor để kết nối cho xương này có thể scale được , chúng ta sẽ check xem xương này scale thì sẽ theo trục nào
+
+chúng ta sẽ tạo ra các crl để điều khiển các xương này nhé, hiện thì maya chỉ cho sẵn chúng ta một cái controller là circle thôi
+nếu muốn nó có nhiều hình thù chúng ta sẽ phải dùng các cái tools plug in khác cài vào, họ đã vẽ sẵn các cái ctrl này cho chúng ta rồi
+sau đó chúng ta làm tiếp đến FK sau đó sẽ tạo ra một ctrl để chuyển giữa 2 ctrl này với nhau
+oke bài hôm nay chỉ có vậy thôi, buổi sau chúng ta sẽ rig tay, hoàng có thắc mắc gì không , oke vậy thì ae mình sẽ gặp nhau ở buổi sau nhớ
+
+
+
+sau một khóa dạy thì cách dạy các buổi cuối khá lan man , sẽ rút thời gian học xuống còn 1 tiếng.
+

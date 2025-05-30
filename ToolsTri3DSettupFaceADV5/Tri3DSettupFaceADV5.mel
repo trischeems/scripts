@@ -1,0 +1,423 @@
+global proc Tri3DSettupFaceADV5(){
+    string $cInstallToolsTri3D = `trInstallToolsTri3D`;
+    string $mainUiWd = "windowUI";
+    float $wigthLayout = 200;
+    if(`window -exists $mainUiWd`){
+        deleteUI $mainUiWd;
+    }
+    window -title "Settup Face ADV5 Tri 3D" -w 912 -h 512 -sizeable false -dockStation -nestedDockingEnabled true -dockCorner "topLeft" "left" $mainUiWd;
+        $mainLayout = `columnLayout -w 912 -h 512 mainLayout`;
+        string $form = `formLayout -w 912 -h 512 -numberOfDivisions 100 -p $mainLayout setupfaceADV`;
+            image -i ($cInstallToolsTri3D + "/Functions/Logo/faceBG.png") -p $form;
+            $bApply = `symbolButton -i ($cInstallToolsTri3D + "/Functions/Logo/buttonApply.jpg") -w 71 -h 137 -c "settupSDK;"`;
+            $tcValueChange = `textField   -w 150 -pht "Enter value change" tcValueChange`;
+            $btPrintDefaultValue = `button -l "Print Default Value SDK" -w 240 -c "printToDefaultSettingADV;"` ;
+            $UpdateValue = `button -l "Update Value" -w 90 -c "updateValueSDK;"` ;
+            string $scDefaultc = `scrollField -w 240 -h 460 scDefaultc`;
+
+            // slider
+            $sl1 = `floatSliderGrp -label "Lip_translateX  :" -field true -minValue -3 -maxValue 3  -value 0 -step 0.001 -dc "Lip_translateX;" sl1`  ;
+            $sl2 = `floatSliderGrp -label "Lip_translateX1:" -field true -minValue -3 -maxValue 3  -value 0 -step 0.001 -dc "Lip_translateX1;" sl2`  ;
+            $sl3 = `floatSliderGrp -label "Lip_translateX2:" -field true -minValue -3 -maxValue 3  -value 0 -step 0.001 -dc "Lip_translateX2;" sl3`  ;
+            $sl4 = `floatSliderGrp -label "Lip_translateX3:" -field true -minValue -3 -maxValue 3  -value 0 -step 0.001 -dc "Lip_translateX3;" sl4`  ;
+            $sl5 = `floatSliderGrp -label "Lip_translateY  :" -field true -minValue -3 -maxValue 3  -value 0 -step 0.001 -dc "Lip_translateY;" sl5`  ;
+            $sl6 = `floatSliderGrp -label "Lip_translateY1:" -field true -minValue -3 -maxValue 3  -value 0 -step 0.001 -dc "Lip_translateY1;" sl6`  ;
+            $sl7 = `floatSliderGrp -label "Lip_translateY2:" -field true -minValue -3 -maxValue 3  -value 0 -step 0.001 -dc "Lip_translateY2;" sl7`  ;
+            $sl8 = `floatSliderGrp -label "Lip_translateZ  :" -field true -minValue -3 -maxValue 3  -value 0 -step 0.001 -dc "Lip_translateZ;" sl8`  ;
+            $sl9 = `floatSliderGrp -label "Lip_translateZ1:" -field true -minValue -3 -maxValue 3  -value 0 -step 0.001 -dc "Lip_translateZ1;" sl9`  ;
+            $sl10 = `floatSliderGrp -label "Lip_translateZ2:" -field true -minValue -3 -maxValue 3  -value 0 -step 0.001 -dc "Lip_translateZ2;" sl10`  ;
+            $sl11 = `floatSliderGrp -label "Lip_ScaleY  :" -field true -minValue -3 -maxValue 3  -value 0 -step 0.001 -dc "Lip_ScaleY;" sl11`  ;
+            $sl12 = `floatSliderGrp -label "Lip_ScaleY1:" -field true -minValue -3 -maxValue 3  -value 0 -step 0.001 -dc "Lip_ScaleY1;" sl12`  ;
+            // check box
+                $cb1 = `checkBox -l "X" -onc "checkBox -edit -v false cb2;checkBox -edit -v false cb3;" cb1`;
+                $cb2 = `checkBox -l "Y" -onc "checkBox -edit -v false cb1;checkBox -edit -v false cb3;" cb2`;
+                $cb3 = `checkBox -l "Z" -onc "checkBox -edit -v false cb1;checkBox -edit -v false cb2;" cb3`;
+                $cb4 = `checkBox -l "1" -onc "checkBox -edit -v false cb5;checkBox -edit -v false cb6;" cb4`;
+                $cb5 = `checkBox -l "2" -onc "checkBox -edit -v false cb4;checkBox -edit -v false cb6;" cb5`;
+                $cb6 = `checkBox -l "3" -onc "checkBox -edit -v false cb5;checkBox -edit -v false cb4;" cb6`;
+                $cb7 = `checkBox -l "i0" -onc "checkBox -edit -v false cb8;checkBox -edit -v false cb9;" cb7`;
+                $cb8 = `checkBox -l "i1" -onc "checkBox -edit -v false cb7;checkBox -edit -v false cb9;" cb8`;
+                $cb9 = `checkBox -l "i2" -onc "checkBox -edit -v false cb7;checkBox -edit -v false cb8;" cb9`;
+            // radio button
+            string $rdButton =` radioCollection rdButton` ;
+                string $b1 = `radioButton -enable true -label "SDKLip" b1`;
+                string $b3 = `radioButton -enable false -label "UpperLipC" b2 `;
+                string $b4 = `radioButton -enable false -label "LowerLipC"  b3`;
+                string $b7 = `radioButton -enable true -label "UpperLipA"  b4`;
+                string $b8 = `radioButton -enable true -label "LowerLipA"  b5`;
+                string $b11 = `radioButton -enable false -label "UpperLipB"  b6`;
+                string $b12 = `radioButton -enable false -label "LowerLipB"  b7`;
+            string $rdButtonIndex =` radioCollection rdButtonIndex` ;
+                string $b13 = `radioButton -enable true -label "Index 0" -cc "indexButton0;"  b8`;
+                string $b14 = `radioButton -enable true -label "Index 1" -cc "indexButton1;" b9`;
+                string $b15 = `radioButton -enable true -label "Index 2" -cc "indexButton2;"  b10`;
+            setFocus $form;
+            formLayout -edit
+                -attachForm $b1 "top"    292
+                -attachForm $b1 "left"   228
+                -attachForm $b3 "top"   308
+                -attachForm $b3 "left"  228
+                -attachForm $b4 "top"   322
+                -attachForm $b4 "left"  228
+                -attachForm $b7 "top"   385 
+                -attachForm $b7 "left"  228
+                -attachForm $b8 "top"   415
+                -attachForm $b8 "left"  228
+                -attachForm $b11 "top"   340
+                -attachForm $b11 "left"  228
+                -attachForm $b12 "top"   360
+                -attachForm $b12 "left"  228
+                -attachForm $b13 "top"   170
+                -attachForm $b13 "left"  450
+                -attachForm $b14 "top"   170
+                -attachForm $b14 "left"  520    
+                -attachForm $b15 "top"   170
+                -attachForm $b15 "left"  585                                              
+                -attachForm $bApply "top"   18
+                -attachForm $bApply "left"  563
+                -attachForm $tcValueChange "top"   26
+                -attachForm $tcValueChange "left"  385
+                -attachForm $cb1 "top"   56
+                -attachForm $cb1 "left"  391
+                -attachForm $cb2 "top"   56
+                -attachForm $cb2 "left"  448
+                -attachForm $cb3 "top"   56
+                -attachForm $cb3 "left"  501
+                -attachForm $cb4 "top"   91
+                -attachForm $cb4 "left"  391
+                -attachForm $cb5 "top"   91
+                -attachForm $cb5 "left"  448
+                -attachForm $cb6 "top"   91
+                -attachForm $cb6 "left"  501
+                -attachForm $cb7 "top"   125
+                -attachForm $cb7 "left"  391
+                -attachForm $cb8 "top"   125
+                -attachForm $cb8 "left"  448
+                -attachForm $cb9 "top"   125
+                -attachForm $cb9 "left"  501
+                -attachForm $scDefaultc "top"   46
+                -attachForm $scDefaultc "left"  665
+                -attachForm $btPrintDefaultValue "top"   16 
+                -attachForm $btPrintDefaultValue "left"  665     
+                -attachForm $UpdateValue "top"   165 
+                -attachForm $UpdateValue "left"  350                
+                -attachForm $sl1 "top"   200
+                -attachForm $sl1 "left"  255   
+                -attachForm $sl2 "top"   225
+                -attachForm $sl2 "left"  255   
+                -attachForm $sl3 "top"   250
+                -attachForm $sl3 "left"  255   
+                -attachForm $sl4 "top"   275
+                -attachForm $sl4 "left"  255   
+                -attachForm $sl5 "top"   300
+                -attachForm $sl5 "left"  255   
+                -attachForm $sl6 "top"   325
+                -attachForm $sl6 "left"  255   
+                -attachForm $sl7 "top"   350
+                -attachForm $sl7 "left"  255   
+                -attachForm $sl8 "top"   375
+                -attachForm $sl8 "left"  255   
+                -attachForm $sl9 "top"   400
+                -attachForm $sl9 "left"  255   
+                -attachForm $sl10 "top"   425
+                -attachForm $sl10 "left"  255     
+                -attachForm $sl11 "top"   450
+                -attachForm $sl11 "left"  255   
+                -attachForm $sl12 "top"   475
+                -attachForm $sl12 "left"  255                                                                                                                          
+            $form;
+    showWindow $mainUiWd;
+}
+global proc trInstallToolsLocator (){}global proc string trInstallToolsTri3D (){
+    string $whatIs=`whatIs trInstallToolsLocator`;string $fullPath=`substring $whatIs 25 999`;string $buffer[];string $slash="/";
+    if (`gmatch $whatIs "*\\\\*"`)$slash="\\";int $numTok=`tokenize $fullPath $slash $buffer`;
+    int $numLetters=size($fullPath);int $numLettersLastFolder=size($buffer[$numTok-1]);
+    string $scriptLocation=`substring $fullPath 1 ($numLetters-$numLettersLastFolder)`;return $scriptLocation;}
+
+global proc settupSDK(){
+    string $bwSDKLipL[] = {"bwSDKLip_L_translateX","bwSDKLip_L_translateY","bwSDKLip_L_translateZ","bwSDKLip_L_scaleY"};
+    string $SDKLipLty[] = {"SDKLip_L_translateY", "SDKLip_L_translateY1", "SDKLip_L_translateY2"};
+    string $SDKLipLtx[] = {"SDKLip_L_translateX", "SDKLip_L_translateX1", "SDKLip_L_translateX2", "SDKLip_L_translateX3"};
+    string $SDKLipLtz[] = {"SDKLip_L_translateZ", "SDKLip_L_translateZ1","SDKLip_L_translateZ2"};
+
+    string $bwSDKLipR[] = {"bwSDKLip_R_translateX","bwSDKLip_R_translateY","bwSDKLip_R_translateZ","bwSDKLip_R_scaleY"};
+    string $SDKLipRty[] = {"SDKLip_R_translateY","SDKLip_R_translateY1","SDKLip_R_translateY2"};
+    string $SDKLipRtx[] = {"SDKLip_R_translateX","SDKLip_R_translateX1","SDKLip_R_translateX2","SDKLip_R_translateX3"};
+    string $SDKLipRtz[] = {"SDKLip_R_translateZ","SDKLip_R_translateZ1","SDKLip_R_translateZ2"};
+    global string $tcValueChange;
+    global string $b1;global string $b3;global string $b4;global string $b7;global string $b8;global string $b11;global string $b12;
+    global string $cb1 ;global string $cb2 ;global string $cb3 ;global string $cb4 ;global string $cb5 ;global string $cb6 ;global string $cb7 ;global string $cb8 ;global string $cb9 ;
+    string $b1qr = `radioButton -q -select b1`;string $b2qr = `radioButton -q -select b2`;string $b3qr = `radioButton -q -select b3`;string $b4qr = `radioButton -q -select b4`;
+    string $b5qr = `radioButton -q -select b5`;string $b6qr = `radioButton -q -select b6`;string $b7qr = `radioButton -q -select b7`;
+    string $cb1qr = `checkBox -q -v cb1`;string $cb2qr = `checkBox -q -v cb2`;string $cb3qr = `checkBox -q -v cb3`;
+    string $cb4qr = `checkBox -q -v cb4`;string $cb5qr = `checkBox -q -v cb5`;string $cb6qr = `checkBox -q -v cb6`;
+    string $cb7qr = `checkBox -q -v cb7`;string $cb8qr = `checkBox -q -v cb8`;string $cb9qr = `checkBox -q -v cb9`;
+    float $value = `textField -q -tx tcValueChange`;
+    if($b1qr){
+        if($cb1qr == 1){
+            if($cb4qr == 0 || $cb5qr == 0 || $cb6qr == 0){
+                if($cb7qr == 1){
+                    keyframe -index 0 -absolute -valueChange $value SDKLip_L_translateX ;}
+                if($cb8qr == 1){
+                    keyframe -index 1 -absolute -valueChange $value SDKLip_L_translateX ;}     
+            }
+            if($cb4qr == 1){
+                if($cb7qr == 1){
+                    keyframe -index 0 -absolute -valueChange $value SDKLip_L_translateX1 ;}
+                if($cb8qr == 1){
+                    keyframe -index 1 -absolute -valueChange $value SDKLip_L_translateX1 ;}
+            }
+            if($cb5qr == 1){
+                if($cb7qr == 1){
+                    keyframe -index 0 -absolute -valueChange $value SDKLip_L_translateX2 ;}
+                if($cb8qr == 1){
+                    keyframe -index 1 -absolute -valueChange $value SDKLip_L_translateX2 ;}
+                if($cb9qr == 1){
+                    keyframe -index 2 -absolute -valueChange $value SDKLip_L_translateX2 ;}                
+            }
+            if($cb6qr == 1){
+                if($cb7qr == 1){
+                    keyframe -index 0 -absolute -valueChange $value SDKLip_L_translateX3 ;}
+                if($cb8qr == 1){
+                    keyframe -index 1 -absolute -valueChange $value SDKLip_L_translateX3 ;}
+                if($cb9qr == 1){
+                    keyframe -index 2 -absolute -valueChange $value SDKLip_L_translateX3 ;}                 
+            }                          
+            
+        }
+        
+        else{
+            confirmDialog -m "Please tick to checkBox !!";
+        }
+    }
+    
+}
+global proc printToDefaultSettingADV(){
+
+    string $bwSDKLipL[] = {"bwSDKLip_L_translateX","bwSDKLip_L_translateY","bwSDKLip_L_translateZ","bwSDKLip_L_scaleY"};
+    string $SDKLipLty[] = {"SDKLip_L_translateY", "SDKLip_L_translateY1", "SDKLip_L_translateY2"};
+    string $SDKLipLtx[] = {"SDKLip_L_translateX", "SDKLip_L_translateX1", "SDKLip_L_translateX2", "SDKLip_L_translateX3"};
+    string $SDKLipLtz[] = {"SDKLip_L_translateZ", "SDKLip_L_translateZ1","SDKLip_L_translateZ2"};
+
+    string $bwSDKLipR[] = {"bwSDKLip_R_translateX","bwSDKLip_R_translateY","bwSDKLip_R_translateZ","bwSDKLip_R_scaleY"};
+    string $SDKLipRty[] = {"SDKLip_R_translateY","SDKLip_R_translateY1","SDKLip_R_translateY2"};
+    string $SDKLipRtx[] = {"SDKLip_R_translateX","SDKLip_R_translateX1","SDKLip_R_translateX2","SDKLip_R_translateX3"};
+    string $SDKLipRtz[] = {"SDKLip_R_translateZ","SDKLip_R_translateZ1","SDKLip_R_translateZ2"};
+
+    // setAttr controller
+    // get attr
+        // bwSDKLip_L_translateX
+            float $bwSDKLip_L_inputX0 = `getAttr "bwSDKLip_L_translateX.input[0]"`;
+            float $bwSDKLip_L_inputX1 = `getAttr "bwSDKLip_L_translateX.input[1]"`;
+            float $bwSDKLip_L_inputX2 = `getAttr "bwSDKLip_L_translateX.input[2]"`;
+            float $bwSDKLip_L_inputX3 = `getAttr "bwSDKLip_L_translateX.input[3]"`;
+
+            string $SDKLipLtx0P = ($SDKLipLtx[0] + " " + $bwSDKLip_L_inputX0);
+            string $SDKLipLtx1P = ($SDKLipLtx[1] + " " + $bwSDKLip_L_inputX1);
+            string $SDKLipLtx2P = ($SDKLipLtx[2] + " " + $bwSDKLip_L_inputX2);
+            string $SDKLipLtx3P = ($SDKLipLtx[3] + " " + $bwSDKLip_L_inputX3);
+        // bwSDKLip_L_translateY
+            float $bwSDKLip_L_inputY0 = `getAttr "bwSDKLip_L_translateY.input[0]"`;
+            float $bwSDKLip_L_inputY1 = `getAttr "bwSDKLip_L_translateY.input[1]"`;
+            float $bwSDKLip_L_inputY2 = `getAttr "bwSDKLip_L_translateY.input[2]"`;
+
+            string $SDKLipLty0P = ($SDKLipLty[0] + " " + $bwSDKLip_L_inputY0);
+            string $SDKLipLty1P = ($SDKLipLty[1] + " " + $bwSDKLip_L_inputY1);
+            string $SDKLipLty2P = ($SDKLipLty[2] + " " + $bwSDKLip_L_inputY2);
+        // bwSDKLip_L_translateY
+            float $bwSDKLip_L_inputZ0 = `getAttr "bwSDKLip_L_translateZ.input[0]"`;
+            float $bwSDKLip_L_inputZ1 = `getAttr "bwSDKLip_L_translateZ.input[1]"`;
+            float $bwSDKLip_L_inputZ2 = `getAttr "bwSDKLip_L_translateZ.input[2]"`;
+
+            string $SDKLipLtz0P = ($SDKLipLtz[0] + " " + $bwSDKLip_L_inputZ0);
+            string $SDKLipLtz1P = ($SDKLipLtz[1] + " " + $bwSDKLip_L_inputZ1);
+            string $SDKLipLtz2P = ($SDKLipLtz[2] + " " + $bwSDKLip_L_inputZ2);
+    
+    // print
+    global string $scDefaultc;
+    $firstPrint = `scrollField -edit -tx ("Index 0 : \n"+
+                    $SDKLipLtx0P + "\n"
+                    + $SDKLipLtx1P + "\n" 
+                    + $SDKLipLtx2P + "\n" 
+                    + $SDKLipLtx3P + "\n" + "\n"
+                    + $SDKLipLty0P + "\n"
+                    + $SDKLipLty1P + "\n"
+                    + $SDKLipLty2P + "\n" + "\n"
+                    + $SDKLipLtz0P + "\n"
+                    + $SDKLipLtz1P + "\n"
+                    + $SDKLipLtz2P + "\n" + "\n"                    
+    )  scDefaultc`;
+    // $firstPrintqr = `scrollField -q -tx $firstPrint`;
+    // scrollField -edit -tx ($firstPrintqr + "\n" + "Index 1 : \n" +
+    //                 $SDKLipLtx0P + "\n"
+    //                 + $SDKLipLtx1P + "\n" 
+    //                 + $SDKLipLtx2P + "\n" 
+    //                 + $SDKLipLtx3P + "\n" + "\n"
+    //                 + $SDKLipLty0P + "\n"
+    //                 + $SDKLipLty1P + "\n"
+    //                 + $SDKLipLty2P + "\n" + "\n"
+    //                 + $SDKLipLtz0P + "\n"
+    //                 + $SDKLipLtz1P + "\n"
+    //                 + $SDKLipLtz2P + "\n" + "\n"                    
+    // )  scDefaultc;
+
+}
+global proc updateValueSDK(){
+
+}
+global proc indexButton0(){
+    setAttr ctrlMouth_M.tx -1;
+    global string $b1;global string $b3;global string $b4;global string $b7;global string $b8;global string $b11;global string $b12;
+    string $bwSDKLipL[] = {"bwSDKLip_L_translateX","bwSDKLip_L_translateY","bwSDKLip_L_translateZ","bwSDKLip_L_scaleY"};
+        float $bwSDKLip_L_inputX0 = `getAttr "bwSDKLip_L_translateX.input[0]"`;
+        float $bwSDKLip_L_inputX1 = `getAttr "bwSDKLip_L_translateX.input[1]"`;
+        float $bwSDKLip_L_inputX2 = `getAttr "bwSDKLip_L_translateX.input[2]"`;
+        float $bwSDKLip_L_inputX3 = `getAttr "bwSDKLip_L_translateX.input[3]"`;
+    global string $sl1;global string $sl2;global string $sl3;global string $sl4;global string $sl5;global string $sl6;global string $sl7;global string $sl8;global string $sl9;global string $sl10;global string $sl12;global string $sl11;
+    string $b1qr = `radioButton -q -select b1`;string $b2qr = `radioButton -q -select b2`;string $b3qr = `radioButton -q -select b3`;string $b4qr = `radioButton -q -select b4`;
+    string $b5qr = `radioButton -q -select b5`;string $b6qr = `radioButton -q -select b6`;string $b7qr = `radioButton -q -select b7`;
+    if($b1qr){    
+        floatSliderGrp -edit -enable true sl1;
+        floatSliderGrp -edit -enable true sl2;
+        floatSliderGrp -edit -enable true sl3;
+        floatSliderGrp -edit -enable true sl4;
+        floatSliderGrp -edit -enable true sl5;
+        floatSliderGrp -edit -enable true sl6;
+        floatSliderGrp -edit -enable true sl7;
+        floatSliderGrp -edit -enable false sl8;
+        floatSliderGrp -edit -enable true sl9;
+        floatSliderGrp -edit -enable true sl10;
+        floatSliderGrp -edit -enable true sl11;
+        floatSliderGrp -edit -enable true sl12;
+    }
+    if($b5qr || $b4qr){    
+        floatSliderGrp -edit -enable true sl1;
+        floatSliderGrp -edit -enable true sl2;
+        floatSliderGrp -edit -enable true sl3;
+        floatSliderGrp -edit -enable true sl4;
+        floatSliderGrp -edit -enable true sl5;
+        floatSliderGrp -edit -enable true sl6;
+        floatSliderGrp -edit -enable true sl7;
+        floatSliderGrp -edit -enable false sl8;
+        floatSliderGrp -edit -enable true sl9;
+        floatSliderGrp -edit -enable true sl10;
+        floatSliderGrp -edit -enable true sl11;
+        floatSliderGrp -edit -enable true sl12;
+    }    
+}
+global proc indexButton1(){
+    global string $b1;global string $b3;global string $b4;global string $b7;global string $b8;global string $b11;global string $b12;
+    string $bwSDKLipL[] = {"bwSDKLip_L_translateX","bwSDKLip_L_translateY","bwSDKLip_L_translateZ","bwSDKLip_L_scaleY"};
+    global string $sl1;global string $sl2;global string $sl3;global string $sl4;global string $sl5;global string $sl6;global string $sl7;global string $sl8;global string $sl9;global string $sl10;global string $sl12;global string $sl11;
+    string $b1qr = `radioButton -q -select b1`;string $b2qr = `radioButton -q -select b2`;string $b3qr = `radioButton -q -select b3`;string $b4qr = `radioButton -q -select b4`;
+    string $b5qr = `radioButton -q -select b5`;string $b6qr = `radioButton -q -select b6`;string $b7qr = `radioButton -q -select b7`;
+    floatSliderGrp -edit -enable true sl1;
+    floatSliderGrp -edit -enable true sl2;
+    floatSliderGrp -edit -enable false sl3;
+    floatSliderGrp -edit -enable false sl4;
+    floatSliderGrp -edit -enable true sl5;
+    floatSliderGrp -edit -enable true sl6;
+    floatSliderGrp -edit -enable true sl7;
+    floatSliderGrp -edit -enable false sl8;
+    floatSliderGrp -edit -enable false sl9;
+    floatSliderGrp -edit -enable true sl10;
+    floatSliderGrp -edit -enable true sl11;
+    floatSliderGrp -edit -enable true sl12;
+
+}
+global proc indexButton2(){
+    setAttr ctrlMouth_M.tx 1;
+    string $bwSDKLipL[] = {"bwSDKLip_L_translateX","bwSDKLip_L_translateY","bwSDKLip_L_translateZ","bwSDKLip_L_scaleY"};
+    global string $sl1;global string $sl2;global string $sl3;global string $sl4;global string $sl5;global string $sl6;global string $sl7;global string $sl8;global string $sl9;global string $sl10;global string $sl12;global string $sl11;
+    global string $b1;global string $b3;global string $b4;global string $b7;global string $b8;global string $b11;global string $b12;
+    string $b1qr = `radioButton -q -select b1`;string $b2qr = `radioButton -q -select b2`;string $b3qr = `radioButton -q -select b3`;string $b4qr = `radioButton -q -select b4`;
+    string $b5qr = `radioButton -q -select b5`;string $b6qr = `radioButton -q -select b6`;string $b7qr = `radioButton -q -select b7`; 
+    floatSliderGrp -edit -enable false sl1;
+    floatSliderGrp -edit -enable false sl2;
+    floatSliderGrp -edit -enable true sl3;
+    floatSliderGrp -edit -enable true sl4;
+    floatSliderGrp -edit -enable false sl5;
+    floatSliderGrp -edit -enable false sl6;
+    floatSliderGrp -edit -enable false sl7;
+    floatSliderGrp -edit -enable true sl8;
+    floatSliderGrp -edit -enable true sl9;
+    floatSliderGrp -edit -enable false sl10;
+    floatSliderGrp -edit -enable false sl11;
+    floatSliderGrp -edit -enable false sl12;   
+
+}
+global proc  Lip_translateX(){
+    
+}
+
+global proc  Lip_translateX1(){
+    
+}
+
+global proc  Lip_translateX2(){
+    
+}
+
+global proc  Lip_translateX3(){
+    global string $b1;global string $b3;global string $b4;global string $b7;global string $b8;global string $b11;global string $b12;
+    string $b1qr = `radioButton -q -select b1`;string $b2qr = `radioButton -q -select b2`;string $b3qr = `radioButton -q -select b3`;string $b4qr = `radioButton -q -select b4`;
+    string $b5qr = `radioButton -q -select b5`;string $b6qr = `radioButton -q -select b6`;string $b7qr = `radioButton -q -select b7`; 
+    global string  $b13;global string  $b14;global string  $b15;global string $sl4;
+    float $sl1 = `radioButton -q -sl b8`;float $sl2 = `radioButton -q -sl b9`;float $sl3 = `radioButton -q -sl b10`;
+    float $value = `floatSliderGrp -q -value sl4`;
+    if($b1qr){
+        if($sl1){
+            keyframe -index 0 -absolute -valueChange $value SDKLip_R_translateX3 ;
+            keyframe -index 0 -absolute -valueChange $value SDKLip_L_translateX3 ;}
+        if($sl3){
+            keyframe -index 2 -absolute -valueChange $value SDKLip_R_translateX3 ;
+            keyframe -index 2 -absolute -valueChange $value SDKLip_L_translateX3 ;}  
+    }
+}
+
+global proc  Lip_translateY(){
+    
+}
+
+global proc  Lip_translateY1(){
+    
+}
+
+global proc  Lip_translateY2(){
+    
+}
+
+global proc  Lip_translateZ(){
+    global string $b1;global string $b3;global string $b4;global string $b7;global string $b8;global string $b11;global string $b12;
+    string $b1qr = `radioButton -q -select b1`;string $b2qr = `radioButton -q -select b2`;string $b3qr = `radioButton -q -select b3`;string $b4qr = `radioButton -q -select b4`;
+    string $b5qr = `radioButton -q -select b5`;string $b6qr = `radioButton -q -select b6`;string $b7qr = `radioButton -q -select b7`;     
+    global string  $b13;global string  $b14;global string  $b15;global string $sl4;
+    float $sl1 = `radioButton -q -sl b8`;float $sl2 = `radioButton -q -sl b9`;float $sl3 = `radioButton -q -sl b10`;
+    float $value = `floatSliderGrp -q -value sl8`;
+    if($b1qr){
+        if($sl1){
+            keyframe -index 0 -absolute -valueChange $value SDKLip_R_translateZ ;
+            keyframe -index 0 -absolute -valueChange $value SDKLip_L_translateZ ;}
+        if($sl3){
+            keyframe -index 2 -absolute -valueChange $value SDKLip_R_translateZ ;
+            keyframe -index 2 -absolute -valueChange $value SDKLip_L_translateZ ;}   
+        } 
+     
+}
+
+global proc  Lip_translateZ1(){
+    
+}
+
+global proc  Lip_translateZ2(){
+    
+}
+
+global proc  Lip_ScaleY(){
+    
+}
+
+global proc  Lip_ScaleY1(){
+    
+}
+

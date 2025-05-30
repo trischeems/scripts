@@ -1,0 +1,67 @@
+//----------------------------------------- bifrost
+// waitCursor -state on;										 $gIgnoreUpdateCallback = true;loadPluginCmd( "C:/Program Files/Autodesk/Bifrost/Maya2019/1.5.7.85/bifrost/plug-ins/bifmeshio.mll"); 		   updatePluginUI( "59" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+// bifMeshIOInitStrings;
+// updatePluginCallback();
+// bifMeshIOCreateUI;
+
+// waitCursor -state on;										 $gIgnoreUpdateCallback = true;loadPluginCmd( "C:/Program Files/Autodesk/Bifrost/Maya2019/1.5.7.85/bifrost/plug-ins/bifrostshellnode.mll"); 		   updatePluginUI( "60" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+// bifrostshellnodeInitStrings;
+// bifrostRegisterRuntimeCmd;
+// optionVar -exists "bifrostScratchMaxRamUsageVar";
+// optionVar -exists "bifrostBackgroundProcessingVar";
+// optionVar -query "bifrostBackgroundProcessingVar";
+// optionVar -exists "bifrostScratchCacheVar";
+// optionVar -query "bifrostScratchCacheVar";
+// evalDeferred "mw_loadui";
+// updatePluginCallback();
+// mw_loadui;
+
+// waitCursor -state on;										 $gIgnoreUpdateCallback = true;loadPluginCmd( "C:/Program Files/Autodesk/Bifrost/Maya2019/1.5.7.85/bifrost/plug-ins/bifrostvisplugin.mll"); 		   updatePluginUI( "61" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+// bifrostvispluginInitStrings;
+// file -query -modified;
+// updatePluginCallback();
+
+// waitCursor -state on;										 $gIgnoreUpdateCallback = true;loadPluginCmd( "C:/Program Files/Autodesk/Bifrost/Maya2019/1.5.7.85/bifrost/plug-ins/Boss.mll"); 		   updatePluginUI( "62" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+// BossInitStrings;
+// bossRegisterRuntimeCmd;
+// evalDeferred "mw_boss_loadui";
+// updatePluginCallback();
+// mw_boss_loadui;
+
+//----------------------------------------- MASH
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;loadPluginCmd( "C:/Program Files/Autodesk/Maya2019/plug-ins/MASH/plug-ins/MASH.mll"); 		   updatePluginUI( "63" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+MASHinitStrings;
+
+
+//-------------------------------------- invertShape
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;loadPluginCmd( "C:/Program Files/Autodesk/Maya2019/plug-ins/camd/plug-ins/invertShape.mll"); 		   updatePluginUI( "68" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+invertShapeInitStrings;
+updatePluginCallback();
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;loadPluginCmd( "C:/Program Files/Autodesk/Maya2019/plug-ins/camd/plug-ins/poseInterpolator.mll"); 		   updatePluginUI( "69" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+poseInterpolatorInitStrings;
+source poseInterpolatorSetup; poseInterpolatorSetup;
+updatePluginCallback();
+
+//---------------------------------------Suptain
+waitCursor -state on;										 $gIgnoreUpdateCallback = true;loadPluginCmd( "C:/Allegorithmic/SubstanceMaya/2019/plug-ins/Substance.mll"); 		   updatePluginUI( "71" );waitCursor -state off;									   $gIgnoreUpdateCallback = false;
+getenv SUBSTANCE_PLUG_IN_PATH;
+getenv "SBS_MEMORY_BUDGET";
+internalVar -userWorkspaceDir;
+assignViewportFactories -textureFactory "substanceBakeEngine" -nodeType "substanceOutput";
+SubstanceDealerInitStrings;
+evalDeferred "SubstancePluginOldInstantiateUI";
+updatePluginCallback();
+SubstancePluginOldInstantiateUI;
+
+
+
+
+
+
+
+
+
+
+
+
+

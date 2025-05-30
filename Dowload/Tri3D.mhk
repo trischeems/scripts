@@ -1,0 +1,160 @@
+//Maya Preference 2020 (Release 1)
+//
+//
+
+//
+// The runtime commands referenced by the hotkeys
+//
+runTimeCommand
+	-annotation "delete key time slider"
+	-category "Custom Scripts"
+	-hotkeyCtx ""
+	-commandLanguage "mel"
+	-command ("timeSliderClearKey;")
+	DeleteKeyCus;
+
+runTimeCommand
+	-annotation "copy key time slider"
+	-category "Custom Scripts"
+	-hotkeyCtx ""
+	-commandLanguage "mel"
+	-command ("timeSliderCopyKey;")
+	CopyKeyCus;
+
+runTimeCommand
+	-annotation "Paste key time slider"
+	-category "Custom Scripts"
+	-hotkeyCtx ""
+	-commandLanguage "mel"
+	-command ("timeSliderPasteKey false;")
+	PasteKeyCus;
+
+//
+// The name commands referenced by the hotkeys
+//
+nameCommand
+	-annotation "SelectToolOptionsMarkingMenuNameCommand"
+	-sourceType "mel"
+	-command ("SelectToolOptionsMarkingMenu")
+	SelectToolOptionsMarkingMenuNameCommand;
+
+nameCommand
+	-annotation "SelectToolOptionsMarkingMenuPopDownNameCommand"
+	-sourceType "mel"
+	-command ("SelectToolOptionsMarkingMenuPopDown")
+	SelectToolOptionsMarkingMenuPopDownNameCommand;
+
+nameCommand
+	-annotation "ResetValue"
+	-sourceType "mel"
+	-command ("python(\"from aTools.generalTools.aToolsGlobals import aToolsGlobals as G; G.aToolsBar.keyTransform.resetValue()\");")
+	ResetValue;
+
+nameCommand
+	-annotation "UnselectChannelBox"
+	-sourceType "mel"
+	-command ("python(\"from aTools.commonMods import commandsMod; commandsMod.unselectChannelBox()\");")
+	UnselectChannelBox;
+
+nameCommand
+	-annotation "PrevFrame"
+	-sourceType "mel"
+	-command ("python(\"from aTools.commonMods import commandsMod; commandsMod.goToKey('previous', 'frame')\");")
+	PrevFrame;
+
+nameCommand
+	-annotation "GraphEditor"
+	-sourceType "mel"
+	-command ("python(\"from maya import mel; mel.eval('tearOffPanel \\\"Graph Editor\\\" \\\"graphEditor\\\" true;')\");")
+	GraphEditor;
+
+nameCommand
+	-annotation "Outliner"
+	-sourceType "mel"
+	-command ("python(\"from maya import mel; mel.eval('tearOffPanel \\\"Outliner\\\" \\\"outlinerPanel\\\" false;')\");")
+	Outliner;
+
+nameCommand
+	-annotation "GraphEditorNameCommand"
+	-sourceType "mel"
+	-command ("GraphEditor")
+	GraphEditorNameCommand;
+
+nameCommand
+	-annotation "NodeEditorWindowNameCommand"
+	-sourceType "mel"
+	-command ("NodeEditorWindow")
+	NodeEditorWindowNameCommand;
+
+nameCommand
+	-annotation "ImportNameCommand"
+	-sourceType "mel"
+	-command ("Import")
+	ImportNameCommand;
+
+nameCommand
+	-annotation "ReferenceEditorNameCommand"
+	-sourceType "mel"
+	-command ("ReferenceEditor")
+	ReferenceEditorNameCommand;
+
+nameCommand
+	-annotation "CopyKeyCusNameCommand"
+	-sourceType "mel"
+	-command ("CopyKeyCus")
+	CopyKeyCusNameCommand;
+
+nameCommand
+	-annotation "PasteKeyCusNameCommand"
+	-sourceType "mel"
+	-command ("PasteKeyCus")
+	PasteKeyCusNameCommand;
+
+nameCommand
+	-annotation "DeleteKeyCusNameCommand"
+	-sourceType "mel"
+	-command ("DeleteKeyCus")
+	DeleteKeyCusNameCommand;
+
+//
+// The user hotkeys
+//
+//
+// The hotkey set
+//
+hotkeySet -source "Maya_Default" -current Tri3D;
+//
+// The hotkey contexts and hotkeys
+//
+hotkey -keyShortcut "0" -ctl -name ("GraphEditor");
+hotkey -keyShortcut "0" -ctl -alt -name ("UnselectChannelBox");
+hotkey -keyShortcut "0" -name ("Outliner");
+hotkey -keyShortcut "r" -ctl -name ("ReferenceEditorNameCommand");
+hotkey -keyShortcut "2" -alt -name ("NodeEditorWindowNameCommand");
+hotkey -keyShortcut "a" -ctl -name ("ImportNameCommand");
+hotkey -keyShortcut "a" -releaseName ("SelectToolOptionsMarkingMenuPopDownNameCommand");
+hotkey -keyShortcut "a" -name ("SelectToolOptionsMarkingMenuNameCommand");
+hotkey -keyShortcut "3" -alt -name ("GraphEditorNameCommand");
+hotkey -keyShortcut "F2" -ctl -name ("PasteKeyCusNameCommand");
+hotkey -keyShortcut "0" -alt -name ("PrevFrame");
+hotkey -keyShortcut "F3" -ctl -name ("DeleteKeyCusNameCommand");
+hotkey -keyShortcut "q" -name ("ResetValue");
+hotkey -keyShortcut "F1" -ctl -name ("CopyKeyCusNameCommand");
+hotkey -keyShortcut "q" -releaseName ("");
+hotkeyCtx -type "Editor" -addClient "hyperShadePanel";
+hotkeyCtx -type "Editor" -addClient "polyTexturePlacementPanel";
+hotkeyCtx -type "Editor" -addClient "graphEditor";
+hotkeyCtx -type "Editor" -addClient "timeEditorPanel";
+hotkeyCtx -type "Editor" -addClient "shapePanel";
+hotkeyCtx -type "Editor" -addClient "outlinerPanel";
+hotkeyCtx -type "Editor" -addClient "profilerPanel";
+hotkeyCtx -type "Editor" -addClient "posePanel";
+hotkeyCtx -type "Editor" -addClient "nodeEditorPanel";
+hotkeyCtx -type "Editor" -addClient "hyperGraphPanel";
+hotkeyCtx -type "Tool" -addClient "sculptMeshCache";
+hotkeyCtx -type "Tool" -addClient "texCutContext";
+hotkeyCtx -type "Tool" -addClient "polyCutUV";
+hotkeyCtx -type "Tool" -addClient "xgmIGBrush";
+hotkeyCtx -type "Tool" -addClient "texSculptCacheContext";
+hotkeyCtx -type "Tool" -addClient "Unfold3DBrush";
+hotkeyCtx -type "Tool" -addClient "SymmetrizeUVBrush";

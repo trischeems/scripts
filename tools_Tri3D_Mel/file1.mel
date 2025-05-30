@@ -1,0 +1,31 @@
+// global proc modifyMelFile() {
+//     string $inputFilePath = "C:/Users/Tri 3D/Documents/maya/2020/scripts/tools_Tri3D_Mel/file2.mel"; 
+//     string $outputFilePath = "C:/Users/Tri 3D/Documents/maya/2020/scripts/tools_Tri3D_Mel/file2.mel"; 
+    
+//     $fileId = `fopen $inputFilePath "r"`;
+//     string $fileContent = "";
+    
+//     string $line = `fgetline $fileId`;
+//     while (size($line) > 0) {
+//         $line = substituteAllString($line, "print", "confirmDialog");
+//         $fileContent += $line;
+        
+//         $line = `fgetline $fileId`;
+//     }
+//     fclose($fileId);
+    
+//     $fileId = `fopen $outputFilePath "w"`;
+//     fwrite $fileId $fileContent;
+//     fclose($fileId);
+    
+//     print("File has been modified successfully.\n");
+// }
+// modifyMelFile();
+
+// Khai báo biến to� n cục
+global int $myGlobalVar = 10;
+
+// H� m in giá trị biến
+global proc printMyVar() {
+    global int $myGlobalVar;  // Khai báo lại biến to� n cục
+}
