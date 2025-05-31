@@ -89,7 +89,6 @@ global proc checkOrCreateTextFile()
             if ($fileId == 0) {
                 return;
             }
-            fprint $fileId "Create by Tri3D !!\n";
             fclose $fileId;
         }        
     }
@@ -108,6 +107,27 @@ global proc checkOrCreateTextFile()
         }        
     }
 }checkOrCreateTextFile();
+
+global proc string readHistoryTxt()
+{
+    string $cInstallToolsTri3D = `tri3dPathTools`;
+    string $filePath = $cInstallToolsTri3D + "Source/Data/History.txt";
+    int $fileId = `fopen $filePath "r"`;
+    string $fileContent = "";
+    string $line;
+
+    while (!`feof $fileId`) {
+        $line = `fgetline $fileId`;
+        $fileContent += $line;
+    }
+    fclose $fileId;
+    return $fileContent;
+}
+global proc historyCur()
+{
+    string $cur = readHistoryTxt();
+    scrollField -edit -tx ($cur+"\n") scrollHistoryTxt;
+}
 global proc historyTxt(string $his)
 {
     checkOrCreateTextFile();
@@ -123,7 +143,7 @@ global proc historyTxt(string $his)
     }
     string $date = `date`;
     int $fileR = `fopen $filePath "w"`;
-    fprint $fileR ($fullText+"\n"+$date+" - "+$his+" .");
+    fprint $fileR ($fullText+$date+" - "+$his+" ."+"\n");
     fclose $fileR;
 }
 
@@ -132,8 +152,10 @@ global proc historyTxt(string $his)
 
 global proc functionsWindow()
 {
+    string $historyTxtRead = readHistoryTxt();
+    global int $dataJsTools[];
     string $cInstallToolsTri3D = `tri3dPathTools`;
-    string $wd[] = {"aliasTri3d", "Tri3d Tools","mainLayout","Rig","Modify","Content"};
+    string $wd[] = {"aliasTri3d", "Tri3d Tools","mainLayout","Rig","Modify","History"};
     float $wh[] = {500,500};
     string $buttonSingleTools[] = {"","Influences","Curve AI","Curve Arc","Curve ADV6","Parent Curve","SetLoop","Pasted","Set default","Anotations","Sample","Check","DtMush"
                                     ,"Ref Geo","AI parent","Rivet","CurJnt","Auto"
@@ -278,19 +300,20 @@ global proc functionsWindow()
         formLayout -edit
             -attachForm $b2 "top" 40 -attachForm $b2 "left" 30
         $fModify;
-    // ### tab Content ### //
+    // ### tab History ### //
         tabLayout -p $wd[2] $wd[5];
-        $fContent = `formLayout -w $wh[0] -numberOfDivisions 100 -p $wd[3] fContent`;
-        $b3 = `button -l "Content" -w 50`;
+        $fHistory = `formLayout -w $wh[0] -numberOfDivisions 100 -p $wd[3] History`;
+        $tf = `textField -editable 0 -tx ("Open tools "+": "+$dataJsTools[0]+ " time.") -w ($wh[0]-200)`;
+        $tf1 = `scrollField -editable 0 -tx ("History tools : \n"+$historyTxtRead) -w ($wh[0]-200) -h 470 scrollHistoryTxt`;
         formLayout -edit
-            -attachForm $b3 "top" 40 -attachForm $b3 "left" 30
-        $fContent; 
+            -attachForm $tf "top" 5 -attachForm $tf "left" 5
+            -attachForm $tf1 "top" 30 -attachForm $tf1 "left" 5
+        $fHistory; 
     showWindow $wd[0];
 }
 
 //############################ ====================
 //############################ ====================
-
 
 // color ex ######
     global proc addAttrNameSDK (){
@@ -328,7 +351,7 @@ global proc functionsWindow()
                         warning "Attribute Exists !!";
                     }
                 }   
-                historyTxt("Creat Attribute "+$nameAttr)  ;           
+                historyTxt("Creat Attribute "+$nameAttr);historyCur();           
             }
         }
     global proc ConnectFrameEx(){
@@ -360,7 +383,7 @@ global proc functionsWindow()
                         addAttr -ln $ctrlEXname -at $dtType -min $nMin -max $nMax -keyable true ($select[0]);
                         connectAttr -f ($select[0] + "." + $ctrlEXname) ($fileEXname + ".frameExtension");
                     }
-                    historyTxt("Switch texture !!")  ;           
+                    historyTxt("Switch texture !!");  historyCur();         
                 }
             }
         }
@@ -423,7 +446,7 @@ global proc DeleteIhi()
         if(size($sl)>0){$newName=renameCur($cur,$o);}
         if($check[4]==1&&size($sl)>0){$jnt=`createNode -n ($o+"_J") joint`;parent $jnt $newName;}
         if($check[3]==1&&size($sl)>0){$grp=`group -empty -n ($o+"_gr")`;parent $newName $grp;}
-        if($check[1]==1&&size($sl)>0){matchTrans($o,$newName);}}select -cl;historyTxt("Create Cube Curve");}
+        if($check[1]==1&&size($sl)>0){matchTrans($o,$newName);}}select -cl;historyTxt("Create Cube Curve");historyCur();}
     }
 
 
