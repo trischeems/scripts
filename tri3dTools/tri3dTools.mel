@@ -383,7 +383,7 @@ global proc functionsWindow()
                         addAttr -ln $ctrlEXname -at $dtType -min $nMin -max $nMax -keyable true ($select[0]);
                         connectAttr -f ($select[0] + "." + $ctrlEXname) ($fileEXname + ".frameExtension");
                     }
-                    historyTxt("Switch texture !!");  historyCur();         
+                    historyTxt("Switch texture !!"); historyCur();         
                 }
             }
         }
