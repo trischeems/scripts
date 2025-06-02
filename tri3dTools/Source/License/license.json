@@ -1,3 +1,10 @@
 {
-    "license": 0
+    "license": 1,
+    "adv6Set": 1,
+    "rivet": 1,
+    "autoWheel": 1,
+    "autoVis": 1,
+    "swordMotion": 1,
+    "history": 1,
+    "autoRigTri3d": 1
 }

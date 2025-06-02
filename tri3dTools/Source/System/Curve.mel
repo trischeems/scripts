@@ -1,0 +1,137 @@
+global proc reFillColorCurve ()
+{
+    string $cSelected[] = `ls -sl`;
+    string $cShapes[];
+    for($obj in $cSelected)
+    {
+        string $cShapes[] = `listRelatives -shapes $obj`;
+        for ($shape in $cShapes)
+        {
+            setAttr ($shape + ".overrideEnabled") 0;
+        }
+    }
+}
+global proc redColorCurve ()
+{
+    string $cSelected[] = `ls -sl`;
+    string $cShapes[];
+    for($obj in $cSelected)
+    {
+        string $cShapes[] = `listRelatives -shapes $obj`;
+        for ($shape in $cShapes)
+        {
+            setAttr ($shape + ".overrideEnabled") 1;
+            setAttr ($shape + ".overrideColor") 13;
+        }
+    }
+}
+global proc yellowColorCurve ()
+{
+    string $cSelected[] = `ls -sl`;
+    string $cShapes[];
+    for($obj in $cSelected)
+    {
+        string $cShapes[] = `listRelatives -shapes $obj`;
+        for ($shape in $cShapes)
+        {
+            setAttr ($shape + ".overrideEnabled") 1;
+            setAttr ($shape + ".overrideColor") 17;
+        }
+    }
+}
+global proc orangeColorCurve ()
+{
+    string $cSelected[] = `ls -sl`;
+    string $cShapes[];
+    for($obj in $cSelected)
+    {
+        string $cShapes[] = `listRelatives -shapes $obj`;
+        for ($shape in $cShapes)
+        {
+            setAttr ($shape + ".overrideEnabled") 1;
+            setAttr ($shape + ".overrideColor") 21;
+        }
+    }
+}
+global proc pinkColorCurve ()
+{
+    string $cSelected[] = `ls -sl`;
+    string $cShapes[];
+    for($obj in $cSelected)
+    {
+        string $cShapes[] = `listRelatives -shapes $obj`;
+        for ($shape in $cShapes)
+        {
+            setAttr ($shape + ".overrideEnabled") 1;
+            setAttr ($shape + ".overrideColor") 20;
+        }
+    }
+}
+global proc greenColorCurve ()
+{
+    string $cSelected[] = `ls -sl`;
+    string $cShapes[];
+    for($obj in $cSelected)
+    {
+        string $cShapes[] = `listRelatives -shapes $obj`;
+        for ($shape in $cShapes)
+        {
+            setAttr ($shape + ".overrideEnabled") 1;
+            setAttr ($shape + ".overrideColor") 14;
+        }
+    }
+}
+global proc whiteColorCurve ()
+{
+    string $cSelected[] = `ls -sl`;
+    string $cShapes[];
+    for($obj in $cSelected)
+    {
+        string $cShapes[] = `listRelatives -shapes $obj`;
+        for ($shape in $cShapes)
+        {setAttr ($shape + ".overrideEnabled") 1;
+        setAttr ($shape + ".overrideColor") 16;
+        }
+    }
+}
+global proc purpleColorCurve ()
+{
+    string $cSelected[] = `ls -sl`;
+    string $cShapes[];
+    for($obj in $cSelected)
+    {
+        string $cShapes[] = `listRelatives -shapes $obj`;
+        for ($shape in $cShapes)
+        {
+            setAttr ($shape + ".overrideEnabled") 1;
+            setAttr ($shape + ".overrideColor") 9;
+        }
+    }
+}
+global proc blueColorCurve ()
+{
+    string $cSelected[] = `ls -sl`;
+    string $cShapes[];
+    for($obj in $cSelected)
+    {
+        string $cShapes[] = `listRelatives -shapes $obj`;
+        for ($shape in $cShapes)
+        {
+            setAttr ($shape + ".overrideEnabled") 1;
+            setAttr ($shape + ".overrideColor") 18;
+        }
+    }
+}
+global proc blueBlackColorCurve (){
+    string $cSelected[] = `ls -sl`;
+    string $cShapes[];
+    for($obj in $cSelected)
+    {
+        string $cShapes[] = `listRelatives -shapes $obj`;
+        for ($shape in $cShapes)
+        {
+            setAttr ($shape + ".overrideEnabled") 1;
+            setAttr ($shape + ".overrideColor") 6;
+        }
+    }
+}
