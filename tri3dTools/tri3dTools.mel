@@ -440,6 +440,8 @@ global proc DeleteIhi()
         $on[2] = `checkBox -q -value ck_Boxer_Ctrl`;
         $on[3] = `checkBox -q -value ck_Group_Ctrl`;
         $on[4] = `checkBox -q -value ck_Joint_Ctrl`;
+        $on[5] = `checkBox -q -value ck_Parent_Ctrl`;
+        $on[6] = `checkBox -q -value ck_Bind_Ctrl`;
         return $on;
     }
     global proc matchTrans(string $tar,string $obj,int $m)
@@ -463,51 +465,15 @@ global proc DeleteIhi()
     // ctrl
     global proc cCubeCur()
     {
-        string $sl[]=`ls -sl`;
-        select -cl;
-        int $check[]=checkBoxCtrl();
-        if(size($sl)>0){
-            for($o in $sl)
-            {
-                $newName="";$grp="";
-                $cur=`curve -n "Cube" -d 1 -p 1 1 1 -p 1 1 -1 -p 1 -1 -1 -p 1 -1 1 -p -1 -1 1 -p -1 1 1 -p 1 1 1 -p 1 -1 1 -p -1 -1 1 -p -1 -1 -1 -p -1 1 -1 -p 1 1 -1 -p 1 -1 -1 -p -1 -1 -1 -p -1 1 -1 -p -1 1 1`;
-                if(size($sl)>0){
-                    $newName=renameCur($cur,$o);
-                }
-                if($check[4]==1&&size($sl)>0)
-                {
-                    $jnt=`createNode -n ($o+"_J") joint`;
-                    parent $jnt $newName;
-                    if($check[6]==1)
-                    {
-                        select -add $o $jnt;SmoothBindSkin;
-                    }
-                }
-                if($check[3]==1&&size($sl)>0)
-                {
-                    $grp=`group -empty -n ($o+"_gr")`;
-                    parent $newName $grp;
-                }
-                if($check[1]==1&&size($sl)>0)
-                {
-                    if($check[3]==1)
-                    {
-                        matchTrans($o,$grp,0);
-                    }
-                    else
-                    {
-                        matchTrans($o,$newName,1);
-                    }
-                }
-                if($check[5]==1&&$check[6]==0)
-                {
-                    parent $o $newName;
-                }
-            }
-            select -cl;hisData("Create Cube Curve");
-        }
+        string $sl[]=`ls -sl`;select -cl;int $check[]=checkBoxCtrl();
+        if(size($sl)>0){for($o in $sl){$newName="";$grp="";$jnt="";
+        $cur=`curve -n "Cube" -d 1 -p 1 1 1 -p 1 1 -1 -p 1 -1 -1 -p 1 -1 1 -p -1 -1 1 -p -1 1 1 -p 1 1 1 -p 1 -1 1 -p -1 -1 1 -p -1 -1 -1 -p -1 1 -1 -p 1 1 -1 -p 1 -1 -1 -p -1 -1 -1 -p -1 1 -1 -p -1 1 1`;
+        if(size($sl)>0){$newName=renameCur($cur,$o);}
+        if($check[4]==1&&size($sl)>0){$jnt=`createNode -n ($o+"_J") joint`;parent $jnt $newName;if($check[6]==1){select -add $o $jnt;SmoothBindSkin;}}
+        if($check[3]==1&&size($sl)>0){$grp=`group -empty -n ($o+"_gr")`;parent $newName $grp;}
+        if($check[1]==1&&size($sl)>0){if($check[3]==1){matchTrans($o,$grp,0);}else{matchTrans($o,$newName,1);}}
+        if($check[5]==1&&$check[6]==0){parent $o $newName;if($check[6]==0){delete $jnt;}}}select -cl;hisData("Create Cube Curve");}
     }
-
 // ################################## history tools ################################### //
 global proc hisData(string $text)
 {
