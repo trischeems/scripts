@@ -7005,6 +7005,7 @@ global proc rivetTools()
 								group -n $grpAll -empty;
 								group -n $grpA -empty;parent $grpA $grpAll;setAttr ($grpA + ".v") 0;
 								group -n $grpL -empty;parent $grpL $grpAll;
+								setAttr ($grpA+".hiddenInOutliner") 1;
 							}	
 							parent $aimS $grpA;
 							parent $locS $grpL;
@@ -7030,16 +7031,11 @@ global proc rivetTools()
 		}
 		else
 		{
-			confirmDialog -m "Please select Edge divisible by 4 !!";
+			confirmDialog -m "Please select Edge divisible by 2 !!";
 		}
 	}
 
 }
-
-
-
-
-
 
 /////// ################## 
 global proc SDK_textF_cbtx()

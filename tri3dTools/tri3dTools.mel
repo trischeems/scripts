@@ -460,14 +460,52 @@ global proc DeleteIhi()
         }
         return $curN;
     }
+    // ctrl
     global proc cCubeCur()
     {
-        string $sl[]=`ls -sl`;int $check[]=checkBoxCtrl();if(size($sl)>0){for($o in $sl){$newName="";$grp="";
-        $cur=`curve -n "Cube" -d 1 -p 1 1 1 -p 1 1 -1 -p 1 -1 -1 -p 1 -1 1 -p -1 -1 1 -p -1 1 1 -p 1 1 1 -p 1 -1 1 -p -1 -1 1 -p -1 -1 -1 -p -1 1 -1 -p 1 1 -1 -p 1 -1 -1 -p -1 -1 -1 -p -1 1 -1 -p -1 1 1`;
-        if(size($sl)>0){$newName=renameCur($cur,$o);}
-        if($check[4]==1&&size($sl)>0){$jnt=`createNode -n ($o+"_J") joint`;parent $jnt $newName;}
-        if($check[3]==1&&size($sl)>0){$grp=`group -empty -n ($o+"_gr")`;parent $newName $grp;}
-        if($check[1]==1&&size($sl)>0){if($check[3]==1){matchTrans($o,$grp,0);}else{matchTrans($o,$newName,1);}}}select -cl;hisData("Create Cube Curve");}
+        string $sl[]=`ls -sl`;
+        select -cl;
+        int $check[]=checkBoxCtrl();
+        if(size($sl)>0){
+            for($o in $sl)
+            {
+                $newName="";$grp="";
+                $cur=`curve -n "Cube" -d 1 -p 1 1 1 -p 1 1 -1 -p 1 -1 -1 -p 1 -1 1 -p -1 -1 1 -p -1 1 1 -p 1 1 1 -p 1 -1 1 -p -1 -1 1 -p -1 -1 -1 -p -1 1 -1 -p 1 1 -1 -p 1 -1 -1 -p -1 -1 -1 -p -1 1 -1 -p -1 1 1`;
+                if(size($sl)>0){
+                    $newName=renameCur($cur,$o);
+                }
+                if($check[4]==1&&size($sl)>0)
+                {
+                    $jnt=`createNode -n ($o+"_J") joint`;
+                    parent $jnt $newName;
+                    if($check[6]==1)
+                    {
+                        select -add $o $jnt;SmoothBindSkin;
+                    }
+                }
+                if($check[3]==1&&size($sl)>0)
+                {
+                    $grp=`group -empty -n ($o+"_gr")`;
+                    parent $newName $grp;
+                }
+                if($check[1]==1&&size($sl)>0)
+                {
+                    if($check[3]==1)
+                    {
+                        matchTrans($o,$grp,0);
+                    }
+                    else
+                    {
+                        matchTrans($o,$newName,1);
+                    }
+                }
+                if($check[5]==1&&$check[6]==0)
+                {
+                    parent $o $newName;
+                }
+            }
+            select -cl;hisData("Create Cube Curve");
+        }
     }
 
 // ################################## history tools ################################### //
@@ -477,6 +515,7 @@ global proc hisData(string $text)
     string $cur = readHistoryTxt();
     scrollField -edit -tx ("History Tools :\n"+$cur+"\n") scrollHistoryTxt;
 }
+
 
 
 
