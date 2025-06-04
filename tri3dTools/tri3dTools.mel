@@ -3,6 +3,11 @@
 // ## Rigging - Animation
 // ## No copy right !!!!
 // ####################################################### //
+global proc int versionMaya()
+{
+    int $versionMaya = `about -v`;
+    return $versionMaya;
+}versionMaya();
 global proc tri3dPathToolsProc (){}
 global proc string tri3dPathTools ()
 {
@@ -79,6 +84,8 @@ global proc checkJson()
 }checkJson();
 global proc checkTxt()
 {
+    // global string $versionMaya;
+    int $version=versionMaya();
     string $cInstallToolsTri3D = `tri3dPathTools`;
     string $listData[] = {($cInstallToolsTri3D + "Source/Data/History.txt")
                             ,($cInstallToolsTri3D + "Source/Data/ListData.txt")
@@ -113,7 +120,14 @@ global proc checkTxt()
     if ($reEcnPy == 0) {
         return;
     }
-    fprint $reEcnPy ("import os\nimport maya.cmds as cmds\ndef read_bin_and_save():\n    key = 123\n    current_dir = os.path.dirname('"+$listLicense[2]+"')\n    filepath = os.path.join(current_dir, 'data.bin')\n    with open(filepath, 'rb') as f:\n        data = f.read()\n    decrypted = ''.join([chr(ord(c) ^ key) for c in data])\n    cmds.optionVar(sv=('decryptedMessage', decrypted))\nread_bin_and_save() ");
+    if($version<=2020)
+    {
+        fprint $reEcnPy ("import os\nimport maya.cmds as cmds\ndef read_bin_and_save():\n    key = 123\n    current_dir = os.path.dirname('"+$listLicense[2]+"')\n    filepath = os.path.join(current_dir, 'data.bin')\n    with open(filepath, 'rb') as f:\n        data = f.read()\n    decrypted = ''.join([chr(ord(c) ^ key) for c in data])\n    #decrypted = ''.join([chr(int(c) ^ key) for c in list(data)])\n    cmds.optionVar(sv=('decryptedMessage', decrypted))\nread_bin_and_save() ");
+
+    }
+    else{
+        fprint $reEcnPy ("import os\nimport maya.cmds as cmds\ndef read_bin_and_save():\n    key = 123\n    current_dir = os.path.dirname('"+$listLicense[2]+"')\n    filepath = os.path.join(current_dir, 'data.bin')\n    with open(filepath, 'rb') as f:\n        data = f.read()\n    #decrypted = ''.join([chr(ord(c) ^ key) for c in data])\n    decrypted = ''.join([chr(int(c) ^ key) for c in list(data)])\n    cmds.optionVar(sv=('decryptedMessage', decrypted))\nread_bin_and_save() ");
+    }    
     fclose $reEcnPy;    
 }checkTxt();
 
@@ -152,10 +166,20 @@ global proc historyTxt(string $his)
 global string $dataLicense;
 global proc license()
 {
+    // global string $versionMaya;
+    int $version=versionMaya();
     global string $dataLicense;
     string $cInstallToolsTri3D = `tri3dPathTools`;
     string $filePath = $cInstallToolsTri3D + "Source/License/data.bin";     
-    python("execfile('" + $cInstallToolsTri3D + "Source/License/reEcn.py" + "')");
+    string $pyPath = $cInstallToolsTri3D + "Source/License/reEcn.py";
+    $pyPath = substituteAllString($pyPath, "\\", "/");
+    if($version<=2020)
+    {
+        python("execfile('" + $cInstallToolsTri3D + "Source/License/reEcn.py" + "')");
+    }
+    else{
+        python("exec(open('" + $pyPath + "').read())");
+    }
     string $msg = `optionVar -q "decryptedMessage"`;
     $dataLicense = `optionVar -q "decryptedMessage"`;
     print($msg);
@@ -166,6 +190,8 @@ global proc license()
 
 global proc functionsWindow()
 {
+    // global string $versionMaya;
+    int $version=versionMaya();
     global string $dataLicense;
     string $historyTxtRead = readHistoryTxt();
     global int $dataJsTools[];
@@ -329,7 +355,7 @@ global proc functionsWindow()
     // ### tab About ### //
         tabLayout -p $wd[2] $wd[5];
         $fContent = `formLayout -w $wh[0] -numberOfDivisions 100 -p $wd[3] About`;
-        $tf = `scrollField -editable 0 -tx $dataLicense -h 85 -w ($wh[0]-20)`;
+        $tf = `scrollField -editable 0 -tx ("## Version Maya : "+$version+" ##"+"\n"+$dataLicense) -h 85 -w ($wh[0]-20)`;
         formLayout -edit
             -attachForm $tf "top" 5 -attachForm $tf "left" 5
         $fContent; 
@@ -389,7 +415,7 @@ global proc nodeTri3d(string $objNode,string $attrNode)
     }
     if(!`attributeExists $attrNode $nodeTri3dTools`)
     {
-        addAttr -ln $attrNode -proxy ($objNode+"."+$attrNode) -keyable 1 $nodeTri3dTools;
+        addAttr -ln ($objNode+"_"+$attrNode) -proxy ($objNode+"."+$attrNode) -keyable 1 $nodeTri3dTools;
     }hisdelete();
 }
 
