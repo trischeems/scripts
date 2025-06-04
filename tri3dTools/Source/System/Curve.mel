@@ -135,50 +135,1279 @@ global proc blueBlackColorCurve (){
         }
     }
 }
-// ctrl
-global proc cCubeCur()
-{
-    string $sl[]=`ls -sl`;
-    select -cl;
-    int $check[]=checkBoxCtrl();
-    if(size($sl)>0){
-        for($o in $sl)
+// ################# Curve ################# //
+    // bdb
+        global proc vector getBDB(string $curN)
         {
-            $newName="";$grp="";
-            $cur=`curve -n "Cube" -d 1 -p 1 1 1 -p 1 1 -1 -p 1 -1 -1 -p 1 -1 1 -p -1 -1 1 -p -1 1 1 -p 1 1 1 -p 1 -1 1 -p -1 -1 1 -p -1 -1 -1 -p -1 1 -1 -p 1 1 -1 -p 1 -1 -1 -p -1 -1 -1 -p -1 1 -1 -p -1 1 1`;
-            if(size($sl)>0){
-                $newName=renameCur($cur,$o);
-            }
-            if($check[4]==1&&size($sl)>0)
+            float $mm[] = {999999,-999999};
+            int $type=1;
+            string $cvs[]=`ls -fl ($curN+".cv[*]")`;
+            float $miX=$mm[0],$miY=$mm[0],$miZ=$mm[0];
+            float $maX=$mm[1],$maY=$mm[1],$maZ=$mm[1];
+            float $sX,$sY,$sZ;
+            if($type==1)
             {
-                $jnt=`createNode -n ($o+"_J") joint`;
-                parent $jnt $newName;
-                if($check[6]==1&&$check[5]==0)
+                float $bb[] = `xform -q -ws -bb $curN`;
+                $sX = $bb[3] - $bb[0];
+                $sY = $bb[4] - $bb[1];
+                $sZ = $bb[5] - $bb[2];
+            }
+            if($type==0)
+            {
+                for($cv in $cvs)
                 {
-                    select -r $o $jnt;SmoothBindSkin;
+                    float $pos[]=`xform -q -ws -t $cv`;
+                    $miX=($pos[0]<$miX)?$pos[0]:$miX;
+                    $maX=($pos[0]>$maX)?$pos[0]:$maX;
+                    $miY=($pos[1]<$miY)?$pos[1]:$miY;
+                    $maY=($pos[1]>$maY)?$pos[1]:$maY;     
+                    $miZ=($pos[2]<$miZ)?$pos[2]:$miZ;
+                    $maZ=($pos[2]>$maZ)?$pos[2]:$maZ;                    
                 }
+                float $sX=$maX-$miX;float $sY=$maY-$miY;float $sZ=$maZ-$miZ;                
             }
-            if($check[3]==1&&size($sl)>0)
+            return <<$sX,$sY,$sZ>>;
+        }
+        global proc curBDB(string $sCur,string $tCur)
+        {
+            vector $sSize=`getBDB($sCur)`;
+            vector $tSize=`getBDB($tCur)`;
+            float $sx = `getAttr ($tCur + ".scaleX")`;
+            float $sy = `getAttr ($tCur + ".scaleY")`;
+            float $sz = `getAttr ($tCur + ".scaleZ")`;
+            float $scaleX = ($sSize.x != 0) ? ($sSize.x / $tSize.x) : 1;
+            float $scaleY = ($sSize.y != 0) ? ($sSize.y / $tSize.y) : 1;
+            float $scaleZ = ($sSize.z != 0) ? ($sSize.z / $tSize.z) : 1;
+            setAttr ($tCur + ".scaleX") (($sx*$scaleX)+0.5);
+            setAttr ($tCur + ".scaleY") (($sy*$scaleY)+0.5);
+            setAttr ($tCur + ".scaleZ") (($sz*$scaleZ)+0.5);
+        }
+    global proc int[] checkBoxCtrl()
+    {
+        string $var[] = {"ck_Normal_Ctrl","ck_Match_Ctrl","ck_Boxer_Ctrl","ck_Group_Ctrl","ck_Joint_Ctrl","ck_Parent_Ctrl","ck_Bind_Ctrl"};
+        int $on[];
+        for($i=0;$i<size($var);$i++)
+        {
+            $on[$i] =`checkBox -q -value $var[$i]`;
+        }
+        return $on;
+    }
+    global proc matchTrans(string $tar,string $obj,int $m)
+    {
+        matchTransform -pos $obj $tar;
+        if($m == 1)
+        {
+            makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $obj;
+        }
+    }
+    global proc string renameCur(string $obj,string $sel)
+    {
+        $curN = `rename $obj ($sel + "_ctrl")`;
+        string $lc[] = `listRelatives -shapes $curN`;
+        for($o in $lc)
+        {
+            $newS = `rename $o ($sel + "CurShape")`;
+        }
+        return $curN;
+    }
+    // ctrl
+        global proc cCubeCur()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
             {
-                $grp=`group -empty -n ($o+"_gr")`;
-                parent $newName $grp;
-            }
-            if($check[1]==1&&size($sl)>0)
-            {
-                if($check[3]==1)
+                for($o in $sl)
                 {
-                    matchTrans($o,$grp,0);
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "Cube" -d 1 -p 1 1 1 -p 1 1 -1 -p 1 -1 -1 -p 1 -1 1 -p -1 -1 1 -p -1 1 1 -p 1 1 1 -p 1 -1 1 -p -1 -1 1 -p -1 -1 -1 -p -1 1 -1 -p 1 1 -1 -p 1 -1 -1 -p -1 -1 -1 -p -1 1 -1 -p -1 1 1`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
                 }
-                else
-                {
-                    matchTrans($o,$newName,1);
-                }
-            }
-            if($check[5]==1&&$check[6]==0)
-            {
-                parent $o $newName;
+                select -cl;hisData("Create Cube Curve");
             }
         }
-        select -cl;hisData("Create Cube Curve");
-    }
-}
+        global proc cCircleCur()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`circle -nr 0 1 0 -r 2 -n "CurveC"`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create Circle Curve");
+            }
+        }        
+        global proc cCicleCurHafl()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "CicleCurHafl" -d 3 -p -2 0 1 -p -2.01 0 0.68 -p -2 0 0 -p -0.97 0 -1.21 -p 0.97 0 -1.21 -p 2 0 0 -p 2.01 0 0.64 -p 2 0 1`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create CicleCurHafl Curve");
+            }
+        }
+        global proc cHandCur()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "HandCur" -d 3 -p -0.03 0 -0.8 -p -0.03 0 -0.25 -p -0.03 0 0.48 -p 0.57 -0 1.48 -p 2.71 -0 2.66 -p 3.25 -0 3.12 -p 4 -0 2.94 -p 4.09 -0 2.11 -p 3.22 -0 1.69 -p 2.65 -0 1.4 -p 3.68 -0 1.4 -p 7 -0 1.4 -p 7.14 -0 0.9 -p 7 -0 0.52 -p 5.4 -0 0.52 -p 4.04 -0 0.52 -p 4.04 -0 0.39 -p 4.04 -0 0.22 -p 5.72 -0 0.22 -p 7.72 -0 0.22 -p 7.86 -0 -0.25 -p 7.72 -0 -0.71 -p 5.72 -0 -0.71 -p 4.1 -0 -0.71 -p 4.1 -0 -0.84 -p 4.1 -0 -1 -p 6.04 -0 -1 -p 7.26 -0 -1 -p 7.46 -0 -1.46 -p 7.24 -0 -1.92 -p 5.97 -0 -1.92 -p 3.92 -0 -1.92 -p 3.92 -0 -2.02 -p 3.92 -0 -2.12 -p 5.38 -0 -2.12 -p 6.25 -0 -2.12 -p 6.61 -0 -2.6 -p 6.31 -0 -3.12 -p 5.14 -0 -3.12 -p 3.88 -0 -3.12 -p 2.57 -0 -3.12 -p 1.1 -0 -3.16 -p -0.03 0 -2.17 -p -0.03 0 -1.47 -p -0.03 0 -0.8`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create HandCur Curve");
+            }
+        }
+        global proc cLegCur()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "LegCur" -d 3 -p 1.35 0 0.65 -p 0.03 0 -0.26 -p -1.48 -0.01 0.4 -p -1.4 0 2.42 -p 0.13 0 3.9 -p -1.27 0 6.03 -p -1.52 0 7.95 -p -0.53 0 9.28 -p 0.74 0 9.76 -p 1.98 0 8.92 -p 2.46 0 7.95 -p 2.67 0 6.03 -p 2.43 0 3.9 -p 1.9 0 1.98 -p 1.35 0 0.65`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create LegCur Curve");
+            }
+        }
+        global proc cTarget()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "Target" -d 1 -p -2 0 0 -p 1 0 1 -p 1 0 -1 -p -2 0 0 -p 1 1 0 -p 1 0 0 -p 1 -1 0 -p -2 0 0`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create Targete Curve");
+            }
+        }
+        global proc cLocator()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "LocatorCtrl" -d 1 -p -2 0 0 -p 2 0 0 -p 0 0 0 -p 0 0 2 -p 0 0 -2 -p 0 0 0 -p 0 2 0 -p 0 -2 0`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create LocatorCtrl Curve");
+            }
+        }
+        global proc cTargetCircle()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "TargetCircle" -d 1 -p 0 5.6 0 -p 2 5.6 -0 -p 1.85 5.6 0.76 -p 1.41 5.6 1.41 -p 0.76 5.6 1.85 -p 0 5.6 2 -p 0 5.6 0 -p 0 5.6 2 -p -0.76 5.6 1.85 -p -1.41 5.6 1.41 -p -1.85 5.6 0.76 -p -2 5.6 -0 -p 0 5.6 0 -p -2 5.6 -0 -p -1.85 5.6 -0.76 -p -1.41 5.6 -1.41 -p -0.76 5.6 -1.85 -p 0 5.6 -2 -p 0 5.6 0 -p 0 5.6 -2 -p 0.76 5.6 -1.85 -p 1.41 5.6 -1.41 -p 1.85 5.6 -0.76 -p 2 5.6 -0 -p 0 5.6 0 -p 0 1.6 0 -p 0 1.6 0.8 -p 0 -0 0 -p 0 1.6 -0.8 -p 0 1.6 0 -p -0.8 1.6 0 -p 0 -0 0 -p 0.8 1.6 0 -p 0 1.6 0.8 -p -0.8 1.6 0 -p 0 1.6 -0.8 -p 0.8 1.6 0 -p 0 1.6 0`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create TargetCircle Curve");
+            }
+        }        
+        global proc cCicleD()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "CircleD" -d 1 -p 0 1 0 -p 0 0.92 0.38 -p 0 0.71 0.71 -p 0 0.38 0.92 -p 0 0 1 -p 0 -0.38 0.92 -p 0 -0.71 0.71 -p 0 -0.92 0.38 -p 0 -1 0 -p 0 -0.92 -0.38 -p 0 -0.71 -0.71 -p 0 -0.38 -0.92 -p 0 0 -1 -p 0 0.38 -0.92 -p 0 0.71 -0.71 -p 0 0.92 -0.38 -p 0 1 0 -p 0.38 0.92 0 -p 0.71 0.71 0 -p 0.92 0.38 0 -p 1 0 0 -p 0.92 -0.38 0 -p 0.71 -0.71 0 -p 0.38 -0.92 0 -p 0 -1 0 -p -0.38 -0.92 0 -p -0.71 -0.71 0 -p -0.92 -0.38 0 -p -1 0 0 -p -0.92 0.38 0 -p -0.71 0.71 0 -p -0.38 0.92 0 -p 0 1 0 -p 0 0.92 -0.38 -p 0 0.71 -0.71 -p 0 0.38 -0.92 -p 0 0 -1 -p -0.38 0 -0.92 -p -0.71 0 -0.71 -p -0.92 0 -0.38 -p -1 0 0 -p -0.92 0 0.38 -p -0.71 0 0.71 -p -0.38 0 0.92 -p 0 0 1 -p 0.38 0 0.92 -p 0.71 0 0.71 -p 0.92 0 0.38 -p 1 0 0 -p 0.92 0 -0.38 -p 0.71 0 -0.71 -p 0.38 0 -0.92 -p 0 0 -1`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create CircleD Curve");
+            }
+        }            
+        global proc cPlus()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "Plus" -d 1 -p -0.64 -2.56 0 -p -0.64 -0.64 0 -p -2.56 -0.64 0 -p -2.56 0.64 0 -p -0.64 0.64 0 -p -0.64 2.56 0 -p 0.64 2.56 0 -p 0.64 0.64 0 -p 2.56 0.64 0 -p 2.56 -0.64 0 -p 0.64 -0.64 0 -p 0.64 -2.56 0 -p -0.64 -2.56 0`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create Plus Curve");
+            }
+        }
+        global proc cCirclePlus()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "CirclePlus" -d 1 -p 0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 -p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p 0 0 0 -p 0 0 -2 -p -0.76 0 -1.85 -p -1.41 0 -1.41 -p -1.85 0 -0.76 -p -2 0 -0 -p 0 0 0 -p 2 0 -0 -p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p -0.76 0 1.85 -p -1.41 0 1.41 -p -1.85 0 0.76 -p -2 0 -0`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create CirclePlus Curve");
+            }
+        }        
+        global proc cRotate()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "Rotate" -d 1 -p 0 0 -2.4 -p 0 0 -3.2 -p 0.83 0 -3.09 -p 1.6 0 -2.77 -p 2.26 0 -2.26 -p 2.77 0 -1.6 -p 3.09 0 -0.83 -p 3.2 0 0 -p 3.09 0 0.83 -p 2.77 0 1.6 -p 2.26 0 2.26 -p 1.6 0 2.77 -p 0.83 0 3.09 -p 0 0 3.2 -p -0.83 0 3.09 -p -1.6 0 2.77 -p -2.26 0 2.26 -p -2.77 0 1.6 -p -3.09 0 0.83 -p -3.2 0 0 -p -4.05 0 0 -p -2.78 0 -2.53 -p -1.52 0 0 -p -2.4 0 0 -p -2.32 0 0.62 -p -2.08 0 1.2 -p -1.7 0 1.7 -p -1.2 0 2.08 -p -0.62 0 2.32 -p 0 0 2.4 -p 0.62 0 2.32 -p 1.2 0 2.08 -p 1.7 0 1.7 -p 2.08 0 1.2 -p 2.32 0 0.62 -p 2.4 0 0 -p 2.32 0 -0.62 -p 2.08 0 -1.2 -p 1.7 0 -1.7 -p 1.2 0 -2.08 -p 0.62 0 -2.32 -p 0 0 -2.4`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create RotateCurve Curve");
+            }
+        }
+        global proc cArrow()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "Arrow" -d 1 -p -2.09 -0 0 -p 2.09 -0 2.83 -p 1.59 -0 2.22 -p 1.22 -0 1.53 -p 0.99 -0 0.78 -p 0.91 -0 0 -p 0.99 0 -0.78 -p 1.22 0 -1.53 -p 1.59 0 -2.22 -p 2.09 0 -2.83 -p -2.09 -0 0`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create Arrow Curve");
+            }
+        }
+        global proc cColorRange()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "ColorRange" -d 1 -p 3.69 -0 1.53 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 1.85 -0 0.76 -p 3.69 -0 1.53 -p 4 0 -0 -p 2 0 -0 -p 1.85 -0 0.76 -p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 1.53 -0 3.69 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 0 -0 2 -p 0 -0 4 -p 1.53 -0 3.69 -p 0.76 -0 1.85 -p 0 -0 2 -p -0.76 -0 1.85 -p -1.53 -0 3.69 -p 0 -0 4 -p 0 -0 2 -p -0.76 -0 1.85 -p -1.41 -0 1.41 -p -2.83 -0 2.83 -p -1.53 -0 3.69 -p -0.76 -0 1.85 -p -1.41 -0 1.41 -p -1.85 -0 0.76 -p -3.69 -0 1.53 -p -2.83 -0 2.83 -p -1.41 -0 1.41 -p -1.85 -0 0.76 -p -2 0 -0 -p -4 0 -0 -p -3.69 -0 1.53 -p -1.85 -0 0.76 -p -2 0 -0 -p -1.85 0 -0.76 -p -3.69 0 -1.53 -p -4 0 -0 -p -2 0 -0 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -2.83 0 -2.83 -p -3.69 0 -1.53 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -0.76 0 -1.85 -p -1.53 0 -3.69 -p -2.83 0 -2.83 -p -1.41 0 -1.41 -p -0.76 0 -1.85 -p -0 0 -2 -p -0 0 -4 -p -1.53 0 -3.69 -p -0.76 0 -1.85 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.53 0 -3.69 -p -0 0 -4 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 2.83 0 -2.83 -p 1.53 0 -3.69 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 3.69 0 -1.53 -p 2.83 0 -2.83 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 -p 4 0 -0 -p 3.69 0 -1.53`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create ColorRange Curve");
+            }
+        }        
+        global proc cDirections()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "DirectionCurve" -d 1 -p 0 0 0 -p 0 2.4 -2.4 -p 0 2.4 -1.6 -p 0 4.8 -1.6 -p 0 4.8 1.6 -p 0 2.4 1.6 -p 0 2.4 2.4 -p 0 0 0`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create DirectionCurve Curve");
+            }
+        }
+        global proc cBody()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "BodyCurve" -d 1 -p -3.14 -0 0.62 -p -4 0 0.8 -p -4 0 1.6 -p -5.6 0 0 -p -4 0 -1.6 -p -4 0 -0.8 -p -3.14 0 -0.62 -p -2.95 0 -1.22 -p -2.66 0 -1.78 -p -2.26 0 -2.26 -p -1.78 0 -2.66 -p -1.22 0 -2.95 -p -0.62 0 -3.14 -p -0.8 0 -4 -p -1.6 0 -4 -p 0 0 -5.6 -p 1.6 0 -4 -p 0.8 0 -4 -p 0.62 0 -3.14 -p 1.22 0 -2.95 -p 1.78 0 -2.66 -p 2.26 0 -2.26 -p 2.66 0 -1.78 -p 2.95 0 -1.22 -p 3.14 0 -0.62 -p 4 0 -0.8 -p 4 0 -1.6 -p 5.6 0 0 -p 4 0 1.6 -p 4 0 0.8 -p 3.14 -0 0.62 -p 2.95 -0 1.22 -p 2.66 -0 1.78 -p 2.26 -0 2.26 -p 1.78 -0 2.66 -p 1.22 -0 2.95 -p 0.62 -0 3.14 -p 0.8 0 4 -p 1.6 0 4 -p 0 0 5.6 -p -1.6 0 4 -p -0.8 0 4 -p -0.62 -0 3.14 -p -1.22 -0 2.95 -p -1.78 -0 2.66 -p -2.26 -0 2.26 -p -2.66 -0 1.78 -p -2.95 -0 1.22 -p -3.14 -0 0.62`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create BodyCurve Curve");
+            }
+        }                          
+        global proc cLockCircle()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "LockCircle" -d 1 -p 0 0 0 -p 0 5.6 0 -p 0.21 5.63 0 -p 0.4 5.71 0 -p 0.57 5.83 0 -p 0.69 6 0 -p 0.77 6.19 0 -p 0.8 6.4 0 -p 0 6.4 0 -p 0 5.6 0 -p -0.21 5.63 0 -p -0.4 5.71 0 -p -0.57 5.83 0 -p -0.69 6 0 -p -0.77 6.19 0 -p -0.8 6.4 0 -p -0.77 6.61 0 -p -0.69 6.8 0 -p -0.57 6.97 0 -p -0.4 7.09 0 -p -0.21 7.17 0 -p 0 7.2 0 -p 0.21 7.17 0 -p 0.4 7.09 0 -p 0.57 6.97 0 -p 0.69 6.8 0 -p 0.77 6.61 0 -p 0.8 6.4 0 -p -0.8 6.4 0 -p 0 6.4 0 -p 0 7.2 0`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create LockCircle Curve");
+            }
+        }       
+        global proc cLockSquare()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "LockSquare" -d 1 -p 0 0 0 -p -0 5.6 -0 -p -0.7 5.6 -0 -p -0.7 7 -0 -p 0.7 7 -0 -p 0.7 5.6 -0 -p -0 5.6 -0`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create LockSquare Curve");
+            }
+        }        
+        global proc cSquare()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "Square" -d 1 -p 1 0 -1 -p -1 0 -1 -p -1 0 1 -p 1 0 1 -p 1 0 -1`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create Square Curve");
+            }
+        }      
+        global proc cdizzyCtrl()
+        {
+            string $sl[]=`ls -sl`;
+            select -cl;
+            int $check[]=checkBoxCtrl();
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $newName="";$grp="";$jnt="";
+                    $cur=`curve -n "dizzyCur" -d 3 -p 0.04 0 0.17 -p -0.29 0 0.82 -p 0.45 0 1.57 -p 1.95 0 0.31 -p 0.06 0 -1.38 -p -1.46 0 -0.08 -p -1.45 0 1.28 -p -0.34 0 2.5 -p 2.38 0 1.95 -p 2.44 0 -1.1 -p -0.02 0 -2.31 -p -2.2 0 -1.28 -p -2.73 0 2.41 -p 1.11 0 4.07 -p 4.54 0 0.54 -p 1.18 0 -4.18 -p -3.84 0 -1.84 -p -3.64 0 3.18 -p 0.13 0 4.74 -p 2.12 0 3.98 -p 3.16 0 3.16`;
+                    if(size($sl)>0)
+                    {
+                        $newName=renameCur($cur,$o);
+                    }
+                    if($check[4]==1&&size($sl)>0)
+                    {
+                        $jnt=`createNode -n ($o+"_J") joint`;
+                        parent $jnt $newName;
+                    }
+                    if($check[3]==1&&size($sl)>0)
+                    {
+                        $grp=`group -empty -n ($o+"_gr")`;
+                        parent $newName $grp;
+                    }
+                    if($check[2]==1)
+                    {
+                        curBDB($o,$newName);
+                    }
+                    if($check[1]==1&&size($sl)>0)
+                    {
+                        if($check[3]==1)
+                        {
+                            matchTrans($o,$grp,0);
+                            if($check[2]==1)
+                            {
+                                makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $newName;
+                            }
+                        }else
+                        {
+                            matchTrans($o,$newName,1);
+                        }
+                    }
+                    if($check[5]==1&&$check[6]==0)
+                    {
+                        parent $o $newName;
+                        if($check[6]==0&&`objExists $jnt`)
+                        {
+                            delete $jnt;
+                        }
+                    }
+                    if($check[6]==1&&$check[4]==1)
+                    {
+                        select -r $o $jnt;SmoothBindSkin;
+                    }
+                    refresh;
+                }
+                select -cl;hisData("Create dizzyCur Curve");
+            }
+        }
