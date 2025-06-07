@@ -104,18 +104,6 @@ global proc checkTxt()
     string $listLicense[] = {($cInstallToolsTri3D + "Source/License/license.json")
                         ,($cInstallToolsTri3D + "Source/License/tri3dTools.txt")
                         ,($cInstallToolsTri3D + "Source/License/reEcn.py")};
-    for($filePath in $listLicense)
-    {
-        if (`filetest -f $filePath`) {
-        } else {
-            int $fileId = `fopen $filePath "w"`;
-            if ($fileId == 0) {
-                return;
-            }
-            fprint $fileId ("################# Tri3d Rigger tools ##################\n## Contact to : info.tri3d@gmail.com\n## Rigging - Animation\n## No copy right !!!!\n#######################################################");
-            fclose $fileId;
-        }        
-    }
     int $reEcnPy = `fopen $listLicense[2] "w"`;
     if ($reEcnPy == 0) {
         return;
@@ -208,8 +196,8 @@ global proc functionsWindow()
     string $imageCtrl[] = {"","ccButton02.png","ccButton08.png","ccButton48.png","ccButton11.png","ccButton12.png","ccButton03.png","ccButton09.png","ccButton10.png","ccButton19.png","ccButton17.png","ccButton23.png","ccButton27.png","ccButton29.png","ccButton32.png","ccButton35.png","ccButton38.png","ccButton40.png","ccButton43.png","ccSquare.png","ccFace.png","ccButton36.png"};
     string $cbCtrl[] = {"","Normal","Match","Boxer","Group","Joint","Parent","Bind"};
     string $cbAliasCtrl[] = {"","ck_Normal_Ctrl","ck_Match_Ctrl","ck_Boxer_Ctrl","ck_Group_Ctrl","ck_Joint_Ctrl","ck_Parent_Ctrl","ck_Bind_Ctrl"};
-    string $fCommand[] = {"","","select -hierarchy;","delete -ch;","makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1;","xform -cpc;","performResetTransformations(0);","matchTransform;","setToolTo jointContext;","SmoothBindSkin;","DetachSkin;","ParentConstraint;","OrientConstraint;","ScaleConstraint;","CopySkinWeights;"};
-    string $fImage[] = {"","","menuIconSelect.png","DeleteHistory.png","FreezeTransform.png","CenterPivot.png","pivotReset.png","NEX_clickDragMoveSnap.png","kinJoint.png","smoothSkin.png","detachSkin.png","parentConstraint.png","orientConstraint.png","scaleConstraint.png","copySkinWeight.png"};
+    string $fCommand[] = {"","","select -hierarchy;","delete -ch;","makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1;","xform -cpc;","performResetTransformations(0);","matchTransform;","setToolTo jointContext;","SmoothBindSkin;","DetachSkin;","ParentConstraint;","OrientConstraint;","ScaleConstraint;","CopySkinWeights;","ctrlSjnt;","geoToCtrl;","addJntToCurve;"};
+    string $fImage[] = {"","","menuIconSelect.png","DeleteHistory.png","FreezeTransform.png","CenterPivot.png","pivotReset.png","NEX_clickDragMoveSnap.png","kinJoint.png","smoothSkin.png","detachSkin.png","parentConstraint.png","orientConstraint.png","scaleConstraint.png","copySkinWeight.png","add2ctrl.png","add3ctrl.png","jointadd.png"};
     if(`window -exists $wd[0]`)
     {
         deleteUI $wd[0];
@@ -252,15 +240,29 @@ global proc functionsWindow()
                         // -attachForm $sep3 "top" 260 -attachForm $sep3 "left" 10
                 $fRig;
             // # function symbol
-                int $left3 = 210;int $top3 = 0;
+                int $left3 = 215;int $top3 = 0;
                 for($j=2;$j<size($fImage);$j++)
                 {
-                    $button = `symbolButton -w 40 -h 40 -i ($cInstallToolsTri3D + "Source/Icons/" + $fImage[$j]) -c $fCommand[$j]`;
+                    $button = `symbolButton -w 35 -h 35 -i ($cInstallToolsTri3D + "Source/Icons/" + $fImage[$j]) -c $fCommand[$j]`;
                     formLayout -edit
                         -attachForm $button "top" (10 + $top3) -attachForm $button "left" ($left3) 
                     $fRig;$left3+=38;
-                    if($j>0&&$j%7==0){$top3 += 41;$left3 = 210;}
-                }                
+                    if($j>0&&$j%7==0){$top3 += 41;$left3 = 215;}
+                }       
+            // # auto node
+                $sepD = `separator -w 200`;
+                $opt1 = `optionMenu -enable true -l "" -w 95 mnNameNode`;
+                    menuItem -l "floatMath";
+                    menuItem -l "multiplyDivide";
+                    menuItem -l "blendColors";
+                    menuItem -l "reverse";
+                    menuItem -l "condition";
+                $bt = `button -l "Create Node" -w 100 -c "autoCreateNode;"` ;  
+                formLayout -edit
+                    -attachForm $opt1 "top" 97 -attachForm $opt1 "left" 10 
+                    -attachForm $bt "top" 95 -attachForm $bt "left" 110 
+                    -attachForm $sepD "top" 123 -attachForm $sepD "left" 10 
+                $fRig;                          
             // # function rig
                 int $hieghtCount = 130;
                 int $left = 10;int $top = 0;
@@ -277,22 +279,9 @@ global proc functionsWindow()
                     }
                 }
                 $hieghtCount+=168;
-            // # auto node
-                $sepD = `separator -w 190`;
-                $opt1 = `optionMenu -enable true -l "" -w 90 mnNameNode`;
-                    menuItem -l "floatMath";
-                    menuItem -l "multiplyDivide";
-                    menuItem -l "blendColors";
-                    menuItem -l "reverse";
-                    menuItem -l "condition";
-                $bt = `button -l "Create Node" -w 90 -c "autoCreateNode;"` ;  
-                formLayout -edit
-                    -attachForm $opt1 "top" ($hieghtCount +2) -attachForm $opt1 "left" 10 
-                    -attachForm $bt "top" $hieghtCount -attachForm $bt "left" 110 
-                    -attachForm $sepD "top" ($hieghtCount+30) -attachForm $sepD "left" 10 
-                $fRig;                         
+                        
             // # create Ctrl
-                $hieghtCount+=100;
+                $hieghtCount+=20;
                 // ## color
                     $c1=`button -l "Return" -w 50 -bgc 1 1 1 -c reFillColorCurve`;
                     $c2=`canvas -w 45 -rgb 1 0 0 -pc redColorCurve`;
@@ -353,9 +342,10 @@ global proc functionsWindow()
             -attachForm $b2 "top" 40 -attachForm $b2 "left" 30
         $fModify;
     // ### tab About ### //
+        string $iconAbout[] = {"","","",""};
         tabLayout -p $wd[2] $wd[5];
         $fContent = `formLayout -w $wh[0] -numberOfDivisions 100 -p $wd[3] About`;
-        $tf = `scrollField -editable 0 -tx ("## Version Maya : "+$version+" ##"+"\n"+$dataLicense) -h 85 -w ($wh[0]-20)`;
+        $tf = `scrollField -editable 0 -tx ("## Version Maya : "+$version+" ##"+"\n\n"+$dataLicense) -h 180 -w ($wh[0]-20)`;
         formLayout -edit
             -attachForm $tf "top" 5 -attachForm $tf "left" 5
         $fContent; 
@@ -363,7 +353,7 @@ global proc functionsWindow()
         tabLayout -p $wd[2] $wd[6];
         $fHistory = `formLayout -w $wh[0] -numberOfDivisions 100 -p $wd[3] History`;
         $tf = `textField -editable 0 -tx ("Open tools "+": "+$dataJsTools[0]+ " time.") -w ($wh[0]-20)`;
-        $tf1 = `scrollField -editable 0 -tx ("History tools : \n"+$historyTxtRead) -w ($wh[0]-20) -h 470 scrollHistoryTxt`;
+        $tf1 = `scrollField -editable 0 -ip 0 -tx ("History tools : \n"+$historyTxtRead) -w ($wh[0]-20) -h 470 scrollHistoryTxt`;
         formLayout -edit
             -attachForm $tf "top" 5 -attachForm $tf "left" 5
             -attachForm $tf1 "top" 30 -attachForm $tf1 "left" 5
@@ -396,9 +386,9 @@ global proc autoSet(string $nObj,int $typeSet)
     {
         if($typeSet==$i)
         {
-            sets -edit -fe $set[$i] $nObj;        
+            sets -edit -fe $set[$i] $nObj;
         }
-    }  
+    }         
 }
 global proc nodeTri3d(string $objNode,string $attrNode)
 {
@@ -416,7 +406,7 @@ global proc nodeTri3d(string $objNode,string $attrNode)
     if(!`attributeExists $attrNode $nodeTri3dTools`)
     {
         addAttr -ln ($objNode+"_"+$attrNode) -proxy ($objNode+"."+$attrNode) -keyable 1 $nodeTri3dTools;
-    }hisdelete();
+    }hisDel($objNode);
 }
 
 // color ex ######
@@ -517,12 +507,8 @@ global proc DeleteIhi()
     // bdb
         global proc vector getBDB(string $curN)
         {
-            float $mm[] = {999999,-999999};
             int $type=1;
-            string $cvs[]=`ls -fl ($curN+".cv[*]")`;
-            float $miX=$mm[0],$miY=$mm[0],$miZ=$mm[0];
-            float $maX=$mm[1],$maY=$mm[1],$maZ=$mm[1];
-            float $sX,$sY,$sZ;
+            float $sX,$sY,$sZ;                
             if($type==1)
             {
                 float $bb[] = `xform -q -ws -bb $curN`;
@@ -532,6 +518,10 @@ global proc DeleteIhi()
             }
             if($type==0)
             {
+                float $mm[] = {999999,-999999};
+                string $cvs[]=`ls -fl ($curN+".cv[*]")`;
+                float $miX=$mm[0],$miY=$mm[0],$miZ=$mm[0];
+                float $maX=$mm[1],$maY=$mm[1],$maZ=$mm[1];
                 for($cv in $cvs)
                 {
                     float $pos[]=`xform -q -ws -t $cv`;
@@ -554,11 +544,14 @@ global proc DeleteIhi()
             float $sy = `getAttr ($tCur + ".scaleY")`;
             float $sz = `getAttr ($tCur + ".scaleZ")`;
             float $scaleX = ($sSize.x != 0) ? ($sSize.x / $tSize.x) : 1;
-            float $scaleY = ($sSize.y != 0) ? ($sSize.y / $tSize.y) : 1;
             float $scaleZ = ($sSize.z != 0) ? ($sSize.z / $tSize.z) : 1;
             setAttr ($tCur + ".scaleX") (($sx*$scaleX)+0.5);
-            setAttr ($tCur + ".scaleY") (($sy*$scaleY)+0.5);
             setAttr ($tCur + ".scaleZ") (($sz*$scaleZ)+0.5);
+            if($sSize.y == 0)
+            {
+                float $scaleY = ($sSize.y != 0) ? ($sSize.y / $tSize.y) : 1;
+                setAttr ($tCur + ".scaleY") (($sy*$scaleY)+0.5);
+            }
         }
     global proc int[] checkBoxCtrl()
     {
@@ -578,9 +571,9 @@ global proc DeleteIhi()
             makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $obj;
         }
     }
-    global proc string renameCur(string $obj,string $sel)
+    global proc string renameCur(string $obj,string $pName,string $sel)
     {
-        $curN = `rename $obj ($sel + "_ctrl")`;
+        $curN = `rename $obj ($sel+"_ctrl"+$pName)`;
         string $lc[] = `listRelatives -shapes $curN`;
         for($o in $lc)
         {
@@ -727,6 +720,69 @@ global proc DeleteIhi()
             }
         }    
     // ctrl
+        global proc ctrlSjnt() {
+            string $sl[]=`ls -sl`;
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $cur=`curve -n "Square" -d 1 -p 1 0 -1 -p -1 0 -1 -p -1 0 1 -p 1 0 1 -p 1 0 -1`;
+                    $cur1=`curve -n "Square1" -d 1 -p 1 0 -1 -p -1 0 -1 -p -1 0 1 -p 1 0 1 -p 1 0 -1`;
+                        $newName=renameCur($cur,"",$o);
+                        $ctrl1=renameCur($cur1,"_core",$o);
+                    curBDB($o,$newName);
+                    curBDB($newName,$ctrl1);
+                            parent $newName $ctrl1;
+                            $jnt=`createNode -n ($ctrl1+"J") joint`;
+                            parent $jnt $newName;
+                    makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $ctrl1;
+                         $grp = `group -n ($o+"_Tctr_gr") -empty`;
+                    parent $ctrl1 $grp;
+                            matchTrans($o,$grp,0);
+                        select -r $o $jnt;SmoothBindSkin;
+                            refresh;
+                    autoSet($grp,3);
+                    autoSet($ctrl1,4);
+                    autoSet($jnt,5);
+                }
+                select -cl;hisData("Create ctrl bind prop");
+            }
+        }     
+        global proc geoToCtrl(){
+            string $sl[]=`ls -sl`;
+            if(size($sl)>0)
+            {
+                for($o in $sl)
+                {
+                    $cur=`curve -n "Square" -d 1 -p 1 0 -1 -p -1 0 -1 -p -1 0 1 -p 1 0 1 -p 1 0 -1`;
+                        $cur1=`curve -n "Square1" -d 1 -p 1 0 -1 -p -1 0 -1 -p -1 0 1 -p 1 0 1 -p 1 0 -1`;
+                    $newName=renameCur($cur,"",$o);
+                        $ctrl1=renameCur($cur1,"_core",$o);
+                                curBDB($o,$newName);
+                                curBDB($newName,$ctrl1);
+                    parent $newName $ctrl1;
+                        makeIdentity -apply 1 -t 1 -r 1 -s 1 -n 9 -pn 1 $ctrl1;
+                    $grp = `group -n ($o+"_Tctr_gr") -empty`;
+                        parent $ctrl1 $grp;
+                            matchTrans($o,$grp,0);
+                            parent $o $newName;refresh;
+                        autoSet($grp,3);
+                        autoSet($ctrl1,4);
+                }
+                select -cl;hisData("Create ctrl Parent prop");
+            }
+        }  
+        global proc addJntToCurve(){
+            string $selected[] = `ls -sl`;
+            for ($obj in $selected){
+                if(!`objExists ($obj + "J")`)
+                {
+                    string $joint = `createNode joint -n ($obj + "J")`;
+                    matchTransform -pos -rot $joint $obj;
+                    parent $joint $obj;autoSet($joint,5);
+                }
+            }
+        }          
         global proc cCubeCur()
         {
             string $sl[]=`ls -sl`;
@@ -740,7 +796,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "Cube" -d 1 -p 1 1 1 -p 1 1 -1 -p 1 -1 -1 -p 1 -1 1 -p -1 -1 1 -p -1 1 1 -p 1 1 1 -p 1 -1 1 -p -1 -1 1 -p -1 -1 -1 -p -1 1 -1 -p 1 1 -1 -p 1 -1 -1 -p -1 -1 -1 -p -1 1 -1 -p -1 1 1`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -803,7 +859,7 @@ global proc DeleteIhi()
                     $cur=`circle -nr 0 1 0 -r 2 -n "CurveC"`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -863,7 +919,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "CicleCurHafl" -d 3 -p -2 0 1 -p -2.01 0 0.68 -p -2 0 0 -p -0.97 0 -1.21 -p 0.97 0 -1.21 -p 2 0 0 -p 2.01 0 0.64 -p 2 0 1`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -926,7 +982,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "HandCur" -d 3 -p -0.03 0 -0.8 -p -0.03 0 -0.25 -p -0.03 0 0.48 -p 0.57 -0 1.48 -p 2.71 -0 2.66 -p 3.25 -0 3.12 -p 4 -0 2.94 -p 4.09 -0 2.11 -p 3.22 -0 1.69 -p 2.65 -0 1.4 -p 3.68 -0 1.4 -p 7 -0 1.4 -p 7.14 -0 0.9 -p 7 -0 0.52 -p 5.4 -0 0.52 -p 4.04 -0 0.52 -p 4.04 -0 0.39 -p 4.04 -0 0.22 -p 5.72 -0 0.22 -p 7.72 -0 0.22 -p 7.86 -0 -0.25 -p 7.72 -0 -0.71 -p 5.72 -0 -0.71 -p 4.1 -0 -0.71 -p 4.1 -0 -0.84 -p 4.1 -0 -1 -p 6.04 -0 -1 -p 7.26 -0 -1 -p 7.46 -0 -1.46 -p 7.24 -0 -1.92 -p 5.97 -0 -1.92 -p 3.92 -0 -1.92 -p 3.92 -0 -2.02 -p 3.92 -0 -2.12 -p 5.38 -0 -2.12 -p 6.25 -0 -2.12 -p 6.61 -0 -2.6 -p 6.31 -0 -3.12 -p 5.14 -0 -3.12 -p 3.88 -0 -3.12 -p 2.57 -0 -3.12 -p 1.1 -0 -3.16 -p -0.03 0 -2.17 -p -0.03 0 -1.47 -p -0.03 0 -0.8`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -989,7 +1045,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "LegCur" -d 3 -p 1.35 0 0.65 -p 0.03 0 -0.26 -p -1.48 -0.01 0.4 -p -1.4 0 2.42 -p 0.13 0 3.9 -p -1.27 0 6.03 -p -1.52 0 7.95 -p -0.53 0 9.28 -p 0.74 0 9.76 -p 1.98 0 8.92 -p 2.46 0 7.95 -p 2.67 0 6.03 -p 2.43 0 3.9 -p 1.9 0 1.98 -p 1.35 0 0.65`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1052,7 +1108,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "Target" -d 1 -p -2 0 0 -p 1 0 1 -p 1 0 -1 -p -2 0 0 -p 1 1 0 -p 1 0 0 -p 1 -1 0 -p -2 0 0`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1115,7 +1171,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "LocatorCtrl" -d 1 -p -2 0 0 -p 2 0 0 -p 0 0 0 -p 0 0 2 -p 0 0 -2 -p 0 0 0 -p 0 2 0 -p 0 -2 0`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1178,7 +1234,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "TargetCircle" -d 1 -p 0 5.6 0 -p 2 5.6 -0 -p 1.85 5.6 0.76 -p 1.41 5.6 1.41 -p 0.76 5.6 1.85 -p 0 5.6 2 -p 0 5.6 0 -p 0 5.6 2 -p -0.76 5.6 1.85 -p -1.41 5.6 1.41 -p -1.85 5.6 0.76 -p -2 5.6 -0 -p 0 5.6 0 -p -2 5.6 -0 -p -1.85 5.6 -0.76 -p -1.41 5.6 -1.41 -p -0.76 5.6 -1.85 -p 0 5.6 -2 -p 0 5.6 0 -p 0 5.6 -2 -p 0.76 5.6 -1.85 -p 1.41 5.6 -1.41 -p 1.85 5.6 -0.76 -p 2 5.6 -0 -p 0 5.6 0 -p 0 1.6 0 -p 0 1.6 0.8 -p 0 -0 0 -p 0 1.6 -0.8 -p 0 1.6 0 -p -0.8 1.6 0 -p 0 -0 0 -p 0.8 1.6 0 -p 0 1.6 0.8 -p -0.8 1.6 0 -p 0 1.6 -0.8 -p 0.8 1.6 0 -p 0 1.6 0`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1241,7 +1297,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "CircleD" -d 1 -p 0 1 0 -p 0 0.92 0.38 -p 0 0.71 0.71 -p 0 0.38 0.92 -p 0 0 1 -p 0 -0.38 0.92 -p 0 -0.71 0.71 -p 0 -0.92 0.38 -p 0 -1 0 -p 0 -0.92 -0.38 -p 0 -0.71 -0.71 -p 0 -0.38 -0.92 -p 0 0 -1 -p 0 0.38 -0.92 -p 0 0.71 -0.71 -p 0 0.92 -0.38 -p 0 1 0 -p 0.38 0.92 0 -p 0.71 0.71 0 -p 0.92 0.38 0 -p 1 0 0 -p 0.92 -0.38 0 -p 0.71 -0.71 0 -p 0.38 -0.92 0 -p 0 -1 0 -p -0.38 -0.92 0 -p -0.71 -0.71 0 -p -0.92 -0.38 0 -p -1 0 0 -p -0.92 0.38 0 -p -0.71 0.71 0 -p -0.38 0.92 0 -p 0 1 0 -p 0 0.92 -0.38 -p 0 0.71 -0.71 -p 0 0.38 -0.92 -p 0 0 -1 -p -0.38 0 -0.92 -p -0.71 0 -0.71 -p -0.92 0 -0.38 -p -1 0 0 -p -0.92 0 0.38 -p -0.71 0 0.71 -p -0.38 0 0.92 -p 0 0 1 -p 0.38 0 0.92 -p 0.71 0 0.71 -p 0.92 0 0.38 -p 1 0 0 -p 0.92 0 -0.38 -p 0.71 0 -0.71 -p 0.38 0 -0.92 -p 0 0 -1`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1304,7 +1360,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "Plus" -d 1 -p -0.64 -2.56 0 -p -0.64 -0.64 0 -p -2.56 -0.64 0 -p -2.56 0.64 0 -p -0.64 0.64 0 -p -0.64 2.56 0 -p 0.64 2.56 0 -p 0.64 0.64 0 -p 2.56 0.64 0 -p 2.56 -0.64 0 -p 0.64 -0.64 0 -p 0.64 -2.56 0 -p -0.64 -2.56 0`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1367,7 +1423,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "CirclePlus" -d 1 -p 0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 -p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p 0 0 0 -p 0 0 -2 -p -0.76 0 -1.85 -p -1.41 0 -1.41 -p -1.85 0 -0.76 -p -2 0 -0 -p 0 0 0 -p 2 0 -0 -p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p -0.76 0 1.85 -p -1.41 0 1.41 -p -1.85 0 0.76 -p -2 0 -0`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1430,7 +1486,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "Rotate" -d 1 -p 0 0 -2.4 -p 0 0 -3.2 -p 0.83 0 -3.09 -p 1.6 0 -2.77 -p 2.26 0 -2.26 -p 2.77 0 -1.6 -p 3.09 0 -0.83 -p 3.2 0 0 -p 3.09 0 0.83 -p 2.77 0 1.6 -p 2.26 0 2.26 -p 1.6 0 2.77 -p 0.83 0 3.09 -p 0 0 3.2 -p -0.83 0 3.09 -p -1.6 0 2.77 -p -2.26 0 2.26 -p -2.77 0 1.6 -p -3.09 0 0.83 -p -3.2 0 0 -p -4.05 0 0 -p -2.78 0 -2.53 -p -1.52 0 0 -p -2.4 0 0 -p -2.32 0 0.62 -p -2.08 0 1.2 -p -1.7 0 1.7 -p -1.2 0 2.08 -p -0.62 0 2.32 -p 0 0 2.4 -p 0.62 0 2.32 -p 1.2 0 2.08 -p 1.7 0 1.7 -p 2.08 0 1.2 -p 2.32 0 0.62 -p 2.4 0 0 -p 2.32 0 -0.62 -p 2.08 0 -1.2 -p 1.7 0 -1.7 -p 1.2 0 -2.08 -p 0.62 0 -2.32 -p 0 0 -2.4`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1493,7 +1549,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "Arrow" -d 1 -p -2.09 -0 0 -p 2.09 -0 2.83 -p 1.59 -0 2.22 -p 1.22 -0 1.53 -p 0.99 -0 0.78 -p 0.91 -0 0 -p 0.99 0 -0.78 -p 1.22 0 -1.53 -p 1.59 0 -2.22 -p 2.09 0 -2.83 -p -2.09 -0 0`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1556,7 +1612,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "ColorRange" -d 1 -p 3.69 -0 1.53 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 1.85 -0 0.76 -p 3.69 -0 1.53 -p 4 0 -0 -p 2 0 -0 -p 1.85 -0 0.76 -p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 1.53 -0 3.69 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 0 -0 2 -p 0 -0 4 -p 1.53 -0 3.69 -p 0.76 -0 1.85 -p 0 -0 2 -p -0.76 -0 1.85 -p -1.53 -0 3.69 -p 0 -0 4 -p 0 -0 2 -p -0.76 -0 1.85 -p -1.41 -0 1.41 -p -2.83 -0 2.83 -p -1.53 -0 3.69 -p -0.76 -0 1.85 -p -1.41 -0 1.41 -p -1.85 -0 0.76 -p -3.69 -0 1.53 -p -2.83 -0 2.83 -p -1.41 -0 1.41 -p -1.85 -0 0.76 -p -2 0 -0 -p -4 0 -0 -p -3.69 -0 1.53 -p -1.85 -0 0.76 -p -2 0 -0 -p -1.85 0 -0.76 -p -3.69 0 -1.53 -p -4 0 -0 -p -2 0 -0 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -2.83 0 -2.83 -p -3.69 0 -1.53 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -0.76 0 -1.85 -p -1.53 0 -3.69 -p -2.83 0 -2.83 -p -1.41 0 -1.41 -p -0.76 0 -1.85 -p -0 0 -2 -p -0 0 -4 -p -1.53 0 -3.69 -p -0.76 0 -1.85 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.53 0 -3.69 -p -0 0 -4 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 2.83 0 -2.83 -p 1.53 0 -3.69 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 3.69 0 -1.53 -p 2.83 0 -2.83 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 -p 4 0 -0 -p 3.69 0 -1.53`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1619,7 +1675,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "DirectionCurve" -d 1 -p 0 0 0 -p 0 2.4 -2.4 -p 0 2.4 -1.6 -p 0 4.8 -1.6 -p 0 4.8 1.6 -p 0 2.4 1.6 -p 0 2.4 2.4 -p 0 0 0`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1682,7 +1738,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "BodyCurve" -d 1 -p -3.14 -0 0.62 -p -4 0 0.8 -p -4 0 1.6 -p -5.6 0 0 -p -4 0 -1.6 -p -4 0 -0.8 -p -3.14 0 -0.62 -p -2.95 0 -1.22 -p -2.66 0 -1.78 -p -2.26 0 -2.26 -p -1.78 0 -2.66 -p -1.22 0 -2.95 -p -0.62 0 -3.14 -p -0.8 0 -4 -p -1.6 0 -4 -p 0 0 -5.6 -p 1.6 0 -4 -p 0.8 0 -4 -p 0.62 0 -3.14 -p 1.22 0 -2.95 -p 1.78 0 -2.66 -p 2.26 0 -2.26 -p 2.66 0 -1.78 -p 2.95 0 -1.22 -p 3.14 0 -0.62 -p 4 0 -0.8 -p 4 0 -1.6 -p 5.6 0 0 -p 4 0 1.6 -p 4 0 0.8 -p 3.14 -0 0.62 -p 2.95 -0 1.22 -p 2.66 -0 1.78 -p 2.26 -0 2.26 -p 1.78 -0 2.66 -p 1.22 -0 2.95 -p 0.62 -0 3.14 -p 0.8 0 4 -p 1.6 0 4 -p 0 0 5.6 -p -1.6 0 4 -p -0.8 0 4 -p -0.62 -0 3.14 -p -1.22 -0 2.95 -p -1.78 -0 2.66 -p -2.26 -0 2.26 -p -2.66 -0 1.78 -p -2.95 -0 1.22 -p -3.14 -0 0.62`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1745,7 +1801,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "LockCircle" -d 1 -p 0 0 0 -p 0 5.6 0 -p 0.21 5.63 0 -p 0.4 5.71 0 -p 0.57 5.83 0 -p 0.69 6 0 -p 0.77 6.19 0 -p 0.8 6.4 0 -p 0 6.4 0 -p 0 5.6 0 -p -0.21 5.63 0 -p -0.4 5.71 0 -p -0.57 5.83 0 -p -0.69 6 0 -p -0.77 6.19 0 -p -0.8 6.4 0 -p -0.77 6.61 0 -p -0.69 6.8 0 -p -0.57 6.97 0 -p -0.4 7.09 0 -p -0.21 7.17 0 -p 0 7.2 0 -p 0.21 7.17 0 -p 0.4 7.09 0 -p 0.57 6.97 0 -p 0.69 6.8 0 -p 0.77 6.61 0 -p 0.8 6.4 0 -p -0.8 6.4 0 -p 0 6.4 0 -p 0 7.2 0`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1808,7 +1864,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "LockSquare" -d 1 -p 0 0 0 -p -0 5.6 -0 -p -0.7 5.6 -0 -p -0.7 7 -0 -p 0.7 7 -0 -p 0.7 5.6 -0 -p -0 5.6 -0`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1871,7 +1927,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "Square" -d 1 -p 1 0 -1 -p -1 0 -1 -p -1 0 1 -p 1 0 1 -p 1 0 -1`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1934,7 +1990,7 @@ global proc DeleteIhi()
                     $cur=`curve -n "dizzyCur" -d 3 -p 0.04 0 0.17 -p -0.29 0 0.82 -p 0.45 0 1.57 -p 1.95 0 0.31 -p 0.06 0 -1.38 -p -1.46 0 -0.08 -p -1.45 0 1.28 -p -0.34 0 2.5 -p 2.38 0 1.95 -p 2.44 0 -1.1 -p -0.02 0 -2.31 -p -2.2 0 -1.28 -p -2.73 0 2.41 -p 1.11 0 4.07 -p 4.54 0 0.54 -p 1.18 0 -4.18 -p -3.84 0 -1.84 -p -3.64 0 3.18 -p 0.13 0 4.74 -p 2.12 0 3.98 -p 3.16 0 3.16`;
                     if(size($sl)>0)
                     {
-                        $newName=renameCur($cur,$o);autoSet($newName,4);
+                        $newName=renameCur($cur,"",$o);autoSet($newName,4);
                     }
                     if($check[4]==1&&size($sl)>0)
                     {
@@ -1991,12 +2047,17 @@ global proc hisData(string $text)
     string $cur = readHistoryTxt();
     scrollField -edit -tx ("History Tools :\n"+$cur+"\n") scrollHistoryTxt;
 }
-global proc hisdelete()
+global proc hisDel(string $objHis)
 {
-    string $his[] = {"node_Tri3D_tools"};
-    for($o in $his)
+    // string $his[] = {"node_Tri3D_tools"};
+    // string $sl[]=`ls`;
+    string $listAttr[] = `listConnections $objHis`;
+    for($o in $listAttr)
     {
+        print $o;
         setAttr ($o+".ihi") 0;
+        if(!`attributeExists "ihi" $o`)
+            continue;
     }
 }
 
