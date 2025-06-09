@@ -188,10 +188,10 @@ global proc functionsWindow()
     float $wh[] = {500,500};
     string $buttonSingleTools[] = {"","Influences","Curve AI","Curve Arc","Curve ADV6","Parent Curve","SetLoop","Pasted","Set default","Anotations","Sample","Check","DtMush"
                                     ,"Ref Geo","Rivet","CurJnt"
-                                    ,"ADV 6 set","Face BS","Auto Vis","Wheel Auto","Sword Motion","His"};
+                                    ,"ADV 6 set","Face BS","Auto Vis","Wheel Auto","Sword Motion","His","Link"};
     string $commandSingleTools[] = {"","AddInfluenceOptions","jointToCurvePY","CreateCurveArc","ControllerGalleryImport","combineCurve","deleteIhistory","pastedRename","CreateQuickSelectSet","CreateAnnotateNode","triFitResample","triModelCheckerUI","triHardenWeights"
                                     ,"refGeoTest","toolsRivetWindow","createCurvePjnt"
-                                    ,"checkFullADV5","importFacialBlendshape","SDKVisAuto","autoRigWheel","swordMotionAuto","DeleteIhi"};
+                                    ,"checkFullADV5","importFacialBlendshape","SDKVisAuto","autoRigWheel","swordMotionAuto","DeleteIhi","linkProject"};
     string $creatCtrl[] = {"","cCubeCur","cCircleCur","cCicleCurHafl","cHandCur","cLegCur","cTarget","cLocator","cCicleD","cTargetCircle","cPlus","cCirclePlus","cRotate","cArrow","cColorRange","cDirections","cBody","cLockCircle","cLockSquare","cSquare","cFaceCtrl","cdizzyCtrl"};
     string $imageCtrl[] = {"","ccButton02.png","ccButton08.png","ccButton48.png","ccButton11.png","ccButton12.png","ccButton03.png","ccButton09.png","ccButton10.png","ccButton19.png","ccButton17.png","ccButton23.png","ccButton27.png","ccButton29.png","ccButton32.png","ccButton35.png","ccButton38.png","ccButton40.png","ccButton43.png","ccSquare.png","ccFace.png","ccButton36.png"};
     string $cbCtrl[] = {"","Normal","Match","Boxer","Group","Joint","Parent","Bind"};
@@ -545,8 +545,8 @@ global proc DeleteIhi()
             float $sz = `getAttr ($tCur + ".scaleZ")`;
             float $scaleX = ($sSize.x != 0) ? ($sSize.x / $tSize.x) : 1;
             float $scaleZ = ($sSize.z != 0) ? ($sSize.z / $tSize.z) : 1;
-            setAttr ($tCur + ".scaleX") (($sx*$scaleX)+0.5);
-            setAttr ($tCur + ".scaleZ") (($sz*$scaleZ)+0.5);
+            setAttr ($tCur + ".scaleX") (($sx*$scaleX)+0.3);
+            setAttr ($tCur + ".scaleZ") (($sz*$scaleZ)+0.3);
             if($sSize.y == 0)
             {
                 float $scaleY = ($sSize.y != 0) ? ($sSize.y / $tSize.y) : 1;
@@ -577,7 +577,7 @@ global proc DeleteIhi()
         string $lc[] = `listRelatives -shapes $curN`;
         for($o in $lc)
         {
-            $newS = `rename $o ($sel + "CurShape")`;
+            $newS = `rename $o ($curN + "CurShape")`;
         }
         return $curN;
     }
@@ -744,8 +744,9 @@ global proc DeleteIhi()
                     autoSet($grp,3);
                     autoSet($ctrl1,4);
                     autoSet($jnt,5);
+                    select -add $newName $ctrl1;yellowColorCurve();select -cl;
                 }
-                select -cl;hisData("Create ctrl bind prop");
+                hisData("Create ctrl bind prop");
             }
         }     
         global proc geoToCtrl(){
@@ -768,6 +769,7 @@ global proc DeleteIhi()
                             parent $o $newName;refresh;
                         autoSet($grp,3);
                         autoSet($ctrl1,4);
+                        select -add $newName $ctrl1;yellowColorCurve();select -cl;
                 }
                 select -cl;hisData("Create ctrl Parent prop");
             }
@@ -2040,6 +2042,108 @@ global proc DeleteIhi()
                 $cur=`curve -n "dizzyCur" -d 3 -p 0.04 0 0.17 -p -0.29 0 0.82 -p 0.45 0 1.57 -p 1.95 0 0.31 -p 0.06 0 -1.38 -p -1.46 0 -0.08 -p -1.45 0 1.28 -p -0.34 0 2.5 -p 2.38 0 1.95 -p 2.44 0 -1.1 -p -0.02 0 -2.31 -p -2.2 0 -1.28 -p -2.73 0 2.41 -p 1.11 0 4.07 -p 4.54 0 0.54 -p 1.18 0 -4.18 -p -3.84 0 -1.84 -p -3.64 0 3.18 -p 0.13 0 4.74 -p 2.12 0 3.98 -p 3.16 0 3.16`;autoSet($cur,4);
             }
         }
+// ################################## linkProject  #################################### //
+global proc linkProject()
+{
+    if(`window -exists linkProjectwd`){deleteUI linkProjectwd;}
+    window -title "link" -w 200 linkProjectwd;
+    columnLayout -w 200;
+    optionMenu -w 200 -cc "linkShow" optionChar ;
+        menuItem -l "Bokid";
+        menuItem -l "Nana";
+        menuItem -l "BabyBoo";
+        menuItem -l "Sophia";
+        menuItem -l "Mother";
+        menuItem -l "Father";
+    optionMenu -w 200 -cc "linkShow" optionLink ;
+        menuItem -l "SS";       
+        menuItem -l "DS";       
+        menuItem -l "RRY";       
+        menuItem -l "BBG";       
+        menuItem -l "BBK";       
+        menuItem -l "DSK2";       
+        menuItem -l "Maxmia";       
+        menuItem -l "PCKS";       
+        menuItem -l "NC";    
+    scrollField -w 200 -h 100 -ww 1 scrollTextLink;
+    showWindow linkProjectwd;  
+}
+global proc linkShow()
+{
+    string $q1 = `optionMenu -q -value optionChar`;
+    string $q2 = `optionMenu -q -value optionLink`;
+    string $result = "";
+
+    if ($q1 == "Bokid") {
+        if ($q2 == "SS")       $result = "V:/Dodo_Kids/SS/modelLibrary/char/Bokid/texture";
+        else if ($q2 == "DS")  $result = "V:/Dodo_Kids/modelLibrary/char/Bokid/texture";
+        else if ($q2 == "DSK2") $result = "V:/Dodo_Kids/DSK2/modelLibrary/char/Bokid/texture";
+        else if ($q2 == "BBK") $result = "V:/Dodo_Kids/BBK/modelLibrary/char/Bokid/texture";
+        else if ($q2 == "RRY") $result = "V:/Dodo_Kids/RRY/modelLibrary/char/Bokid/texture";
+        else if ($q2 == "Maxmia") $result = "no";
+        else if ($q2 == "BBG") $result = "V:/Dodo_Kids/BBG/modelLibrary/char/Bokid/texture";
+        else if ($q2 == "PCKS") $result = "V:/Dodo_Kids/LLK/modelLibrary/char/Bokid/texture";
+        else if ($q2 == "NC")  $result = "no";
+    }
+    else if ($q1 == "Nana") {
+        if ($q2 == "SS")       $result = "linkNanaSS";
+        else if ($q2 == "DS")  $result = "linkNanaDS";
+        else if ($q2 == "DSK2") $result = "linkNanaDSK2";
+        else if ($q2 == "BBK") $result = "linkNanaBBK";
+        else if ($q2 == "RRY") $result = "linkNanaRRY";
+        else if ($q2 == "Maxmia") $result = "linkNanaMaxmia";
+        else if ($q2 == "BBG") $result = "linkNanaBBG";
+        else if ($q2 == "PCKS") $result = "linkNanaPCKS";
+        else if ($q2 == "NC")  $result = "linkNanaNC";
+    }
+    else if ($q1 == "BabyBoo") {
+        if ($q2 == "SS")       $result = "V:/Dodo_Kids/SS/modelLibrary/char/BabyBoo/texture";
+        else if ($q2 == "DS")  $result = "V:/Dodo_Kids/modelLibrary/char/BabyBoo/texture";
+        else if ($q2 == "DSK2") $result = "V:/Dodo_Kids/DSK2/modelLibrary/char/BabyBoo/texture";
+        else if ($q2 == "BBK") $result = "V:/Dodo_Kids/BBK/modelLibrary/char/BabyBoo/texture";
+        else if ($q2 == "RRY") $result = "V:/Dodo_Kids/RRY/modelLibrary/char/BabyBoo/texture";
+        else if ($q2 == "Maxmia") $result = "linkBabybooMaxmia";
+        else if ($q2 == "BBG") $result = "V:/Dodo_Kids/BBG/modelLibrary/char/BabyBoo/texture";
+        else if ($q2 == "PCKS") $result = "V:/Dodo_Kids/KKS/modelLibrary/char/BabyBoo/texture";
+        else if ($q2 == "NC")  $result = "linkBabybooNC";
+    }
+    else if ($q1 == "Sophia") {
+        if ($q2 == "SS")       $result = "V:/Dodo_Kids/SS/modelLibrary/char/Sophia/texture";
+        else if ($q2 == "DS")  $result = "V:/Dodo_Kids/modelLibrary/char/Sophia/texture";
+        else if ($q2 == "DSK2") $result = "V:/Dodo_Kids/DSK2/modelLibrary/char/Sophia/texture";
+        else if ($q2 == "BBK") $result = "V:/Dodo_Kids/BBK/modelLibrary/char/Sophia/texture";
+        else if ($q2 == "RRY") $result = "V:/Dodo_Kids/RRY/modelLibrary/char/Sophia/texture";
+        else if ($q2 == "Maxmia") $result = "no";
+        else if ($q2 == "BBG") $result = "V:/Dodo_Kids/BBG/modelLibrary/char/Sophia/texture";
+        else if ($q2 == "PCKS") $result = "V:/Dodo_Kids/LLK/modelLibrary/char/Sophia/texture";
+        else if ($q2 == "NC")  $result = "no";
+    }
+    else if ($q1 == "Mother") {
+        if ($q2 == "SS")       $result = "V:/Dodo_Kids/SS/modelLibrary/char/Mother/texture";
+        else if ($q2 == "DS")  $result = "V:/Dodo_Kids/modelLibrary/char/Mother/texture";
+        else if ($q2 == "DSK2") $result = "V:/Dodo_Kids/DSK2/modelLibrary/char/Mother/texture";
+        else if ($q2 == "BBK") $result = "V:/Dodo_Kids/BBK/modelLibrary/char/Mother/texture";
+        else if ($q2 == "RRY") $result = "V:/Dodo_Kids/RRY/modelLibrary/char/Mother/texture";
+        else if ($q2 == "Maxmia") $result = "no";
+        else if ($q2 == "BBG") $result = "V:/Dodo_Kids/BBG/modelLibrary/char/Mother/texture";
+        else if ($q2 == "PCKS") $result = "V:/Dodo_Kids/LLK/modelLibrary/char/Mother/texture";
+        else if ($q2 == "NC")  $result = "no";
+    }
+    else if ($q1 == "Father") {
+        if ($q2 == "SS")       $result = "linkFatherSS";
+        else if ($q2 == "DS")  $result = "linkFatherDS";
+        else if ($q2 == "DSK2") $result = "linkFatherDSK2";
+        else if ($q2 == "BBK") $result = "linkFatherBBK";
+        else if ($q2 == "RRY") $result = "linkFatherRRY";
+        else if ($q2 == "Maxmia") $result = "linkFatherMaxmia";
+        else if ($q2 == "BBG") $result = "linkFatherBBG";
+        else if ($q2 == "PCKS") $result = "linkFatherPCKS";
+        else if ($q2 == "NC")  $result = "linkFatherNC";
+    }
+
+    scrollField -edit -tx $result scrollTextLink;
+}
+
 // ################################## history tools ################################### //
 global proc hisData(string $text)
 {
