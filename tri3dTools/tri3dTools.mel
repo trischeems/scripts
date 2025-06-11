@@ -12,16 +12,16 @@ global proc tri3dPathToolsProc (){}
 global proc string tri3dPathTools ()
 {
     string $whatIs=`whatIs tri3dPathToolsProc`;
-    string $fullPath=`substring $whatIs 25 999`;
-    string $buffer[];
+    string $fP=`substring $whatIs 25 999`;
+    string $bf[];
     string $slash="/";
     if (`gmatch $whatIs "*\\\\*"`)
         $slash="\\";
-    int $numTok=`tokenize $fullPath $slash $buffer`;
-    int $numLetters=size($fullPath);
-    int $numLettersLastFolder=size($buffer[$numTok-1]);
-    string $scriptLocation=`substring $fullPath 1 ($numLetters-$numLettersLastFolder)`;
-    return $scriptLocation;
+    int $nTk=`tokenize $fP $slash $bf`;
+    int $nL=size($fP);
+    int $nF=size($bf[$nTk-1]);
+    string $sL=`substring $fP 1 ($nL-$nF)`;
+    return $sL;
 }
 // ########## data global ########### ######################## #####################
 // ########## data global ########### ######################## #####################
@@ -119,38 +119,38 @@ global proc checkTxt()
     fclose $reEcnPy;    
 }checkTxt();
 
-global proc string readHistoryTxt()
-{
-    string $cInstallToolsTri3D = `tri3dPathTools`;
-    string $filePath = $cInstallToolsTri3D + "Source/Data/History.txt";
-    int $fileId = `fopen $filePath "r"`;
-    string $fileContent = "";
-    string $line;
-    while (!`feof $fileId`) {
-        $line = `fgetline $fileId`;
-        $fileContent += $line;
-    }
-    fclose $fileId;
-    return $fileContent;
-}
-global proc historyTxt(string $his)
-{
-    checkTxt();
-    string $cInstallToolsTri3D = `tri3dPathTools`;
-    string $filePath = $cInstallToolsTri3D + "Source/Data/History.txt";    
-    int $fileId = `fopen $filePath "r"`;
-    string $fullText = "";
-    if ($fileId != 0) {
-        while (!`feof $fileId`) {
-            $fullText+=`fgetline $fileId`;
-        }
-        fclose $fileId;
-    }
-    string $date = `date`;
-    int $fileR = `fopen $filePath "w"`;
-    fprint $fileR ($fullText+$date+" - "+$his+" ."+"\n");
-    fclose $fileR;
-}
+// global proc string readHistoryTxt()
+// {
+//     string $cInstallToolsTri3D = `tri3dPathTools`;
+//     string $filePath = $cInstallToolsTri3D + "Source/Data/History.txt";
+//     int $fileId = `fopen $filePath "r"`;
+//     string $fileContent = "";
+//     string $line;
+//     while (!`feof $fileId`) {
+//         $line = `fgetline $fileId`;
+//         $fileContent += $line;
+//     }
+//     fclose $fileId;
+//     return $fileContent;
+// }
+// global proc historyTxt(string $his)
+// {
+//     checkTxt();
+//     string $cInstallToolsTri3D = `tri3dPathTools`;
+//     string $filePath = $cInstallToolsTri3D + "Source/Data/History.txt";    
+//     int $fileId = `fopen $filePath "r"`;
+//     string $fullText = "";
+//     if ($fileId != 0) {
+//         while (!`feof $fileId`) {
+//             $fullText+=`fgetline $fileId`;
+//         }
+//         fclose $fileId;
+//     }
+//     string $date = `date`;
+//     int $fileR = `fopen $filePath "w"`;
+//     fprint $fileR ($fullText+$date+" - "+$his+" ."+"\n");
+//     fclose $fileR;
+// }
 global string $dataLicense;
 global proc license()
 {
@@ -181,7 +181,7 @@ global proc functionsWindow()
     // global string $versionMaya;
     int $version=versionMaya();
     global string $dataLicense;
-    string $historyTxtRead = readHistoryTxt();
+    string $historyTxtRead = "";//readHistoryTxt();
     global int $dataJsTools[];
     string $cInstallToolsTri3D = `tri3dPathTools`;
     string $wd[] = {"aliasTri3d", "Tri3d Tools","mainLayout","Rig","Modify","About","History"};
@@ -201,7 +201,7 @@ global proc functionsWindow()
     if(`window -exists $wd[0]`)
     {
         deleteUI $wd[0];
-    }window -title $wd[1] -width $wh[0] -sizeable 0 $wd[0];
+    }window -title $wd[1] -width $wh[0] -sizeable 1 $wd[0];
     columnLayout -w $wh[0] $wd[2];
     // #### tab rig #### //---------------------------------------------------------------------------------------------
         tabLayout -p $wd[2] $wd[3];
@@ -345,19 +345,19 @@ global proc functionsWindow()
         string $iconAbout[] = {"","","",""};
         tabLayout -p $wd[2] $wd[5];
         $fContent = `formLayout -w $wh[0] -numberOfDivisions 100 -p $wd[3] About`;
-        $tf = `scrollField -editable 0 -tx ("## Version Maya : "+$version+" ##"+"\n\n"+$dataLicense) -h 180 -w ($wh[0]-20)`;
+        $tf = `scrollField -editable 0 -tx ("## Version Maya : "+$version+" ##\n## Open tools : "+$dataJsTools[0]+" time ##\n\n"+$dataLicense) -h 200 -w ($wh[0]-20)`;
         formLayout -edit
             -attachForm $tf "top" 5 -attachForm $tf "left" 5
         $fContent; 
     // ### tab History ### //
-        tabLayout -p $wd[2] $wd[6];
-        $fHistory = `formLayout -w $wh[0] -numberOfDivisions 100 -p $wd[3] History`;
-        $tf = `textField -editable 0 -tx ("Open tools "+": "+$dataJsTools[0]+ " time.") -w ($wh[0]-20)`;
-        $tf1 = `scrollField -editable 0 -ip 0 -tx ("History tools : \n"+$historyTxtRead) -w ($wh[0]-20) -h 470 scrollHistoryTxt`;
-        formLayout -edit
-            -attachForm $tf "top" 5 -attachForm $tf "left" 5
-            -attachForm $tf1 "top" 30 -attachForm $tf1 "left" 5
-        $fHistory;         
+        // tabLayout -p $wd[2] $wd[6];
+        // $fHistory = `formLayout -w $wh[0] -numberOfDivisions 100 -p $wd[3] History`;
+        // $tf = `textField -editable 0 -tx ("Open tools "+": "+$dataJsTools[0]+ " time.") -w ($wh[0]-20)`;
+        // $tf1 = `scrollField -editable 0 -ip 0 -tx ("History tools : \n"+$historyTxtRead) -w ($wh[0]-20) -h 470 scrollHistoryTxt`;
+        // formLayout -edit
+        //     -attachForm $tf "top" 5 -attachForm $tf "left" 5
+        //     -attachForm $tf1 "top" 30 -attachForm $tf1 "left" 5
+        // $fHistory;         
     showWindow $wd[0];
 }
 
@@ -445,7 +445,7 @@ global proc nodeTri3d(string $objNode,string $attrNode)
                         warning "Attribute Exists !!";
                     }
                 }   
-                hisData("Creat Attribute "+$nameAttr);           
+                // hisData("Creat Attribute "+$nameAttr);           
             }
         }
     global proc ConnectFrameEx(){
@@ -477,7 +477,7 @@ global proc nodeTri3d(string $objNode,string $attrNode)
                         addAttr -ln $ctrlEXname -at $dtType -min $nMin -max $nMax -keyable true ($select[0]);
                         connectAttr -f ($select[0] + "." + $ctrlEXname) ($fileEXname + ".frameExtension");nodeTri3d($select[0],$ctrlEXname);
                     }
-                    hisData("Switch texture !!");         
+                    // hisData("Switch texture !!");         
                 }
             }
         }
@@ -499,7 +499,8 @@ global proc DeleteIhi()
                 setAttr ($l + ".ihi") 0;
             }
         }
-    }hisData("Delete Output !!");
+    }
+    // hisData("Delete Output !!");
 }
 // ################## check advanced skeleton ###################### //
 
@@ -746,7 +747,7 @@ global proc DeleteIhi()
                     autoSet($jnt,5);
                     select -add $newName $ctrl1;yellowColorCurve();select -cl;
                 }
-                hisData("Create ctrl bind prop");
+                // hisData("Create ctrl bind prop");
             }
         }     
         global proc geoToCtrl(){
@@ -771,7 +772,7 @@ global proc DeleteIhi()
                         autoSet($ctrl1,4);
                         select -add $newName $ctrl1;yellowColorCurve();select -cl;
                 }
-                select -cl;hisData("Create ctrl Parent prop");
+                // select -cl;hisData("Create ctrl Parent prop");
             }
         }  
         global proc addJntToCurve(){
@@ -842,7 +843,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create Cube Curve");
+                // select -cl;hisData("Create Cube Curve");
             }
             else{
                 $cur=`curve -n "Cube" -d 1 -p 1 1 1 -p 1 1 -1 -p 1 -1 -1 -p 1 -1 1 -p -1 -1 1 -p -1 1 1 -p 1 1 1 -p 1 -1 1 -p -1 -1 1 -p -1 -1 -1 -p -1 1 -1 -p 1 1 -1 -p 1 -1 -1 -p -1 -1 -1 -p -1 1 -1 -p -1 1 1`;autoSet($cur,4);
@@ -905,7 +906,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create Circle Curve");
+                // select -cl;hisData("Create Circle Curve");
             }
         }        
         global proc cCicleCurHafl()
@@ -965,7 +966,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create CicleCurHafl Curve");
+                // select -cl;hisData("Create CicleCurHafl Curve");
             }
             else{
                 $cur=`curve -n "CicleCurHafl" -d 3 -p -2 0 1 -p -2.01 0 0.68 -p -2 0 0 -p -0.97 0 -1.21 -p 0.97 0 -1.21 -p 2 0 0 -p 2.01 0 0.64 -p 2 0 1`;autoSet($cur,4);
@@ -1028,7 +1029,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create HandCur Curve");
+                // select -cl;hisData("Create HandCur Curve");
             }
             else{
                 $cur=`curve -n "HandCur" -d 3 -p -0.03 0 -0.8 -p -0.03 0 -0.25 -p -0.03 0 0.48 -p 0.57 -0 1.48 -p 2.71 -0 2.66 -p 3.25 -0 3.12 -p 4 -0 2.94 -p 4.09 -0 2.11 -p 3.22 -0 1.69 -p 2.65 -0 1.4 -p 3.68 -0 1.4 -p 7 -0 1.4 -p 7.14 -0 0.9 -p 7 -0 0.52 -p 5.4 -0 0.52 -p 4.04 -0 0.52 -p 4.04 -0 0.39 -p 4.04 -0 0.22 -p 5.72 -0 0.22 -p 7.72 -0 0.22 -p 7.86 -0 -0.25 -p 7.72 -0 -0.71 -p 5.72 -0 -0.71 -p 4.1 -0 -0.71 -p 4.1 -0 -0.84 -p 4.1 -0 -1 -p 6.04 -0 -1 -p 7.26 -0 -1 -p 7.46 -0 -1.46 -p 7.24 -0 -1.92 -p 5.97 -0 -1.92 -p 3.92 -0 -1.92 -p 3.92 -0 -2.02 -p 3.92 -0 -2.12 -p 5.38 -0 -2.12 -p 6.25 -0 -2.12 -p 6.61 -0 -2.6 -p 6.31 -0 -3.12 -p 5.14 -0 -3.12 -p 3.88 -0 -3.12 -p 2.57 -0 -3.12 -p 1.1 -0 -3.16 -p -0.03 0 -2.17 -p -0.03 0 -1.47 -p -0.03 0 -0.8`;autoSet($cur,4);
@@ -1091,7 +1092,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create LegCur Curve");
+                // select -cl;hisData("Create LegCur Curve");
             }
             else{
                 $cur=`curve -n "LegCur" -d 3 -p 1.35 0 0.65 -p 0.03 0 -0.26 -p -1.48 -0.01 0.4 -p -1.4 0 2.42 -p 0.13 0 3.9 -p -1.27 0 6.03 -p -1.52 0 7.95 -p -0.53 0 9.28 -p 0.74 0 9.76 -p 1.98 0 8.92 -p 2.46 0 7.95 -p 2.67 0 6.03 -p 2.43 0 3.9 -p 1.9 0 1.98 -p 1.35 0 0.65`;autoSet($cur,4);
@@ -1154,7 +1155,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create Targete Curve");
+                // select -cl;hisData("Create Targete Curve");
             }
             else{
                 $cur=`curve -n "Target" -d 1 -p -2 0 0 -p 1 0 1 -p 1 0 -1 -p -2 0 0 -p 1 1 0 -p 1 0 0 -p 1 -1 0 -p -2 0 0`;autoSet($cur,4);
@@ -1217,7 +1218,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create LocatorCtrl Curve");
+                // select -cl;hisData("Create LocatorCtrl Curve");
             }
             else{
                 $cur=`curve -n "LocatorCtrl" -d 1 -p -2 0 0 -p 2 0 0 -p 0 0 0 -p 0 0 2 -p 0 0 -2 -p 0 0 0 -p 0 2 0 -p 0 -2 0`;autoSet($cur,4);
@@ -1280,7 +1281,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create TargetCircle Curve");
+                // select -cl;hisData("Create TargetCircle Curve");
             }
             else{
                 $cur=`curve -n "TargetCircle" -d 1 -p 0 5.6 0 -p 2 5.6 -0 -p 1.85 5.6 0.76 -p 1.41 5.6 1.41 -p 0.76 5.6 1.85 -p 0 5.6 2 -p 0 5.6 0 -p 0 5.6 2 -p -0.76 5.6 1.85 -p -1.41 5.6 1.41 -p -1.85 5.6 0.76 -p -2 5.6 -0 -p 0 5.6 0 -p -2 5.6 -0 -p -1.85 5.6 -0.76 -p -1.41 5.6 -1.41 -p -0.76 5.6 -1.85 -p 0 5.6 -2 -p 0 5.6 0 -p 0 5.6 -2 -p 0.76 5.6 -1.85 -p 1.41 5.6 -1.41 -p 1.85 5.6 -0.76 -p 2 5.6 -0 -p 0 5.6 0 -p 0 1.6 0 -p 0 1.6 0.8 -p 0 -0 0 -p 0 1.6 -0.8 -p 0 1.6 0 -p -0.8 1.6 0 -p 0 -0 0 -p 0.8 1.6 0 -p 0 1.6 0.8 -p -0.8 1.6 0 -p 0 1.6 -0.8 -p 0.8 1.6 0 -p 0 1.6 0`;autoSet($cur,4);
@@ -1343,7 +1344,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create CircleD Curve");
+                // select -cl;hisData("Create CircleD Curve");
             }
             else{
                 $cur=`curve -n "CircleD" -d 1 -p 0 1 0 -p 0 0.92 0.38 -p 0 0.71 0.71 -p 0 0.38 0.92 -p 0 0 1 -p 0 -0.38 0.92 -p 0 -0.71 0.71 -p 0 -0.92 0.38 -p 0 -1 0 -p 0 -0.92 -0.38 -p 0 -0.71 -0.71 -p 0 -0.38 -0.92 -p 0 0 -1 -p 0 0.38 -0.92 -p 0 0.71 -0.71 -p 0 0.92 -0.38 -p 0 1 0 -p 0.38 0.92 0 -p 0.71 0.71 0 -p 0.92 0.38 0 -p 1 0 0 -p 0.92 -0.38 0 -p 0.71 -0.71 0 -p 0.38 -0.92 0 -p 0 -1 0 -p -0.38 -0.92 0 -p -0.71 -0.71 0 -p -0.92 -0.38 0 -p -1 0 0 -p -0.92 0.38 0 -p -0.71 0.71 0 -p -0.38 0.92 0 -p 0 1 0 -p 0 0.92 -0.38 -p 0 0.71 -0.71 -p 0 0.38 -0.92 -p 0 0 -1 -p -0.38 0 -0.92 -p -0.71 0 -0.71 -p -0.92 0 -0.38 -p -1 0 0 -p -0.92 0 0.38 -p -0.71 0 0.71 -p -0.38 0 0.92 -p 0 0 1 -p 0.38 0 0.92 -p 0.71 0 0.71 -p 0.92 0 0.38 -p 1 0 0 -p 0.92 0 -0.38 -p 0.71 0 -0.71 -p 0.38 0 -0.92 -p 0 0 -1`;autoSet($cur,4);
@@ -1406,7 +1407,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create Plus Curve");
+                // select -cl;hisData("Create Plus Curve");
             }
             else{
                 $cur=`curve -n "Plus" -d 1 -p -0.64 -2.56 0 -p -0.64 -0.64 0 -p -2.56 -0.64 0 -p -2.56 0.64 0 -p -0.64 0.64 0 -p -0.64 2.56 0 -p 0.64 2.56 0 -p 0.64 0.64 0 -p 2.56 0.64 0 -p 2.56 -0.64 0 -p 0.64 -0.64 0 -p 0.64 -2.56 0 -p -0.64 -2.56 0`;autoSet($cur,4);
@@ -1469,7 +1470,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create CirclePlus Curve");
+                // select -cl;hisData("Create CirclePlus Curve");
             }
             else{
                 $cur=`curve -n "CirclePlus" -d 1 -p 0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 -p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p 0 0 0 -p 0 0 -2 -p -0.76 0 -1.85 -p -1.41 0 -1.41 -p -1.85 0 -0.76 -p -2 0 -0 -p 0 0 0 -p 2 0 -0 -p 1.85 0 0.76 -p 1.41 0 1.41 -p 0.76 0 1.85 -p 0 0 2 -p -0.76 0 1.85 -p -1.41 0 1.41 -p -1.85 0 0.76 -p -2 0 -0`;autoSet($cur,4);
@@ -1532,7 +1533,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create RotateCurve Curve");
+                // select -cl;hisData("Create RotateCurve Curve");
             }
             else{
                 $cur=`curve -n "Rotate" -d 1 -p 0 0 -2.4 -p 0 0 -3.2 -p 0.83 0 -3.09 -p 1.6 0 -2.77 -p 2.26 0 -2.26 -p 2.77 0 -1.6 -p 3.09 0 -0.83 -p 3.2 0 0 -p 3.09 0 0.83 -p 2.77 0 1.6 -p 2.26 0 2.26 -p 1.6 0 2.77 -p 0.83 0 3.09 -p 0 0 3.2 -p -0.83 0 3.09 -p -1.6 0 2.77 -p -2.26 0 2.26 -p -2.77 0 1.6 -p -3.09 0 0.83 -p -3.2 0 0 -p -4.05 0 0 -p -2.78 0 -2.53 -p -1.52 0 0 -p -2.4 0 0 -p -2.32 0 0.62 -p -2.08 0 1.2 -p -1.7 0 1.7 -p -1.2 0 2.08 -p -0.62 0 2.32 -p 0 0 2.4 -p 0.62 0 2.32 -p 1.2 0 2.08 -p 1.7 0 1.7 -p 2.08 0 1.2 -p 2.32 0 0.62 -p 2.4 0 0 -p 2.32 0 -0.62 -p 2.08 0 -1.2 -p 1.7 0 -1.7 -p 1.2 0 -2.08 -p 0.62 0 -2.32 -p 0 0 -2.4`;autoSet($cur,4);
@@ -1595,7 +1596,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create Arrow Curve");
+                // select -cl;hisData("Create Arrow Curve");
             }
             else{
                 $cur=`curve -n "Arrow" -d 1 -p -2.09 -0 0 -p 2.09 -0 2.83 -p 1.59 -0 2.22 -p 1.22 -0 1.53 -p 0.99 -0 0.78 -p 0.91 -0 0 -p 0.99 0 -0.78 -p 1.22 0 -1.53 -p 1.59 0 -2.22 -p 2.09 0 -2.83 -p -2.09 -0 0`;autoSet($cur,4);
@@ -1658,7 +1659,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create ColorRange Curve");
+                // select -cl;hisData("Create ColorRange Curve");
             }
             else{
                 $cur=`curve -n "ColorRange" -d 1 -p 3.69 -0 1.53 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 1.85 -0 0.76 -p 3.69 -0 1.53 -p 4 0 -0 -p 2 0 -0 -p 1.85 -0 0.76 -p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 1.53 -0 3.69 -p 2.83 -0 2.83 -p 1.41 -0 1.41 -p 0.76 -0 1.85 -p 0 -0 2 -p 0 -0 4 -p 1.53 -0 3.69 -p 0.76 -0 1.85 -p 0 -0 2 -p -0.76 -0 1.85 -p -1.53 -0 3.69 -p 0 -0 4 -p 0 -0 2 -p -0.76 -0 1.85 -p -1.41 -0 1.41 -p -2.83 -0 2.83 -p -1.53 -0 3.69 -p -0.76 -0 1.85 -p -1.41 -0 1.41 -p -1.85 -0 0.76 -p -3.69 -0 1.53 -p -2.83 -0 2.83 -p -1.41 -0 1.41 -p -1.85 -0 0.76 -p -2 0 -0 -p -4 0 -0 -p -3.69 -0 1.53 -p -1.85 -0 0.76 -p -2 0 -0 -p -1.85 0 -0.76 -p -3.69 0 -1.53 -p -4 0 -0 -p -2 0 -0 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -2.83 0 -2.83 -p -3.69 0 -1.53 -p -1.85 0 -0.76 -p -1.41 0 -1.41 -p -0.76 0 -1.85 -p -1.53 0 -3.69 -p -2.83 0 -2.83 -p -1.41 0 -1.41 -p -0.76 0 -1.85 -p -0 0 -2 -p -0 0 -4 -p -1.53 0 -3.69 -p -0.76 0 -1.85 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.53 0 -3.69 -p -0 0 -4 -p -0 0 -2 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 2.83 0 -2.83 -p 1.53 0 -3.69 -p 0.76 0 -1.85 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 3.69 0 -1.53 -p 2.83 0 -2.83 -p 1.41 0 -1.41 -p 1.85 0 -0.76 -p 2 0 -0 -p 4 0 -0 -p 3.69 0 -1.53`;autoSet($cur,4);
@@ -1721,7 +1722,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create DirectionCurve Curve");
+                // select -cl;hisData("Create DirectionCurve Curve");
             }
             else{
                 $cur=`curve -n "DirectionCurve" -d 1 -p 0 0 0 -p 0 2.4 -2.4 -p 0 2.4 -1.6 -p 0 4.8 -1.6 -p 0 4.8 1.6 -p 0 2.4 1.6 -p 0 2.4 2.4 -p 0 0 0`;autoSet($cur,4);
@@ -1784,7 +1785,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create BodyCurve Curve");
+                // select -cl;hisData("Create BodyCurve Curve");
             }
             else{
                 $cur=`curve -n "BodyCurve" -d 1 -p -3.14 -0 0.62 -p -4 0 0.8 -p -4 0 1.6 -p -5.6 0 0 -p -4 0 -1.6 -p -4 0 -0.8 -p -3.14 0 -0.62 -p -2.95 0 -1.22 -p -2.66 0 -1.78 -p -2.26 0 -2.26 -p -1.78 0 -2.66 -p -1.22 0 -2.95 -p -0.62 0 -3.14 -p -0.8 0 -4 -p -1.6 0 -4 -p 0 0 -5.6 -p 1.6 0 -4 -p 0.8 0 -4 -p 0.62 0 -3.14 -p 1.22 0 -2.95 -p 1.78 0 -2.66 -p 2.26 0 -2.26 -p 2.66 0 -1.78 -p 2.95 0 -1.22 -p 3.14 0 -0.62 -p 4 0 -0.8 -p 4 0 -1.6 -p 5.6 0 0 -p 4 0 1.6 -p 4 0 0.8 -p 3.14 -0 0.62 -p 2.95 -0 1.22 -p 2.66 -0 1.78 -p 2.26 -0 2.26 -p 1.78 -0 2.66 -p 1.22 -0 2.95 -p 0.62 -0 3.14 -p 0.8 0 4 -p 1.6 0 4 -p 0 0 5.6 -p -1.6 0 4 -p -0.8 0 4 -p -0.62 -0 3.14 -p -1.22 -0 2.95 -p -1.78 -0 2.66 -p -2.26 -0 2.26 -p -2.66 -0 1.78 -p -2.95 -0 1.22 -p -3.14 -0 0.62`;autoSet($cur,4);
@@ -1847,7 +1848,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create LockCircle Curve");
+                // select -cl;hisData("Create LockCircle Curve");
             }
             else{
                 $cur=`curve -n "LockCircle" -d 1 -p 0 0 0 -p 0 5.6 0 -p 0.21 5.63 0 -p 0.4 5.71 0 -p 0.57 5.83 0 -p 0.69 6 0 -p 0.77 6.19 0 -p 0.8 6.4 0 -p 0 6.4 0 -p 0 5.6 0 -p -0.21 5.63 0 -p -0.4 5.71 0 -p -0.57 5.83 0 -p -0.69 6 0 -p -0.77 6.19 0 -p -0.8 6.4 0 -p -0.77 6.61 0 -p -0.69 6.8 0 -p -0.57 6.97 0 -p -0.4 7.09 0 -p -0.21 7.17 0 -p 0 7.2 0 -p 0.21 7.17 0 -p 0.4 7.09 0 -p 0.57 6.97 0 -p 0.69 6.8 0 -p 0.77 6.61 0 -p 0.8 6.4 0 -p -0.8 6.4 0 -p 0 6.4 0 -p 0 7.2 0`;autoSet($cur,4);
@@ -1910,7 +1911,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create LockSquare Curve");
+                // select -cl;hisData("Create LockSquare Curve");
             }
             else{
                 $cur=`curve -n "LockSquare" -d 1 -p 0 0 0 -p -0 5.6 -0 -p -0.7 5.6 -0 -p -0.7 7 -0 -p 0.7 7 -0 -p 0.7 5.6 -0 -p -0 5.6 -0`;autoSet($cur,4);
@@ -1973,7 +1974,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create Square Curve");
+                // select -cl;hisData("Create Square Curve");
             }
             else{
                 $cur=`curve -n "Square" -d 1 -p 1 0 -1 -p -1 0 -1 -p -1 0 1 -p 1 0 1 -p 1 0 -1`;autoSet($cur,4);
@@ -2036,7 +2037,7 @@ global proc DeleteIhi()
                     }
                     refresh;
                 }
-                select -cl;hisData("Create dizzyCur Curve");
+                // select -cl;hisData("Create dizzyCur Curve");
             }
             else{
                 $cur=`curve -n "dizzyCur" -d 3 -p 0.04 0 0.17 -p -0.29 0 0.82 -p 0.45 0 1.57 -p 1.95 0 0.31 -p 0.06 0 -1.38 -p -1.46 0 -0.08 -p -1.45 0 1.28 -p -0.34 0 2.5 -p 2.38 0 1.95 -p 2.44 0 -1.1 -p -0.02 0 -2.31 -p -2.2 0 -1.28 -p -2.73 0 2.41 -p 1.11 0 4.07 -p 4.54 0 0.54 -p 1.18 0 -4.18 -p -3.84 0 -1.84 -p -3.64 0 3.18 -p 0.13 0 4.74 -p 2.12 0 3.98 -p 3.16 0 3.16`;autoSet($cur,4);
@@ -2145,12 +2146,12 @@ global proc linkShow()
 }
 
 // ################################## history tools ################################### //
-global proc hisData(string $text)
-{
-    historyTxt($text);
-    string $cur = readHistoryTxt();
-    scrollField -edit -tx ("History Tools :\n"+$cur+"\n") scrollHistoryTxt;
-}
+// global proc hisData(string $text)
+// {
+//     historyTxt($text);
+//     string $cur = readHistoryTxt();
+//     scrollField -edit -tx ("History Tools :\n"+$cur+"\n") scrollHistoryTxt;
+// }
 global proc hisDel(string $objHis)
 {
     // string $his[] = {"node_Tri3D_tools"};
