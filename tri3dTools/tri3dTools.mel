@@ -363,51 +363,7 @@ global proc functionsWindow()
 
 //############################ ====================
 //############################ ====================
-// ##### data in scene ##### //
 
-global proc autoSet(string $nObj,int $typeSet)
-{
-    select -cl;
-    string $set[] = {"SetToolsT","SystemT","CreatCurveSetT","CurGrpSetT","CurveSetT","JointSetT","AllSetToolsT"};
-    for($s in $set)
-    {
-        if(!`objExists $s`)
-        {
-            sets -name $s;
-        }        
-    }
-    sets -edit -fe  CreatCurveSetT CurveSetT ;
-    sets -edit -fe  CreatCurveSetT JointSetT ;
-    sets -edit -fe  CreatCurveSetT CurGrpSetT ;
-    sets -edit -fe  SetToolsT SystemT ;
-    sets -edit -fe  SetToolsT CreatCurveSetT ;        
-    sets -edit -fe  SetToolsT AllSetToolsT ;   
-    for($i=1;$i<size($set);$i++)
-    {
-        if($typeSet==$i)
-        {
-            sets -edit -fe $set[$i] $nObj;
-        }
-    }         
-}
-global proc nodeTri3d(string $objNode,string $attrNode)
-{
-    string $nodeTri3dTools = "node_Tri3D_tools";
-    string $attrN[] = {"en","ssx","ssy","ssz"};
-    if(!`objExists $nodeTri3dTools`)
-    {
-        createNode -n $nodeTri3dTools transferAttributes;
-        autoSet($nodeTri3dTools,1);
-        for($a in $attrN)
-        {
-            setAttr -lock true -keyable false -channelBox false ($nodeTri3dTools+"."+$a);
-        }       
-    }
-    if(!`attributeExists $attrNode $nodeTri3dTools`)
-    {
-        addAttr -ln ($objNode+"_"+$attrNode) -proxy ($objNode+"."+$attrNode) -keyable 1 $nodeTri3dTools;
-    }hisDel($objNode);
-}
 
 // color ex ######
     global proc addAttrNameSDK (){
@@ -2152,19 +2108,59 @@ global proc linkShow()
 //     string $cur = readHistoryTxt();
 //     scrollField -edit -tx ("History Tools :\n"+$cur+"\n") scrollHistoryTxt;
 // }
-global proc hisDel(string $objHis)
-{
-    // string $his[] = {"node_Tri3D_tools"};
-    // string $sl[]=`ls`;
-    string $listAttr[] = `listConnections $objHis`;
-    for($o in $listAttr)
+
+    // ##### data in scene ##### //
+    global proc autoSet(string $nObj,int $typeSet)
     {
-        print $o;
-        setAttr ($o+".ihi") 0;
-        if(!`attributeExists "ihi" $o`)
-            continue;
+        select -cl;
+        string $set[] = {"SetToolsT","SystemT","CreatCurveSetT","CurGrpSetT","CurveSetT","JointSetT","AllSetToolsT"};
+        for($s in $set)
+        {
+            if(!`objExists $s`)
+            {
+                sets -name $s;
+            }        
+        }
+        sets -edit -fe  CreatCurveSetT CurveSetT ;sets -edit -fe  CreatCurveSetT JointSetT ;sets -edit -fe  CreatCurveSetT CurGrpSetT ;sets -edit -fe  SetToolsT SystemT ;sets -edit -fe  SetToolsT CreatCurveSetT ;sets -edit -fe  SetToolsT AllSetToolsT ;   
+        for($i=1;$i<size($set);$i++)
+        {
+            if($typeSet==$i)
+            {
+                sets -edit -fe $set[$i] $nObj;
+            }
+        }         
     }
-}
+    global proc nodeTri3d(string $objNode,string $attrNode)
+    {
+        string $nodeTri3dTools = "node_Tri3D_tools";
+        string $attrN[] = {"en","ssx","ssy","ssz"};
+        if(!`objExists $nodeTri3dTools`)
+        {
+            createNode -n $nodeTri3dTools transferAttributes;
+            autoSet($nodeTri3dTools,1);
+            for($a in $attrN)
+            {
+                setAttr -lock true -keyable false -channelBox false ($nodeTri3dTools+"."+$a);
+            }       
+        }
+        if(!`attributeExists $attrNode $nodeTri3dTools`)
+        {
+            addAttr -ln ($objNode+"_"+$attrNode) -proxy ($objNode+"."+$attrNode) -keyable 1 $nodeTri3dTools;
+        }hisDel($objNode);
+    }
+    global proc hisDel(string $objHis)
+    {
+        // string $his[] = {"node_Tri3D_tools"};
+        // string $sl[]=`ls`;
+        string $listAttr[] = `listConnections $objHis`;
+        for($o in $listAttr)
+        {
+            print $o;
+            setAttr ($o+".ihi") 0;
+            if(!`attributeExists "ihi" $o`)
+                continue;
+        }
+    }
 
 
 
