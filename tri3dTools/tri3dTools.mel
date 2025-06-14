@@ -2163,5 +2163,14 @@ global proc linkShow()
     }
 
 
-
+// string $ls [] =`ls -sl`;
+// for($i=0;$i<size($ls);$i+=2)
+// {
+//     $a = $ls[$i];
+//     $b = $ls[$i+1];
+//     $n = `createNode -n ($a+"_sf") standardSurface`;
+//     connectAttr -f ($n+".outColor") ($b+".surfaceShader");
+//     connectAttr -f ($a+".outColor") ($n+".baseColor");
+//     if($i>size($ls))break;
+// }
 
